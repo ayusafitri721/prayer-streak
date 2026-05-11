@@ -645,3 +645,147 @@ if (hadisDetail && hadisContextMenu && hadisShareCard) {
   });
 }
 
+// ── Countdown Salat Berikutnya ───────────────────────────────────────
+const countdownEl = document.querySelector("[data-prayer-countdown]");
+
+if (countdownEl) {
+  const prayerTime = countdownEl.dataset.prayerTime;
+  const isTomorrow = countdownEl.dataset.prayerTomorrow === "true";
+  const display = countdownEl.querySelector("[data-countdown-display]");
+  const label = countdownEl.querySelector("[data-countdown-label]");
+
+  if (prayerTime && display && label) {
+    const [targetH, targetM] = prayerTime.split(":").map(Number);
+
+    const getTarget = () => {
+      const now = new Date();
+      const target = new Date(now);
+      target.setHours(targetH, targetM, 0, 0);
+      if (isTomorrow || target <= now) {
+        target.setDate(target.getDate() + 1);
+      }
+      return target;
+    };
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    const tick = () => {
+      const now = new Date();
+      const diff = getTarget() - now;
+
+      if (diff <= 0) {
+        display.textContent = "Waktunya!";
+        label.textContent = "sudah masuk waktu salat";
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+
+      display.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+      if (h > 0) {
+        label.textContent = `${h} jam ${m} menit lagi`;
+      } else if (m > 0) {
+        label.textContent = `${m} menit ${s} detik lagi`;
+      } else {
+        label.textContent = `${s} detik lagi`;
+      }
+    };
+
+    tick();
+    setInterval(tick, 1000);
+  }
+}
+
+// ── Kompas Arah Kiblat ──────────────────────────────────────────────
+const qiblaCompass = document.querySelector("[data-qibla-compass]");
+
+if (qiblaCompass) {
+  const KAABA_LAT = 21.4225;
+  const KAABA_LNG = 39.8262;
+
+  const needle = qiblaCompass.querySelector("[data-qibla-needle]");
+  const bearingText = qiblaCompass.querySelector("[data-qibla-bearing]");
+  const permissionBtn = qiblaCompass.querySelector("[data-qibla-permission-btn]");
+
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const toDeg = (rad) => (rad * 180) / Math.PI;
+
+  const calcQiblaBearing = (lat, lng) => {
+    const lat1 = toRad(lat);
+    const lat2 = toRad(KAABA_LAT);
+    const dLng = toRad(KAABA_LNG - lng);
+    const x = Math.sin(dLng) * Math.cos(lat2);
+    const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    return (toDeg(Math.atan2(x, y)) + 360) % 360;
+  };
+
+  const bearingToLabel = (deg) => {
+    const labels = ["Utara", "Timur Laut", "Timur", "Tenggara", "Selatan", "Barat Daya", "Barat", "Barat Laut"];
+    return labels[Math.round(deg / 45) % 8];
+  };
+
+  const rotateNeedle = (deg) => {
+    needle.setAttribute("style", `transform-origin:100px 100px;transform:rotate(${deg}deg);transition:transform 0.3s ease-out`);
+  };
+
+  const startOrientation = (qiblaBearing) => {
+    const handleOrientation = (e) => {
+      if (e.alpha == null) return;
+      rotateNeedle(qiblaBearing - e.alpha);
+    };
+
+    if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+      // iOS 13+ — perlu permission request via user gesture
+      permissionBtn.classList.remove("hidden");
+      permissionBtn.addEventListener("click", () => {
+        DeviceOrientationEvent.requestPermission().then((state) => {
+          if (state === "granted") {
+            permissionBtn.classList.add("hidden");
+            window.addEventListener("deviceorientation", handleOrientation);
+          } else {
+            bearingText.textContent = "Izin kompas ditolak";
+          }
+        }).catch(() => {
+          bearingText.textContent = "Izin kompas gagal";
+        });
+      });
+    } else {
+      // Android / desktop — langsung pasang listener
+      // Prefer deviceorientationabsolute, fallback ke deviceorientation
+      let useAbsolute = false;
+
+      window.addEventListener("deviceorientationabsolute", (e) => {
+        useAbsolute = true;
+        handleOrientation(e);
+      });
+
+      window.addEventListener("deviceorientation", (e) => {
+        if (!useAbsolute) handleOrientation(e);
+      });
+    }
+  };
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const bearing = calcQiblaBearing(latitude, longitude);
+        const rounded = Math.round(bearing);
+        bearingText.textContent = `${rounded}° ${bearingToLabel(bearing)}`;
+        rotateNeedle(bearing);
+        startOrientation(bearing);
+      },
+      () => {
+        bearingText.textContent = "Izinkan akses lokasi untuk melihat arah kiblat";
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  } else {
+    bearingText.textContent = "Geolocation tidak tersedia";
+  }
+}
+
