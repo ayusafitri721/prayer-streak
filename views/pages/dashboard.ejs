@@ -73,6 +73,28 @@
     </aside>
   </section>
 
+  <% if (dailyHadis) { %>
+  <section class="rounded-[2rem] border border-[#D4A373]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10">
+    <div class="flex items-start gap-4">
+      <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#D4A373]/15">
+        <svg class="h-5 w-5 text-[#D4A373]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-xs font-semibold uppercase tracking-wider text-[#D4A373]">Hadis Penyemangat Hari Ini</p>
+        <p class="mt-2 text-sm leading-7 text-[#344E41]/80"><%= dailyHadis.id.length > 250 ? dailyHadis.id.substring(0, 250) + '...' : dailyHadis.id %></p>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <span class="rounded-full border border-[#D4A373]/30 bg-[#D4A373]/10 px-3 py-1 text-xs font-medium text-[#D4A373]">HR. <%= dailyHadis.name %> No. <%= dailyHadis.number %></span>
+          <a href="/hadis/<%= dailyHadis.slug %>/<%= dailyHadis.number %>" class="text-xs font-semibold text-[#588157] transition hover:text-[#344E41]">
+            Baca selengkapnya &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
   <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>

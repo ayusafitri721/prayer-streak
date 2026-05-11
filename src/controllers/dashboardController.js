@@ -5,16 +5,21 @@ const {
   getStatsData,
   getProfileData,
 } = require("../services/prayerProgressService");
+const { getDailyHadis } = require("../services/hadisService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
   try {
-    const data = await getDashboardData(user.id, user.name);
+    const [data, dailyHadis] = await Promise.all([
+      getDashboardData(user.id, user.name),
+      getDailyHadis().catch(() => null),
+    ]);
 
     return res.render("pages/dashboard", {
       title: "Dashboard - Prayer Streak",
       ...data,
       userName: user.name,
+      dailyHadis,
     });
   } catch (error) {
     req.flash("error", "Gagal memuat dashboard. Coba lagi beberapa saat.");
@@ -46,6 +51,7 @@ async function renderDashboard(req, res) {
       fullDays: 0,
       streakActive: false,
       latestAchievement: null,
+      dailyHadis: null,
     });
   }
 }

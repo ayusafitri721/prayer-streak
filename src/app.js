@@ -13,6 +13,7 @@ const statisticsRoutes = require("./routes/statistics");
 const achievementsRoutes = require("./routes/achievements");
 const profileRoutes = require("./routes/profile");
 const quranRoutes = require("./routes/quran");
+const hadisRoutes = require("./routes/hadis");
 
 const app = express();
 
@@ -43,5 +44,6 @@ app.use("/statistics", statisticsRoutes);
 app.use("/achievements", achievementsRoutes);
 app.use("/profile", profileRoutes);
 app.use("/quran", quranRoutes);
+app.use("/hadis", hadisRoutes);
 
 module.exports = app;

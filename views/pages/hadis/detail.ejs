@@ -1,0 +1,137 @@
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
+  <section
+    class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10"
+    data-hadis-detail
+    data-hadis-name="<%= hadis.name %>"
+    data-hadis-slug="<%= hadis.slug %>"
+    data-hadis-number="<%= hadis.number %>"
+    data-hadis-arab="<%= hadis.arab %>"
+    data-hadis-translation="<%= hadis.id %>"
+  >
+    <!-- Breadcrumb -->
+    <nav class="flex flex-wrap items-center gap-1.5 text-sm text-[#344E41]/60">
+      <a href="/hadis" class="transition hover:text-[#588157]">Hadis</a>
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+      <a href="/hadis/<%= hadis.slug %>" class="transition hover:text-[#588157]"><%= hadis.name %></a>
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="font-medium text-[#344E41]">Hadis No. <%= hadis.number %></span>
+    </nav>
+
+    <div class="mt-6 text-center">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#588157]/25 bg-[#588157]/10 text-sm font-bold text-[#588157]">
+        <%= hadis.number %>
+      </span>
+      <h1 class="mt-4 text-2xl font-bold text-[#344E41] sm:text-3xl"><%= hadis.name %></h1>
+      <p class="mt-2 text-sm text-[#344E41]/60">Hadis Nomor <%= hadis.number %></p>
+      <div class="mx-auto mt-5 h-px w-32 bg-gradient-to-r from-transparent via-[#A3B18A] to-transparent"></div>
+    </div>
+
+    <!-- Arabic text -->
+    <div class="mt-8 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
+      <p class="text-right font-[Amiri,serif] text-2xl leading-[2.5] text-[#344E41] sm:text-3xl" dir="rtl"><%= hadis.arab %></p>
+    </div>
+
+    <!-- Translation -->
+    <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[#588157]">Terjemahan</p>
+      <p class="mt-3 text-sm leading-7 text-[#344E41]/80"><%= hadis.id %></p>
+    </div>
+
+    <!-- Info + 3-dot menu -->
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+      <span class="rounded-full border border-[#588157]/25 bg-[#588157]/10 px-3 py-1 font-medium text-[#588157]">HR. <%= hadis.name %></span>
+      <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-[#344E41]/70">No. <%= hadis.number %></span>
+      <button
+        type="button"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#344E41]/50 transition hover:bg-[#588157]/10 hover:text-[#588157]"
+        data-hadis-more
+      >
+        <svg class="h-4 w-4 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="1.5"/>
+          <circle cx="12" cy="12" r="1.5"/>
+          <circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation prev/next -->
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
+      <% if (hadis.number > 1) { %>
+        <a href="/hadis/<%= hadis.slug %>/<%= hadis.number - 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Hadis <%= hadis.number - 1 %>
+        </a>
+      <% } %>
+      <a href="/hadis/<%= hadis.slug %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+        </svg>
+        Daftar Hadis
+      </a>
+      <a href="/hadis/<%= hadis.slug %>/<%= hadis.number + 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+        Hadis <%= hadis.number + 1 %>
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Hidden share image template 540x960 → scale 2x = 1080x1920 (9:16 story) -->
+  <div id="hadis-share-image-card" style="position:fixed;left:-9999px;top:0;width:540px;height:960px;font-family:sans-serif;overflow:hidden;">
+    <div style="width:100%;height:100%;background:linear-gradient(170deg,#344E41 0%,#588157 50%,#344E41 100%);padding:0 48px;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;box-sizing:border-box;">
+      <!-- Decorative circles -->
+      <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.08);"></div>
+      <div style="position:absolute;bottom:60px;left:-60px;width:240px;height:240px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.06);"></div>
+      <div style="position:absolute;top:30%;right:30px;width:80px;height:80px;border-radius:50%;border:1px solid rgba(255,255,255,0.05);"></div>
+      <div style="position:absolute;bottom:25%;left:20px;width:50px;height:50px;border-radius:50%;border:1px solid rgba(255,255,255,0.04);"></div>
+
+      <!-- Top ornament line -->
+      <div style="width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(163,177,138,0.6),transparent);border-radius:1px;margin-bottom:36px;"></div>
+
+      <!-- Arabic text -->
+      <p id="hadis-share-arabic" dir="rtl" style="font-family:'Amiri',serif;font-size:28px;line-height:2.2;color:#ffffff;text-align:center;margin:0 0 28px;width:100%;"></p>
+
+      <!-- Separator -->
+      <div style="width:50px;height:1px;background:linear-gradient(90deg,transparent,rgba(163,177,138,0.4),transparent);margin-bottom:24px;"></div>
+
+      <!-- Translation -->
+      <p id="hadis-share-translation" style="font-size:14px;line-height:1.9;color:rgba(218,215,205,0.7);text-align:center;margin:0 0 36px;width:100%;"></p>
+
+      <!-- Bottom ornament line -->
+      <div style="width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(163,177,138,0.6),transparent);border-radius:1px;margin-bottom:20px;"></div>
+
+      <!-- Hadis info -->
+      <p id="hadis-share-info" style="font-size:14px;color:rgba(218,215,205,0.6);text-align:center;margin:0 0 28px;letter-spacing:0.5px;"></p>
+
+      <!-- Branding -->
+      <p style="font-size:11px;color:rgba(218,215,205,0.3);text-align:center;margin:0;letter-spacing:3px;text-transform:uppercase;">Prayer Streak</p>
+    </div>
+  </div>
+
+  <!-- Context menu -->
+  <div id="hadis-context-menu" style="display:none;position:fixed;z-index:9999;min-width:200px;background:#fff;border:1px solid rgba(163,177,138,0.4);border-radius:12px;box-shadow:0 8px 30px rgba(52,78,65,0.18);overflow:hidden;">
+    <button type="button" data-hadis-action="share-image" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border:none;background:none;cursor:pointer;font-size:14px;color:#344E41;text-align:left;" onmouseover="this.style.background='#F6F1E9'" onmouseout="this.style.background='none'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#588157" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      Bagikan sebagai Gambar
+    </button>
+    <div style="height:1px;background:rgba(163,177,138,0.25);margin:0 12px;"></div>
+    <button type="button" data-hadis-action="download-image" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border:none;background:none;cursor:pointer;font-size:14px;color:#344E41;text-align:left;" onmouseover="this.style.background='#F6F1E9'" onmouseout="this.style.background='none'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#588157" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Unduh Gambar
+    </button>
+    <div style="height:1px;background:rgba(163,177,138,0.25);margin:0 12px;"></div>
+    <button type="button" data-hadis-action="copy-text" style="display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border:none;background:none;cursor:pointer;font-size:14px;color:#344E41;text-align:left;" onmouseover="this.style.background='#F6F1E9'" onmouseout="this.style.background='none'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#588157" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Salin Teks
+    </button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</main>

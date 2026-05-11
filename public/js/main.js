@@ -450,3 +450,198 @@ if (verseSection && contextMenu && shareCard) {
   });
 }
 
+// ── Share Hadis sebagai Gambar ──────────────────────────────────────
+const hadisDetail = document.querySelector("[data-hadis-detail]");
+const hadisContextMenu = document.getElementById("hadis-context-menu");
+const hadisShareCard = document.getElementById("hadis-share-image-card");
+
+if (hadisDetail && hadisContextMenu && hadisShareCard) {
+  const hadisName = hadisDetail.dataset.hadisName;
+  const hadisSlug = hadisDetail.dataset.hadisSlug;
+  const hadisNumber = hadisDetail.dataset.hadisNumber;
+  const hadisArab = hadisDetail.dataset.hadisArab;
+  const hadisTranslation = hadisDetail.dataset.hadisTranslation;
+
+  // ── Toast notification ──
+  const showHadisToast = (message) => {
+    const existing = document.getElementById("share-toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "share-toast";
+    toast.textContent = message;
+    Object.assign(toast.style, {
+      position: "fixed",
+      bottom: "24px",
+      left: "50%",
+      transform: "translateX(-50%) translateY(20px)",
+      background: "#344E41",
+      color: "#fff",
+      padding: "10px 20px",
+      borderRadius: "10px",
+      fontSize: "14px",
+      zIndex: "10000",
+      opacity: "0",
+      transition: "opacity 0.3s, transform 0.3s",
+      pointerEvents: "none",
+    });
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateX(-50%) translateY(0)";
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(-50%) translateY(20px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  };
+
+  // ── Context menu positioning ──
+  const showHadisMenu = (button) => {
+    hadisContextMenu.style.display = "block";
+
+    const rect = button.getBoundingClientRect();
+    const menuW = hadisContextMenu.offsetWidth;
+    const menuH = hadisContextMenu.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    let left = rect.right - menuW;
+    let top = rect.bottom + 6;
+    if (left < 8) left = 8;
+    if (left + menuW > vw - 8) left = vw - menuW - 8;
+    if (top + menuH > vh - 8) top = rect.top - menuH - 6;
+
+    hadisContextMenu.style.left = left + "px";
+    hadisContextMenu.style.top = top + "px";
+  };
+
+  const hideHadisMenu = () => {
+    hadisContextMenu.style.display = "none";
+  };
+
+  // ── 3-dot button click ──
+  const moreBtn = hadisDetail.querySelector("[data-hadis-more]");
+  if (moreBtn) {
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (hadisContextMenu.style.display === "block") {
+        hideHadisMenu();
+      } else {
+        showHadisMenu(moreBtn);
+      }
+    });
+  }
+
+  // ── Dismiss menu ──
+  document.addEventListener("click", (e) => {
+    if (hadisContextMenu.style.display === "block" && !hadisContextMenu.contains(e.target)) {
+      hideHadisMenu();
+    }
+  });
+  document.addEventListener("scroll", () => hideHadisMenu(), true);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideHadisMenu();
+  });
+
+  // ── Copy text ──
+  hadisContextMenu.querySelector('[data-hadis-action="copy-text"]').addEventListener("click", () => {
+    const info = `${hadisName} No. ${hadisNumber}`;
+
+    let text = hadisArab + "\n\n" + hadisTranslation + "\n\n" + info;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showHadisToast("Teks hadis berhasil disalin");
+    }).catch(() => {
+      showHadisToast("Gagal menyalin teks");
+    });
+
+    hideHadisMenu();
+  });
+
+  // ── Generate image helper ──
+  const generateHadisImage = async () => {
+    if (typeof html2canvas === "undefined") {
+      showHadisToast("Gagal memuat library gambar");
+      return null;
+    }
+
+    const maxArab = 500;
+    const maxTranslation = 400;
+    const arabText = hadisArab.length > maxArab ? hadisArab.substring(0, maxArab) + "..." : hadisArab;
+    const transText = hadisTranslation.length > maxTranslation ? hadisTranslation.substring(0, maxTranslation) + "..." : hadisTranslation;
+
+    hadisShareCard.querySelector("#hadis-share-arabic").textContent = arabText;
+    hadisShareCard.querySelector("#hadis-share-translation").textContent = transText;
+    hadisShareCard.querySelector("#hadis-share-info").textContent =
+      `${hadisName} No. ${hadisNumber}`;
+
+    showHadisToast("Membuat gambar...");
+
+    const canvas = await html2canvas(hadisShareCard, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null,
+    });
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    const fileName = `Hadis-${hadisSlug}-No${hadisNumber}.png`;
+    return { blob, fileName };
+  };
+
+  const downloadHadisBlob = (blob, fileName) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Share image ──
+  hadisContextMenu.querySelector('[data-hadis-action="share-image"]').addEventListener("click", async () => {
+    hideHadisMenu();
+    try {
+      const result = await generateHadisImage();
+      if (!result) return;
+
+      if (navigator.share && navigator.canShare) {
+        const file = new File([result.blob], result.fileName, { type: "image/png" });
+        const shareData = { files: [file] };
+
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          showHadisToast("Berhasil dibagikan");
+          return;
+        }
+      }
+
+      downloadHadisBlob(result.blob, result.fileName);
+      showHadisToast("Gambar berhasil diunduh");
+    } catch (err) {
+      console.error("Share hadis image error:", err);
+      showHadisToast("Gagal membuat gambar");
+    }
+  });
+
+  // ── Download image ──
+  hadisContextMenu.querySelector('[data-hadis-action="download-image"]').addEventListener("click", async () => {
+    hideHadisMenu();
+    try {
+      const result = await generateHadisImage();
+      if (!result) return;
+
+      downloadHadisBlob(result.blob, result.fileName);
+      showHadisToast("Gambar berhasil diunduh");
+    } catch (err) {
+      console.error("Download hadis image error:", err);
+      showHadisToast("Gagal membuat gambar");
+    }
+  });
+}
+

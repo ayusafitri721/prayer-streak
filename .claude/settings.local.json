@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:equran.id)"
+      "WebFetch(domain:equran.id)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:hadis-api-id.vercel.app)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api-hadis.vercel.app)",
+      "WebFetch(domain:api.hadith.gading.dev)"
     ]
   }
 }

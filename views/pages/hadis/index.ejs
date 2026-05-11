@@ -1,0 +1,90 @@
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
+  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
+    <div class="text-center">
+      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#588157]/10">
+        <svg class="h-7 w-7 text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+      </div>
+      <h1 class="mt-4 text-3xl font-bold text-[#344E41]">Koleksi Hadis</h1>
+      <p class="mt-2 text-[#344E41]/70">
+        Jelajahi koleksi hadis dari 9 perawi terpercaya. Pilih perawi untuk membaca hadis lengkap dengan teks Arab dan terjemahan.
+      </p>
+    </div>
+
+    <div class="mt-6 flex justify-center">
+      <label class="block w-full max-w-md">
+        <div class="relative">
+          <svg class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A3B18A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Cari perawi... (contoh: Bukhari, Muslim)"
+            class="w-full rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] py-3 pl-11 pr-4 text-[#344E41] outline-none transition placeholder:text-[#344E41]/40 focus:border-[#588157] focus:ring-2 focus:ring-[#588157]/20"
+            data-perawi-search
+          />
+        </div>
+      </label>
+    </div>
+
+    <% if (pageError) { %>
+      <div class="mt-6 rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <%= pageError %>
+      </div>
+    <% } %>
+
+    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-perawi-grid>
+      <% perawiList.forEach((perawi) => { %>
+        <a
+          href="/hadis/<%= perawi.slug %>"
+          class="group flex items-center gap-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-4 transition hover:border-[#588157]/50 hover:bg-[#A3B18A]/15 hover:shadow-md"
+          data-perawi-card
+          data-perawi-search-value="<%= perawi.name.toLowerCase() %>"
+        >
+          <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[#588157]/25 bg-[#588157]/10 transition group-hover:bg-[#588157] group-hover:text-white">
+            <svg class="h-5 w-5 text-[#588157] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="truncate font-bold text-[#344E41]"><%= perawi.name %></h2>
+            <p class="mt-1 text-xs text-[#344E41]/60"><%= perawi.total.toLocaleString("id-ID") %> hadis</p>
+          </div>
+          <svg class="h-4 w-4 flex-shrink-0 text-[#A3B18A] transition group-hover:text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      <% }) %>
+    </div>
+
+    <div class="<%= perawiList.length || pageError ? 'hidden' : '' %> mt-6 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-8 text-center text-[#344E41]/60" data-perawi-empty>
+      <svg class="mx-auto h-10 w-10 text-[#A3B18A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <p class="mt-3">Perawi tidak ditemukan untuk kata kunci tersebut.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var input = document.querySelector("[data-perawi-search]");
+  var cards = document.querySelectorAll("[data-perawi-card]");
+  var empty = document.querySelector("[data-perawi-empty]");
+  if (!input || !cards.length) return;
+
+  input.addEventListener("input", function () {
+    var query = this.value.toLowerCase().trim();
+    var visible = 0;
+    cards.forEach(function (card) {
+      var match = !query || card.getAttribute("data-perawi-search-value").indexOf(query) !== -1;
+      card.style.display = match ? "" : "none";
+      if (match) visible++;
+    });
+    if (empty) {
+      empty.classList.toggle("hidden", visible > 0);
+    }
+  });
+})();
+</script>
