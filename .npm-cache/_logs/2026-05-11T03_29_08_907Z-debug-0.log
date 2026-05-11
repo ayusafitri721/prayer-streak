@@ -1,0 +1,24 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.4.2
+2 info using node@v22.19.0
+3 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:E:\backup\prayer-streak\.npmrc
+5 silly config load:file:C:\Users\ayusa\.npmrc
+6 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install @prisma/client@5.22.0 prisma@5.22.0
+8 verbose argv "install" "@prisma/client@5.22.0" "prisma@5.22.0" "--no-audit" "--no-fund" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_29_08_907Z-
+10 verbose logfile E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_29_08_907Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest @prisma/client@5.22.0
+15 silly packumentCache full:https://registry.npmjs.org/@prisma%2fclient cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 2 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 3 failed with EACCES
+20 silly fetch manifest prisma@5.22.0
+21 silly packumentCache full:https://registry.npmjs.org/prisma cache-miss
+22 http fetch GET https://registry.npmjs.org/prisma attempt 1 failed with EACCES
+23 http fetch GET https://registry.npmjs.org/prisma attempt 2 failed with EACCES

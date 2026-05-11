@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  password    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  prayerLogs  PrayerLog[]
+  achievements UserAchievement[]
+  xpHistories XPHistory[]
+}
+
+model PrayerLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  prayerType String
+  date       DateTime @db.Date
+  status     Boolean  @default(false)
+  prayedAt   DateTime?
+  xpEarned   Int      @default(0)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, prayerType])
+  @@index([userId, date])
+}
+
+model Achievement {
+  id           Int    @id @default(autoincrement())
+  slug         String @unique
+  name         String
+  description  String
+  targetType   String
+  targetValue  Int
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  achievementId Int
+  unlockedAt    DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
+model XPHistory {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  pointChange Int
+  reason      String
+  relatedDate DateTime?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}

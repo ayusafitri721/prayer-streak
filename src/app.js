@@ -1,0 +1,45 @@
+require("dotenv").config();
+
+const path = require("path");
+const express = require("express");
+const expressLayouts = require("express-ejs-layouts");
+const session = require("express-session");
+const flash = require("connect-flash");
+const { attachGlobals } = require("./middlewares/flash");
+const mainRoutes = require("./routes/main");
+const authRoutes = require("./routes/auth");
+const dashboardRoutes = require("./routes/dashboard");
+const statisticsRoutes = require("./routes/statistics");
+const achievementsRoutes = require("./routes/achievements");
+const profileRoutes = require("./routes/profile");
+
+const app = express();
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "../views"));
+app.set("layout", "layouts/main");
+
+app.use(expressLayouts);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "../public")));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "change_this_secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(flash());
+
+app.use(attachGlobals);
+
+app.use("/", mainRoutes);
+app.use("/", authRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/statistics", statisticsRoutes);
+app.use("/achievements", achievementsRoutes);
+app.use("/profile", profileRoutes);
+
+module.exports = app;

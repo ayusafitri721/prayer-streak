@@ -1,0 +1,29 @@
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
+  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
+    <h1 class="text-3xl font-bold text-white">Statistik Progres</h1>
+    <p class="mt-2 text-slate-300">Ringkasan performa konsistensi salat 5 waktu.</p>
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Total salat selesai minggu ini</p>
+        <p class="mt-2 text-2xl font-bold text-emerald-200"><%= totalThisWeek %></p>
+      </article>
+      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Persentase konsistensi</p>
+        <p class="mt-2 text-2xl font-bold text-emerald-200"><%= consistencyPercent %>%</p>
+      </article>
+      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Hari full completed</p>
+        <p class="mt-2 text-2xl font-bold text-emerald-200"><%= fullDays %></p>
+      </article>
+      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Streak aktif</p>
+        <p class="mt-2 text-2xl font-bold text-emerald-200"><%= activeStreak %> hari</p>
+      </article>
+      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Longest streak</p>
+        <p class="mt-2 text-2xl font-bold text-emerald-200"><%= longestStreak %> hari</p>
+      </article>
+    </div>
+  </section>
+</main>
+

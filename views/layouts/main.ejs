@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || "Prayer Streak" %></title>
+    <link rel="stylesheet" href="/css/output.css" />
+  </head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+    <div class="min-h-screen bg-[radial-gradient(circle_at_top,_#10b981_0%,_#0f172a_55%,_#020617_100%)]">
+      <%- include('../partials/topbar') %>
+      <% if (flashMessage) { %>
+        <div class="mx-auto mt-4 w-full max-w-5xl px-4">
+          <div class="rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-50">
+            <%= flashMessage %>
+          </div>
+        </div>
+      <% } %>
+      <% if (flashError) { %>
+        <div class="mx-auto mt-4 w-full max-w-5xl px-4">
+          <div class="rounded-lg border border-red-300/40 bg-red-400/10 px-4 py-3 text-sm text-red-50">
+            <%= flashError %>
+          </div>
+        </div>
+      <% } %>
+      <%- body %>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

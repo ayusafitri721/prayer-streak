@@ -1,0 +1,75 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.4.2
+2 info using node@v22.19.0
+3 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:E:\backup\prayer-streak\.npmrc
+5 silly config load:file:C:\Users\ayusa\.npmrc
+6 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install @prisma/adapter-mysql
+8 verbose argv "install" "--no-audit" "--no-fund" "@prisma/adapter-mysql" "--save-dev" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_18_08_638Z-
+10 verbose logfile E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_18_08_638Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest @prisma/client@^5.22.0
+15 silly packumentCache full:https://registry.npmjs.org/@prisma%2fclient cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 1 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with EACCES
+20 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 2 failed with EACCES
+21 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with EACCES
+22 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 3 failed with EACCES
+23 silly fetch manifest prisma@^5.22.0
+24 silly packumentCache full:https://registry.npmjs.org/prisma cache-miss
+25 http fetch GET https://registry.npmjs.org/prisma attempt 1 failed with EACCES
+26 http fetch GET https://registry.npmjs.org/prisma attempt 2 failed with EACCES
+27 http fetch GET https://registry.npmjs.org/prisma attempt 3 failed with EACCES
+28 silly fetch manifest @prisma/adapter-mysql@*
+29 silly packumentCache full:https://registry.npmjs.org/@prisma%2fadapter-mysql cache-miss
+30 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-mysql attempt 1 failed with EACCES
+31 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-mysql attempt 2 failed with EACCES
+32 http fetch GET https://registry.npmjs.org/@prisma%2fadapter-mysql attempt 3 failed with EACCES
+33 silly placeDep ROOT @prisma/adapter-mysql@ OK for: prayer-streak@1.0.0 want: *
+34 silly placeDep ROOT @prisma/client@ REPLACE for: prayer-streak@1.0.0 want: ^5.22.0
+35 silly placeDep ROOT prisma@ OK for: prayer-streak@1.0.0 want: ^5.22.0
+36 verbose type system
+37 verbose stack FetchError: request to https://registry.npmjs.org/@prisma%2fadapter-mysql failed, reason: 
+37 verbose stack     at ClientRequest.<anonymous> (C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+37 verbose stack     at ClientRequest.emit (node:events:519:28)
+37 verbose stack     at emitErrorEvent (node:_http_client:105:11)
+37 verbose stack     at _destroy (node:_http_client:898:9)
+37 verbose stack     at onSocketNT (node:_http_client:918:5)
+37 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+38 error code EACCES
+39 error errno EACCES
+40 error FetchError: request to https://registry.npmjs.org/@prisma%2fadapter-mysql failed, reason: 
+40 error     at ClientRequest.<anonymous> (C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+40 error     at ClientRequest.emit (node:events:519:28)
+40 error     at emitErrorEvent (node:_http_client:105:11)
+40 error     at _destroy (node:_http_client:898:9)
+40 error     at onSocketNT (node:_http_client:918:5)
+40 error     at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+40 error   code: 'EACCES',
+40 error   errno: 'EACCES',
+40 error   type: 'system',
+40 error   requiredBy: '.'
+40 error }
+41 error
+41 error The operation was rejected by your operating system.
+41 error It's possible that the file was already in use (by a text editor or antivirus),
+41 error or that you lack permissions to access it.
+41 error
+41 error If you believe this might be a permissions issue, please double-check the
+41 error permissions of the file and its containing directories, or try running
+41 error the command again as root/Administrator.
+42 silly unfinished npm timer reify 1778469489295
+43 silly unfinished npm timer reify:loadTrees 1778469489298
+44 verbose cwd E:\backup\prayer-streak
+45 verbose os Windows_NT 10.0.26100
+46 verbose node v22.19.0
+47 verbose npm  v11.4.2
+48 verbose exit 1
+49 verbose code 1
+50 error A complete log of this run can be found in: E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_18_08_638Z-debug-0.log

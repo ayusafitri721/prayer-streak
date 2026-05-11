@@ -1,0 +1,55 @@
+<main class="mx-auto mt-8 flex w-full max-w-5xl flex-col gap-5 px-4 pb-10 sm:px-6">
+  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
+    <p class="text-sm text-emerald-100">Hai, <%= userName %></p>
+    <h1 class="mt-2 text-3xl font-bold text-white">Dashboard Harian</h1>
+    <p class="mt-2 text-slate-300">
+      Waktu salat berikutnya: <strong><%= nextPrayer.name %></strong>
+      <% if (nextPrayer.time) { %>jam <%= nextPrayer.time %><% } %>
+    </p>
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">XP</p>
+        <p class="text-2xl font-bold text-emerald-200"><%= xp %></p>
+      </div>
+      <div class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Level</p>
+        <p class="text-2xl font-bold text-emerald-200"><%= level %></p>
+      </div>
+      <div class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Streak Aktif</p>
+        <p class="text-2xl font-bold text-emerald-200"><%= streak %> hari</p>
+      </div>
+      <div class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
+        <p class="text-sm text-slate-400">Hari ini</p>
+        <p class="text-2xl font-bold text-emerald-200"><%= todayCompleted %> / <%= totalToday %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-bold">Checklist Salat 5 Waktu</h2>
+      <% if (latestAchievement) { %>
+        <span class="rounded-full bg-amber-500/20 px-3 py-1 text-sm text-amber-100"><%= latestAchievement %></span>
+      <% } %>
+    </div>
+    <div class="mt-4 grid gap-3">
+      <% checklist.forEach((item) => { %>
+        <form method="POST" action="/dashboard/prayer/<%= item.key %>/complete" class="flex items-center justify-between rounded-xl border border-slate-700/70 bg-slate-900/75 p-4">
+          <div>
+            <p class="font-semibold text-white"><%= item.label %></p>
+            <% if (todayState[item.key]) { %>
+              <p class="text-xs text-emerald-200">Selesai jam <%= todayState[item.key] %></p>
+            <% } else { %>
+              <p class="text-xs text-slate-400">Belum dicentang</p>
+            <% } %>
+          </div>
+          <button type="submit" class="rounded-full bg-emerald-300/20 px-4 py-2 text-sm text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" <%= todayState[item.key] ? "disabled" : "" %>>
+            <%= todayState[item.key] ? "Done" : "Checklist" %>
+          </button>
+        </form>
+      <% }) %>
+    </div>
+  </section>
+</main>
+

@@ -1,0 +1,32 @@
+<main class="mx-auto mt-16 w-full max-w-lg px-4">
+  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-8 shadow-2xl shadow-emerald-900/30">
+    <h1 class="text-3xl font-bold text-white">Register</h1>
+    <p class="mt-2 text-sm text-slate-300">Bikin akun untuk mulai membangun konsistensi salatmu.</p>
+    <form class="mt-8 space-y-4" action="/register" method="POST">
+      <div>
+        <label class="mb-1 block text-sm text-slate-200" for="name">Nama</label>
+        <input id="name" name="name" type="text" placeholder="Nama panggilan" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-slate-100 outline-none focus:border-emerald-300" required />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-slate-200" for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="nama@email.com" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-slate-100 outline-none focus:border-emerald-300" required />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-slate-200" for="password">Password</label>
+        <input id="password" name="password" type="password" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-slate-100 outline-none focus:border-emerald-300" required />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-slate-200" for="confirmPassword">Konfirmasi Password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-slate-100 outline-none focus:border-emerald-300" required />
+      </div>
+      <button type="submit" class="w-full rounded-xl bg-emerald-400 px-4 py-2 font-semibold text-slate-900 hover:bg-amber-300">
+        Register
+      </button>
+    </form>
+    <p class="mt-5 text-sm text-slate-300">
+      Sudah punya akun?
+      <a href="/login" class="text-emerald-300 underline">Login</a>
+    </p>
+  </section>
+</main>
+

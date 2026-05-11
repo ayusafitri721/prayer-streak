@@ -1,0 +1,66 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.4.2
+2 info using node@v22.19.0
+3 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:E:\backup\prayer-streak\.npmrc
+5 silly config load:file:C:\Users\ayusa\.npmrc
+6 silly config load:file:C:\Users\ayusa\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install @prisma/client@5.22.0 prisma@5.22.0
+8 verbose argv "install" "@prisma/client@5.22.0" "prisma@5.22.0" "--no-audit" "--no-fund" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_31_16_554Z-
+10 verbose logfile E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_31_16_554Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 silly idealTree buildDeps
+14 silly fetch manifest @prisma/client@5.22.0
+15 silly packumentCache full:https://registry.npmjs.org/@prisma%2fclient cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 2 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/@prisma%2fclient attempt 3 failed with EACCES
+20 silly fetch manifest prisma@5.22.0
+21 silly packumentCache full:https://registry.npmjs.org/prisma cache-miss
+22 http fetch GET https://registry.npmjs.org/prisma attempt 1 failed with EACCES
+23 http fetch GET https://registry.npmjs.org/prisma attempt 2 failed with EACCES
+24 http fetch GET https://registry.npmjs.org/prisma attempt 3 failed with EACCES
+25 silly placeDep ROOT @prisma/client@ REPLACE for: prayer-streak@1.0.0 want: 5.22.0
+26 silly placeDep ROOT prisma@ OK for: prayer-streak@1.0.0 want: 5.22.0
+27 verbose type system
+28 verbose stack FetchError: request to https://registry.npmjs.org/@prisma%2fclient failed, reason: 
+28 verbose stack     at ClientRequest.<anonymous> (C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+28 verbose stack     at ClientRequest.emit (node:events:519:28)
+28 verbose stack     at emitErrorEvent (node:_http_client:105:11)
+28 verbose stack     at _destroy (node:_http_client:898:9)
+28 verbose stack     at onSocketNT (node:_http_client:918:5)
+28 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+29 error code EACCES
+30 error errno EACCES
+31 error FetchError: request to https://registry.npmjs.org/@prisma%2fclient failed, reason: 
+31 error     at ClientRequest.<anonymous> (C:\Users\ayusa\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+31 error     at ClientRequest.emit (node:events:519:28)
+31 error     at emitErrorEvent (node:_http_client:105:11)
+31 error     at _destroy (node:_http_client:898:9)
+31 error     at onSocketNT (node:_http_client:918:5)
+31 error     at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+31 error   code: 'EACCES',
+31 error   errno: 'EACCES',
+31 error   type: 'system',
+31 error   requiredBy: '.'
+31 error }
+32 error
+32 error The operation was rejected by your operating system.
+32 error It's possible that the file was already in use (by a text editor or antivirus),
+32 error or that you lack permissions to access it.
+32 error
+32 error If you believe this might be a permissions issue, please double-check the
+32 error permissions of the file and its containing directories, or try running
+32 error the command again as root/Administrator.
+33 silly unfinished npm timer reify 1778470276970
+34 silly unfinished npm timer reify:loadTrees 1778470276971
+35 verbose cwd E:\backup\prayer-streak
+36 verbose os Windows_NT 10.0.26100
+37 verbose node v22.19.0
+38 verbose npm  v11.4.2
+39 verbose exit 1
+40 verbose code 1
+41 error A complete log of this run can be found in: E:\backup\prayer-streak\.npm-cache\_logs\2026-05-11T03_31_16_554Z-debug-0.log

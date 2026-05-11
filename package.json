@@ -1,0 +1,38 @@
+{
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.16.0",
+    "bcrypt": "^6.0.0",
+    "connect-flash": "^0.1.1",
+    "dayjs": "^1.11.20",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.22.3",
+    "prisma": "^5.22.0"
+  },
+  "name": "prayer-streak",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^4.3.0"
+  },
+  "scripts": {
+    "dev": "concurrently \"nodemon src/server.js\" \"tailwindcss -i ./src/input.css -o ./public/css/output.css --watch\"",
+    "start": "node src/server.js",
+    "css": "tailwindcss -i ./src/input.css -o ./public/css/output.css --watch",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
