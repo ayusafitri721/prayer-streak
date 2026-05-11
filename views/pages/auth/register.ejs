@@ -1,35 +1,134 @@
-<main class="mx-auto flex min-h-[calc(100vh-73px)] w-full max-w-lg items-center px-4 py-10">
-  <section class="w-full rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-8 shadow-2xl shadow-[#344E41]/10">
-    <h1 class="text-3xl font-bold text-[#344E41]">Register</h1>
-    <p class="mt-2 text-sm leading-6 text-[#344E41]/75">Bikin akun untuk mulai membangun konsistensi salatmu.</p>
-    <form class="mt-8 space-y-4" action="/register" method="POST">
+<main class="min-h-screen bg-white text-[#344E41]">
+  <div class="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 items-center gap-10 px-6 py-8 lg:grid-cols-2 lg:px-12">
+    <section class="mx-auto w-full max-w-md">
+      <a href="/" class="mb-8 inline-flex items-center gap-3 text-[#344E41]">
+        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#588157] text-sm font-bold text-white">PS</span>
+        <span class="text-lg font-bold">Prayer Streak</span>
+      </a>
+
       <div>
-        <label class="mb-1 block text-sm font-medium text-[#344E41]" for="name">Nama</label>
-        <input id="name" name="name" type="text" placeholder="Nama panggilan" class="w-full rounded-xl border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-3 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:bg-white" required />
+        <h1 class="text-4xl font-bold tracking-tight text-[#111827] sm:text-5xl">Create account</h1>
+        <p class="mt-4 max-w-sm text-center text-sm leading-6 text-[#344E41]/65 sm:text-left">
+          Mulai bangun konsistensi salat harian dengan checklist, XP, dan streak personalmu.
+        </p>
       </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#344E41]" for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="nama@email.com" class="w-full rounded-xl border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-3 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:bg-white" required />
+
+      <form class="mt-8 space-y-3" action="/register" method="POST">
+        <div>
+          <label class="sr-only" for="name">Nama</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Nama panggilan"
+            class="w-full rounded-full border border-[#344E41]/35 bg-white px-7 py-4 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:ring-4 focus:ring-[#A3B18A]/25"
+            required
+          />
+        </div>
+        <div>
+          <label class="sr-only" for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Email"
+            class="w-full rounded-full border border-[#344E41]/35 bg-white px-7 py-4 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:ring-4 focus:ring-[#A3B18A]/25"
+            required
+          />
+        </div>
+        <div>
+          <label class="sr-only" for="phone">Nomor Telepon</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            placeholder="Nomor telepon"
+            class="w-full rounded-full border border-[#344E41]/35 bg-white px-7 py-4 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:ring-4 focus:ring-[#A3B18A]/25"
+            required
+          />
+        </div>
+        <div>
+          <label class="sr-only" for="password">Password</label>
+          <div class="relative">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Password"
+              class="w-full appearance-none rounded-full border border-[#344E41]/35 bg-white px-7 py-4 pr-16 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:ring-4 focus:ring-[#A3B18A]/25"
+              data-password-input="register-password"
+              required
+            />
+            <button type="button" class="absolute right-5 top-1/2 -translate-y-1/2 text-[#588157] hover:text-[#344E41]" data-password-toggle="register-password" aria-label="Tampilkan password">
+              <svg class="h-5 w-5" data-password-icon="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 12S5.8 5.5 12 5.5 21.5 12 21.5 12 18.2 18.5 12 18.5 2.5 12 2.5 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg class="hidden h-5 w-5" data-password-icon="hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3l18 18" />
+                <path d="M10.6 10.6A3 3 0 0 0 13.4 13.4" />
+                <path d="M9.9 5.8A8.8 8.8 0 0 1 12 5.5C18.2 5.5 21.5 12 21.5 12a17.8 17.8 0 0 1-3.2 4.1" />
+                <path d="M6.5 7.4A18.4 18.4 0 0 0 2.5 12S5.8 18.5 12 18.5a8.7 8.7 0 0 0 3.2-.6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="sr-only" for="confirmPassword">Konfirmasi Password</label>
+          <div class="relative">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="Konfirmasi password"
+              class="w-full appearance-none rounded-full border border-[#344E41]/35 bg-white px-7 py-4 pr-16 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:ring-4 focus:ring-[#A3B18A]/25"
+              data-password-input="register-confirm-password"
+              required
+            />
+            <button type="button" class="absolute right-5 top-1/2 -translate-y-1/2 text-[#588157] hover:text-[#344E41]" data-password-toggle="register-confirm-password" aria-label="Tampilkan konfirmasi password">
+              <svg class="h-5 w-5" data-password-icon="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 12S5.8 5.5 12 5.5 21.5 12 21.5 12 18.2 18.5 12 18.5 2.5 12 2.5 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg class="hidden h-5 w-5" data-password-icon="hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3l18 18" />
+                <path d="M10.6 10.6A3 3 0 0 0 13.4 13.4" />
+                <path d="M9.9 5.8A8.8 8.8 0 0 1 12 5.5C18.2 5.5 21.5 12 21.5 12a17.8 17.8 0 0 1-3.2 4.1" />
+                <path d="M6.5 7.4A18.4 18.4 0 0 0 2.5 12S5.8 18.5 12 18.5a8.7 8.7 0 0 0 3.2-.6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full rounded-full bg-[#111827] px-7 py-4 font-semibold text-white transition hover:bg-[#588157]">
+          Register
+        </button>
+      </form>
+
+      <div class="mt-8 flex items-center gap-4">
+        <div class="h-px flex-1 bg-[#344E41]/15"></div>
+        <span class="text-sm text-[#344E41]/55">atau</span>
+        <div class="h-px flex-1 bg-[#344E41]/15"></div>
       </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#344E41]" for="phone">Nomor Telepon</label>
-        <input id="phone" name="phone" type="tel" placeholder="08xxxxxxxxxx" class="w-full rounded-xl border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-3 text-[#344E41] outline-none transition placeholder:text-[#344E41]/45 focus:border-[#588157] focus:bg-white" required />
+
+      <p class="mt-8 text-center text-sm text-[#344E41]/70">
+        Sudah punya akun?
+        <a href="/login" class="font-semibold text-[#588157] hover:text-[#344E41]">Login sekarang</a>
+      </p>
+    </section>
+
+    <section class="hidden lg:block">
+      <div class="rounded-[2rem] bg-[#F1F7EE] p-8 shadow-2xl shadow-[#344E41]/8">
+        <img src="/assets/login-illustration.svg" alt="Prayer Streak illustration" class="mx-auto h-auto w-full max-w-[560px]" />
+        <div class="mx-auto mt-3 flex w-fit items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-[#D7DED0]"></span>
+          <span class="h-2 w-2 rounded-full bg-[#D7DED0]"></span>
+          <span class="h-2 w-7 rounded-full bg-[#344E41]"></span>
+        </div>
+        <h2 class="mx-auto mt-8 max-w-md text-center text-3xl font-semibold leading-tight text-[#111827]">
+          Mulai perjalanan ibadah harian yang lebih terarah bersama <span class="font-bold">Prayer Streak</span>
+        </h2>
       </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#344E41]" for="password">Password</label>
-        <input id="password" name="password" type="password" class="w-full rounded-xl border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-3 text-[#344E41] outline-none transition focus:border-[#588157] focus:bg-white" required />
-      </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#344E41]" for="confirmPassword">Konfirmasi Password</label>
-        <input id="confirmPassword" name="confirmPassword" type="password" class="w-full rounded-xl border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-3 text-[#344E41] outline-none transition focus:border-[#588157] focus:bg-white" required />
-      </div>
-      <button type="submit" class="w-full rounded-xl bg-[#588157] px-4 py-3 font-semibold text-white transition hover:bg-[#D4A373] hover:text-[#344E41]">
-        Register
-      </button>
-    </form>
-    <p class="mt-5 text-sm text-[#344E41]/75">
-      Sudah punya akun?
-      <a href="/login" class="font-semibold text-[#588157] underline">Login</a>
-    </p>
-  </section>
+    </section>
+  </div>
 </main>

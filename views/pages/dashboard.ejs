@@ -1,74 +1,80 @@
 <%
   const progressPercent = totalToday > 0 ? Math.round((todayCompleted / totalToday) * 100) : 0;
   const remainingToday = Math.max(totalToday - todayCompleted, 0);
-  const dailyMessage = todayCompleted === totalToday
-    ? "Checklist hari ini sudah lengkap."
-    : `${remainingToday} salat lagi untuk menyelesaikan target hari ini.`;
   const isDailyComplete = todayCompleted === totalToday;
+  const dailyMessage = isDailyComplete
+    ? "Target salat hari ini sudah lengkap."
+    : `${remainingToday} salat lagi untuk menyelesaikan target hari ini.`;
 %>
 
-<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-8 text-[#344E41] sm:px-6" data-streak-complete="<%= isDailyComplete ? 'true' : 'false' %>" data-streak-count="<%= streak %>">
-  <section class="grid gap-5 lg:grid-cols-[1.4fr_0.8fr]">
-    <div class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10">
-      <p class="text-sm font-semibold text-[#588157]">Assalamu'alaikum, <%= userName %></p>
-      <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-[#344E41] sm:text-4xl">Progress Salat Hari Ini</h1>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-[#344E41]/70"><%= dailyMessage %></p>
-        </div>
-        <div class="rounded-2xl bg-[#588157] px-5 py-4 text-white">
-          <p class="text-xs font-medium text-white/75">Selesai</p>
-          <p class="text-3xl font-bold"><%= todayCompleted %>/<%= totalToday %></p>
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 text-[#344E41] sm:px-6 lg:py-8" data-streak-complete="<%= isDailyComplete ? 'true' : 'false' %>" data-streak-count="<%= streak %>">
+  <section class="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+    <div class="overflow-hidden rounded-[2rem] border border-[#A3B18A]/35 bg-white/85 shadow-xl shadow-[#344E41]/8">
+      <div class="border-b border-[#A3B18A]/25 px-6 py-5">
+        <p class="text-sm font-semibold text-[#588157]">Assalamu'alaikum, <%= userName %></p>
+        <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-[#344E41] sm:text-4xl">Dashboard Harian</h1>
+            <p class="mt-2 text-sm leading-6 text-[#344E41]/70"><%= dailyMessage %></p>
+          </div>
+          <div class="<%= isDailyComplete ? 'bg-[#D4A373] text-[#344E41]' : 'bg-[#588157] text-white' %> rounded-2xl px-5 py-4 text-right shadow-lg shadow-[#344E41]/10">
+            <p class="text-xs font-semibold opacity-75">Progress</p>
+            <p class="text-3xl font-bold"><%= todayCompleted %>/<%= totalToday %></p>
+          </div>
         </div>
       </div>
 
-      <div class="mt-6">
+      <div class="px-6 py-5">
         <div class="flex items-center justify-between text-sm">
-          <span class="font-medium text-[#344E41]/70">Target harian</span>
+          <span class="font-medium text-[#344E41]/65">Target 5 salat</span>
           <span class="font-bold text-[#588157]"><%= progressPercent %>%</span>
         </div>
-        <div class="mt-2 h-3 overflow-hidden rounded-full bg-[#A3B18A]/25">
-          <div class="h-full rounded-full bg-[#588157]" style="width: <%= progressPercent %>%"></div>
+        <div class="mt-3 h-3 overflow-hidden rounded-full bg-[#A3B18A]/20">
+          <div class="h-full rounded-full bg-[#588157] transition-all" style="width: <%= progressPercent %>%"></div>
         </div>
-      </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-          <p class="text-sm text-[#344E41]/60">XP</p>
-          <p class="mt-1 text-2xl font-bold text-[#588157]"><%= xp %></p>
-        </div>
-        <div class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-          <p class="text-sm text-[#344E41]/60">Level</p>
-          <p class="mt-1 text-2xl font-bold text-[#588157]"><%= level %></p>
-        </div>
-        <div class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-          <p class="text-sm text-[#344E41]/60">Streak</p>
-          <p class="mt-1 text-2xl font-bold text-[#588157]"><%= streak %> hari</p>
+        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <article class="rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/80 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-[#344E41]/50">XP</p>
+            <p class="mt-2 text-2xl font-bold text-[#588157]"><%= xp %></p>
+          </article>
+          <article class="rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/80 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-[#344E41]/50">Level</p>
+            <p class="mt-2 text-2xl font-bold text-[#588157]"><%= level %></p>
+          </article>
+          <article class="rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/80 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-[#344E41]/50">Streak</p>
+            <p class="mt-2 text-2xl font-bold text-[#588157]"><%= streak %> hari</p>
+          </article>
         </div>
       </div>
     </div>
 
-    <aside class="grid gap-5">
-      <div class="rounded-[2rem] border border-[#A3B18A]/40 bg-[#344E41] p-6 text-white shadow-2xl shadow-[#344E41]/10">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-medium text-[#A3B18A]">Salat berikutnya</p>
-            <h2 class="mt-2 text-3xl font-bold"><%= nextPrayer.name %></h2>
-            <% if (nextPrayer.time) { %>
-              <p class="mt-1 text-lg text-white/80">Jam <%= nextPrayer.time %><%= nextPrayer.isTomorrow ? " besok" : "" %></p>
-            <% } %>
-          </div>
-          <% if (streak > 0 || isDailyComplete) { %>
-            <div class="flame-badge relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#D4A373]/20">
-              <div class="flame-glow absolute inset-0 rounded-full bg-[#D4A373]/30"></div>
-              <div class="flame-core relative text-4xl">🔥</div>
-            </div>
+    <aside class="rounded-[2rem] bg-[#344E41] p-6 text-white shadow-xl shadow-[#344E41]/15">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-[#A3B18A]">Salat berikutnya</p>
+          <h2 class="mt-2 text-4xl font-bold"><%= nextPrayer.name %></h2>
+          <% if (nextPrayer.time) { %>
+            <p class="mt-1 text-lg text-white/80">Jam <%= nextPrayer.time %><%= nextPrayer.isTomorrow ? " besok" : "" %></p>
           <% } %>
         </div>
-        <div class="mt-5 rounded-2xl bg-white/10 p-4">
-          <p class="text-sm text-white/70">Fokus hari ini</p>
-          <p class="mt-1 font-semibold">Selesaikan 5 salat untuk menjaga streak.</p>
-        </div>
+        <% if (streak > 0 || isDailyComplete) { %>
+          <div class="flame-badge relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#D4A373]/20">
+            <div class="flame-glow absolute inset-0 rounded-full bg-[#D4A373]/30"></div>
+            <div class="flame-core relative text-4xl">&#128293;</div>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="mt-6 rounded-2xl bg-white/10 p-4">
+        <p class="text-sm text-white/65">Fokus hari ini</p>
+        <p class="mt-1 text-lg font-semibold leading-7">Selesaikan 5 salat untuk menjaga streak.</p>
+      </div>
+
+      <div class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <p class="text-sm text-white/65">Status</p>
+        <p class="mt-1 font-semibold"><%= isDailyComplete ? "Hari ini lengkap" : "Masih berjalan" %></p>
       </div>
     </aside>
   </section>
@@ -95,13 +101,13 @@
   </section>
   <% } %>
 
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+  <section class="rounded-[2rem] border border-[#A3B18A]/35 bg-white/85 p-5 shadow-xl shadow-[#344E41]/8 sm:p-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-2xl font-bold text-[#344E41]">Checklist Salat</h2>
-        <p class="mt-1 text-sm text-[#344E41]/65">Centang setelah salat selesai. Satu salat bernilai 10 XP.</p>
+        <p class="mt-1 text-sm text-[#344E41]/65">Catat setelah masuk waktu dan salat selesai.</p>
       </div>
-      <span class="rounded-full border border-[#A3B18A]/50 bg-[#F6F1E9] px-4 py-2 text-sm font-semibold text-[#588157]">
+      <span class="w-fit rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-4 py-2 text-sm font-semibold text-[#588157]">
         <%= todayCompleted %> selesai
       </span>
     </div>
@@ -110,14 +116,15 @@
       <% checklist.forEach((item, index) => { %>
         <% const isDone = Boolean(todayState[item.key]); %>
         <% const isLocked = !isDone && !item.isAvailable; %>
-        <form method="POST" action="/dashboard/prayer/<%= item.key %>/complete" class="grid gap-3 rounded-2xl border <%= isDone ? 'border-[#588157]/35 bg-[#A3B18A]/20' : isLocked ? 'border-[#A3B18A]/25 bg-white/55' : 'border-[#A3B18A]/40 bg-[#F6F1E9]' %> p-4 sm:grid-cols-[auto_1fr_auto] sm:items-center">
-          <div class="<%= isDone ? 'bg-[#588157] text-white' : isLocked ? 'bg-[#A3B18A]/25 text-[#344E41]/45' : 'bg-white text-[#588157]' %> flex h-11 w-11 items-center justify-center rounded-full border border-[#A3B18A]/50 text-sm font-bold">
+        <form method="POST" action="/dashboard/prayer/<%= item.key %>/complete" class="<%= isDone ? 'border-[#588157]/35 bg-[#A3B18A]/18' : isLocked ? 'border-[#A3B18A]/25 bg-white/55' : 'border-[#A3B18A]/40 bg-[#F6F1E9]/85' %> grid gap-3 rounded-2xl border p-4 transition hover:shadow-md hover:shadow-[#344E41]/5 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+          <div class="<%= isDone ? 'bg-[#588157] text-white' : isLocked ? 'bg-[#A3B18A]/20 text-[#344E41]/45' : 'bg-white text-[#588157]' %> flex h-11 w-11 items-center justify-center rounded-2xl border border-[#A3B18A]/45 text-sm font-bold">
             <%= index + 1 %>
           </div>
+
           <div>
             <div class="flex flex-wrap items-center gap-2">
               <p class="text-lg font-bold text-[#344E41]"><%= item.label %></p>
-              <span class="rounded-full border border-[#A3B18A]/40 bg-white px-3 py-1 text-xs font-semibold text-[#344E41]/60">Jam <%= item.time %></span>
+              <span class="rounded-full border border-[#A3B18A]/35 bg-white px-3 py-1 text-xs font-semibold text-[#344E41]/60">Jam <%= item.time %></span>
               <% if (isDone) { %>
                 <span class="rounded-full bg-[#588157] px-3 py-1 text-xs font-semibold text-white">Selesai</span>
               <% } else if (isLocked) { %>
@@ -129,13 +136,14 @@
             <% if (isDone) { %>
               <p class="mt-1 text-sm text-[#344E41]/65">Dicatat jam <%= todayState[item.key] %></p>
             <% } else if (isLocked) { %>
-              <p class="mt-1 text-sm text-[#344E41]/65">Belum bisa dicatat sebelum jam <%= item.time %>.</p>
+              <p class="mt-1 text-sm text-[#344E41]/65">Tombol aktif setelah jam <%= item.time %>.</p>
             <% } else { %>
-              <p class="mt-1 text-sm text-[#344E41]/65">Sudah masuk waktunya, bisa dicatat setelah salat.</p>
+              <p class="mt-1 text-sm text-[#344E41]/65">Sudah masuk waktu, catat setelah selesai salat.</p>
             <% } %>
           </div>
-          <button type="submit" class="rounded-full px-5 py-3 text-sm font-semibold transition <%= isDone || isLocked ? 'cursor-not-allowed bg-[#A3B18A]/40 text-[#344E41]/55' : 'bg-[#588157] text-white hover:bg-[#D4A373] hover:text-[#344E41]' %>" <%= isDone || isLocked ? "disabled" : "" %>>
-            <%= isDone ? "Sudah dicatat" : isLocked ? "Terkunci" : "Checklist" %>
+
+          <button type="submit" class="<%= isDone || isLocked ? 'cursor-not-allowed bg-[#A3B18A]/35 text-[#344E41]/55' : 'bg-[#588157] text-white hover:bg-[#D4A373] hover:text-[#344E41]' %> rounded-full px-5 py-3 text-sm font-semibold transition" <%= isDone || isLocked ? "disabled" : "" %>>
+            <%= isDone ? "Tercatat" : isLocked ? "Terkunci" : "Checklist" %>
           </button>
         </form>
       <% }) %>

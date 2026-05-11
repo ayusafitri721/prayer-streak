@@ -3,12 +3,14 @@ const { createUser, validateUser, findById } = require("../services/userService"
 async function showLogin(req, res) {
   res.render("pages/auth/login", {
     title: "Login - Prayer Streak",
+    hideTopbar: true,
   });
 }
 
 async function showRegister(req, res) {
   res.render("pages/auth/register", {
     title: "Register - Prayer Streak",
+    hideTopbar: true,
   });
 }
 

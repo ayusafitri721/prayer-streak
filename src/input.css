@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+html {
+  background: #ffffff;
+  overscroll-behavior-y: none;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-caps-lock-indicator,
+input[type="password"]::-webkit-reveal {
+  display: none;
+}
+
 @keyframes flame-float {
   0%, 100% {
     transform: translateY(0) scale(1) rotate(-3deg);

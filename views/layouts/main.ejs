@@ -9,19 +9,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
   </head>
-<body class="min-h-screen bg-[#F6F1E9] text-[#344E41]">
-    <div class="min-h-screen bg-[#F6F1E9]">
-      <%- include('../partials/topbar') %>
+<body class="min-h-screen <%= hideTopbar ? 'bg-white' : 'bg-[#F6F1E9]' %> text-[#344E41]">
+    <div class="<%= hideTopbar ? 'min-h-screen bg-white' : 'min-h-screen bg-[linear-gradient(180deg,_#F6F1E9_0%,_#F3ECDf_100%)]' %>">
+      <% if (!hideTopbar) { %>
+        <%- include('../partials/topbar') %>
+      <% } %>
       <% if (flashMessage) { %>
-        <div class="mx-auto mt-4 w-full max-w-5xl px-4">
-          <div class="rounded-lg border border-[#A3B18A]/50 bg-[#A3B18A]/20 px-4 py-3 text-sm font-medium text-[#344E41]">
+        <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
+          <div class="rounded-2xl border border-[#A3B18A]/50 bg-white/75 px-4 py-3 text-sm font-medium text-[#344E41] shadow-sm">
             <%= flashMessage %>
           </div>
         </div>
       <% } %>
       <% if (flashError) { %>
-        <div class="mx-auto mt-4 w-full max-w-5xl px-4">
-          <div class="rounded-lg border border-red-300/40 bg-red-400/10 px-4 py-3 text-sm text-red-50">
+        <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
+          <div class="rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
             <%= flashError %>
           </div>
         </div>

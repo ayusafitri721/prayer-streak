@@ -1,0 +1,44 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="42" fill="#F1F7EE"/>
+  <path d="M208 588V332C208 238 272 160 352 132C432 160 496 238 496 332V588H208Z" fill="#F6F1E9" stroke="#A3B18A" stroke-width="5"/>
+  <path d="M236 588V346C236 266 286 202 352 176C418 202 468 266 468 346V588H236Z" fill="#F1F7EE" stroke="#A3B18A" stroke-width="3" stroke-dasharray="12 12"/>
+  <path d="M510 116C486 121 470 143 475 168C480 194 504 210 529 205C510 195 500 173 505 151C508 136 516 124 529 116C523 115 516 115 510 116Z" fill="#D4A373"/>
+  <path d="M566 130L573 144L589 147L577 158L580 174L566 166L552 174L555 158L543 147L559 144L566 130Z" fill="#D4A373"/>
+  <path d="M150 136L156 148L169 150L159 159L162 172L150 166L138 172L141 159L131 150L144 148L150 136Z" fill="#A3B18A"/>
+  <circle cx="362" cy="300" r="124" stroke="#A3B18A" stroke-width="8" stroke-linecap="round" stroke-dasharray="70 24"/>
+  <circle cx="184" cy="196" r="38" fill="#FFFFFF" stroke="#344E41" stroke-width="4"/>
+  <path d="M168 203C179 220 197 220 207 203" stroke="#344E41" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="172" cy="190" r="5" fill="#344E41"/>
+  <circle cx="198" cy="190" r="5" fill="#344E41"/>
+  <path d="M160 179C167 154 202 153 212 178C198 163 176 164 160 179Z" fill="#344E41"/>
+  <circle cx="566" cy="436" r="38" fill="#FFFFFF" stroke="#344E41" stroke-width="4"/>
+  <path d="M550 443C561 460 579 460 589 443" stroke="#344E41" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="554" cy="430" r="5" fill="#344E41"/>
+  <circle cx="580" cy="430" r="5" fill="#344E41"/>
+  <path d="M544 419C552 392 588 393 596 419C579 407 560 407 544 419Z" fill="#344E41"/>
+  <path d="M352 216C304 216 274 256 276 306C278 350 306 380 352 380C398 380 426 350 428 306C430 256 400 216 352 216Z" fill="#344E41"/>
+  <path d="M307 298C307 247 397 247 397 298V330C397 355 377 376 352 376C327 376 307 355 307 330V298Z" fill="#FFFFFF"/>
+  <circle cx="334" cy="316" r="5" fill="#344E41"/>
+  <circle cx="370" cy="316" r="5" fill="#344E41"/>
+  <path d="M338 343C346 350 358 350 366 343" stroke="#344E41" stroke-width="5" stroke-linecap="round"/>
+  <path d="M296 278C313 236 386 230 410 281C383 260 325 260 296 278Z" fill="#344E41"/>
+  <path d="M246 456C266 391 302 362 352 362C402 362 438 391 458 456L468 488H236L246 456Z" fill="#A3B18A"/>
+  <path d="M314 448C330 472 374 472 390 448" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <path d="M296 434C312 396 392 396 408 434" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <path d="M246 458C202 482 168 524 150 570H292C314 532 318 498 296 450L246 458Z" fill="#344E41"/>
+  <path d="M458 458C502 482 536 524 554 570H412C390 532 386 498 408 450L458 458Z" fill="#344E41"/>
+  <path d="M204 600H500C516 600 528 612 528 628C528 644 516 656 500 656H204C188 656 176 644 176 628C176 612 188 600 204 600Z" fill="#D4A373"/>
+  <path d="M222 616H482" stroke="#F6F1E9" stroke-width="6" stroke-linecap="round" stroke-dasharray="18 14"/>
+  <path d="M248 570C284 520 420 520 456 570" stroke="#344E41" stroke-width="34" stroke-linecap="round"/>
+  <path d="M254 574C306 616 398 616 450 574" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round"/>
+  <rect x="126" y="430" width="176" height="112" rx="28" fill="#FFFFFF" stroke="#344E41" stroke-width="3"/>
+  <text x="148" y="470" fill="#344E41" font-family="Arial, sans-serif" font-size="24" font-weight="700">Prayer</text>
+  <text x="148" y="500" fill="#344E41" font-family="Arial, sans-serif" font-size="18">5 Task</text>
+  <rect x="148" y="512" width="78" height="30" rx="15" fill="#F6F1E9" stroke="#344E41"/>
+  <text x="166" y="534" fill="#344E41" font-family="Arial, sans-serif" font-size="16">Done</text>
+  <circle cx="258" cy="504" r="26" fill="#A3B18A"/>
+  <path d="M249 504L256 511L269 493" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="344" cy="632" r="7" fill="#D9DED2"/>
+  <circle cx="366" cy="632" r="7" fill="#D9DED2"/>
+  <rect x="384" y="625" width="28" height="14" rx="7" fill="#344E41"/>
+</svg>
