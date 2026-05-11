@@ -31,9 +31,8 @@ async function doRegister(req, res) {
     return res.redirect("/register");
   }
 
-  req.session.user = { id: user.id, name: user.name, email: user.email };
-  req.flash("message", "Registrasi berhasil. Selamat datang di Prayer Streak.");
-  return res.redirect("/dashboard");
+  req.flash("message", "Registrasi berhasil. Silakan login untuk melanjutkan.");
+  return res.redirect("/login");
 }
 
 async function doLogin(req, res) {
@@ -83,4 +82,3 @@ module.exports = {
   logout,
   showProfileFallback,
 };
-

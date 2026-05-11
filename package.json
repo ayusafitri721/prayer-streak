@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "5.22.0",
     "axios": "^1.16.0",
     "bcrypt": "^6.0.0",
     "connect-flash": "^0.1.1",
@@ -11,7 +11,7 @@
     "express-ejs-layouts": "^2.5.1",
     "express-session": "^1.19.0",
     "mysql2": "^3.22.3",
-    "prisma": "^5.22.0"
+    "prisma": "5.22.0"
   },
   "name": "prayer-streak",
   "version": "1.0.0",
