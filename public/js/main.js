@@ -236,3 +236,217 @@ if (streakDashboard) {
   }, 1800);
 }
 
+// ── Share Ayat sebagai Gambar ──────────────────────────────────────
+const verseSection = document.querySelector("[data-verse-section]");
+const contextMenu = document.getElementById("verse-context-menu");
+const shareCard = document.getElementById("share-image-card");
+
+if (verseSection && contextMenu && shareCard) {
+  let activeCard = null;
+
+  const surahNameLatin = verseSection.dataset.surahNameLatin;
+  const surahNameArabic = verseSection.dataset.surahNameArabic;
+  const surahNumber = verseSection.dataset.surahNumber;
+
+  // ── Toast notification ──
+  const showToast = (message) => {
+    const existing = document.getElementById("share-toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "share-toast";
+    toast.textContent = message;
+    Object.assign(toast.style, {
+      position: "fixed",
+      bottom: "24px",
+      left: "50%",
+      transform: "translateX(-50%) translateY(20px)",
+      background: "#344E41",
+      color: "#fff",
+      padding: "10px 20px",
+      borderRadius: "10px",
+      fontSize: "14px",
+      zIndex: "10000",
+      opacity: "0",
+      transition: "opacity 0.3s, transform 0.3s",
+      pointerEvents: "none",
+    });
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateX(-50%) translateY(0)";
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(-50%) translateY(20px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  };
+
+  // ── Context menu positioning (anchored to button) ──
+  const showContextMenu = (button, card) => {
+    activeCard = card;
+    contextMenu.style.display = "block";
+
+    const rect = button.getBoundingClientRect();
+    const menuW = contextMenu.offsetWidth;
+    const menuH = contextMenu.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    let left = rect.right - menuW;
+    let top = rect.bottom + 6;
+    if (left < 8) left = 8;
+    if (left + menuW > vw - 8) left = vw - menuW - 8;
+    if (top + menuH > vh - 8) top = rect.top - menuH - 6;
+
+    contextMenu.style.left = left + "px";
+    contextMenu.style.top = top + "px";
+  };
+
+  const hideContextMenu = () => {
+    contextMenu.style.display = "none";
+    activeCard = null;
+  };
+
+  // ── 3-dot button click ──
+  verseSection.addEventListener("click", (e) => {
+    const moreBtn = e.target.closest("[data-verse-more]");
+    if (!moreBtn) return;
+
+    e.stopPropagation();
+    const card = moreBtn.closest("[data-verse-card]");
+    if (!card) return;
+
+    if (contextMenu.style.display === "block" && activeCard === card) {
+      hideContextMenu();
+    } else {
+      showContextMenu(moreBtn, card);
+    }
+  });
+
+  // ── Dismiss menu ──
+  document.addEventListener("click", (e) => {
+    if (contextMenu.style.display === "block" && !contextMenu.contains(e.target)) {
+      hideContextMenu();
+    }
+  });
+  document.addEventListener("scroll", () => hideContextMenu(), true);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideContextMenu();
+  });
+
+  // ── Copy text ──
+  contextMenu.querySelector('[data-action="copy-text"]').addEventListener("click", () => {
+    if (!activeCard) return;
+
+    const arabic = activeCard.dataset.verseArabic;
+    const latin = activeCard.dataset.verseLatin;
+    const translation = activeCard.dataset.verseTranslation;
+    const verseNum = activeCard.dataset.verseNumber;
+    const info = `QS. ${surahNameLatin} (${surahNameArabic}) : ${verseNum}`;
+
+    let text = arabic + "\n\n";
+    if (latin) text += latin + "\n\n";
+    text += translation + "\n\n" + info;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showToast("Teks ayat berhasil disalin");
+    }).catch(() => {
+      showToast("Gagal menyalin teks");
+    });
+
+    hideContextMenu();
+  });
+
+  // ── Generate image helper ──
+  const generateImage = async (card) => {
+    if (!card) return null;
+    if (typeof html2canvas === "undefined") {
+      showToast("Gagal memuat library gambar");
+      return null;
+    }
+
+    const arabic = card.dataset.verseArabic;
+    const latin = card.dataset.verseLatin;
+    const translation = card.dataset.verseTranslation;
+    const verseNum = card.dataset.verseNumber;
+
+    shareCard.querySelector("#share-arabic").textContent = arabic;
+    shareCard.querySelector("#share-latin").textContent = latin || "";
+    shareCard.querySelector("#share-latin").style.display = latin ? "block" : "none";
+    shareCard.querySelector("#share-translation").textContent = translation;
+    shareCard.querySelector("#share-surah-info").textContent =
+      `QS. ${surahNameLatin} (${surahNameArabic}) : ${verseNum}`;
+
+    showToast("Membuat gambar...");
+
+    const canvas = await html2canvas(shareCard, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null,
+    });
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    const fileName = `QS${surahNumber}-Ayat${verseNum}.png`;
+    return { blob, fileName };
+  };
+
+  const downloadBlob = (blob, fileName) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Share image ──
+  contextMenu.querySelector('[data-action="share-image"]').addEventListener("click", async () => {
+    const card = activeCard;
+    hideContextMenu();
+    try {
+      const result = await generateImage(card);
+      if (!result) return;
+
+      if (navigator.share && navigator.canShare) {
+        const file = new File([result.blob], result.fileName, { type: "image/png" });
+        const shareData = { files: [file] };
+
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+          showToast("Berhasil dibagikan");
+          return;
+        }
+      }
+
+      // Fallback: download
+      downloadBlob(result.blob, result.fileName);
+      showToast("Gambar berhasil diunduh");
+    } catch (err) {
+      console.error("Share image error:", err);
+      showToast("Gagal membuat gambar");
+    }
+  });
+
+  // ── Download image ──
+  contextMenu.querySelector('[data-action="download-image"]').addEventListener("click", async () => {
+    const card = activeCard;
+    hideContextMenu();
+    try {
+      const result = await generateImage(card);
+      if (!result) return;
+
+      downloadBlob(result.blob, result.fileName);
+      showToast("Gambar berhasil diunduh");
+    } catch (err) {
+      console.error("Download image error:", err);
+      showToast("Gagal membuat gambar");
+    }
+  });
+}
+

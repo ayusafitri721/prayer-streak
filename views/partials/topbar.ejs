@@ -1,40 +1,123 @@
-<header class="border-b border-[#A3B18A]/30 bg-[#F6F1E9]/90 backdrop-blur">
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+<% const navItems = user ? [
+  { href: "/dashboard", label: "Dashboard", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" />' },
+  { href: "/statistics", label: "Statistik", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />' },
+  { href: "/achievements", label: "Achievement", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />' },
+  { href: "/quran", label: "Al-Qur'an", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />' },
+  { href: "/profile", label: "Profile", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />' },
+] : []; %>
+
+<header class="sticky top-0 z-40 border-b border-[#A3B18A]/30 bg-[#F6F1E9]/90 backdrop-blur">
+  <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
     <a href="<%= user ? '/dashboard' : '/' %>" class="text-xl font-bold tracking-wide text-[#344E41]">Prayer Streak</a>
 
     <% if (user) { %>
-      <% const navItems = [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/statistics", label: "Statistik" },
-        { href: "/achievements", label: "Achievement" },
-        { href: "/quran", label: "Al-Qur'an" },
-        { href: "/profile", label: "Profile" },
-      ]; %>
-      <div class="flex flex-wrap items-center gap-2 text-sm">
+      <!-- Desktop nav -->
+      <div class="hidden items-center gap-2 text-sm lg:flex">
         <% navItems.forEach((item) => { %>
           <% const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`); %>
-          <a
-            href="<%= item.href %>"
-            class="<%= isActive ? 'border-[#588157]/35 bg-[#A3B18A]/25 text-[#344E41]' : 'border-[#A3B18A]/20 bg-white/55 text-[#344E41]' %> rounded-full border px-4 py-2 transition hover:bg-[#A3B18A]/25"
-          >
+          <a href="<%= item.href %>" class="<%= isActive ? 'border-[#588157]/35 bg-[#A3B18A]/25 text-[#344E41]' : 'border-[#A3B18A]/20 bg-white/55 text-[#344E41]' %> rounded-full border px-4 py-2 transition hover:bg-[#A3B18A]/25">
             <%= item.label %>
           </a>
         <% }) %>
         <form action="/logout" method="POST">
-          <button type="submit" class="rounded-full border border-[#588157]/30 bg-white/60 px-4 py-2 text-[#588157] transition hover:bg-[#A3B18A]/20">
-            Logout
-          </button>
+          <button type="submit" class="rounded-full border border-[#588157]/30 bg-white/60 px-4 py-2 text-[#588157] transition hover:bg-[#A3B18A]/20">Logout</button>
         </form>
       </div>
+
+      <!-- Mobile hamburger -->
+      <button type="button" class="flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/30 bg-white/60 text-[#344E41] lg:hidden" id="sidebar-open-btn">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
     <% } else { %>
-      <div class="flex flex-wrap items-center gap-2 text-sm">
-        <a href="/login" class="rounded-full border border-[#A3B18A]/20 bg-white/55 px-4 py-2 text-[#344E41] transition hover:bg-[#A3B18A]/25">
-          Login
-        </a>
-        <a href="/register" class="rounded-full bg-[#588157] px-4 py-2 font-semibold text-white transition hover:bg-[#D4A373]">
-          Register
-        </a>
+      <div class="flex items-center gap-2 text-sm">
+        <a href="/login" class="rounded-full border border-[#A3B18A]/20 bg-white/55 px-4 py-2 text-[#344E41] transition hover:bg-[#A3B18A]/25">Login</a>
+        <a href="/register" class="rounded-full bg-[#588157] px-4 py-2 font-semibold text-white transition hover:bg-[#D4A373]">Register</a>
       </div>
     <% } %>
   </div>
 </header>
+
+<% if (user) { %>
+<!-- Mobile sidebar - rendered outside header -->
+<div class="fixed inset-0 z-50 hidden" id="sidebar-container">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="sidebar-backdrop"></div>
+  <aside class="absolute right-0 top-0 flex h-full w-[280px] max-w-[85vw] translate-x-full flex-col border-l border-[#A3B18A]/20 bg-[#F6F1E9] shadow-2xl transition-transform duration-300 ease-out" id="sidebar-panel">
+    <!-- Sidebar header -->
+    <div class="flex items-center justify-between px-5 py-4">
+      <span class="text-base font-bold text-[#344E41]">Menu</span>
+      <button type="button" class="flex h-8 w-8 items-center justify-center rounded-lg text-[#344E41]/60 transition hover:bg-[#A3B18A]/20 hover:text-[#344E41]" id="sidebar-close-btn">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- User info -->
+    <div class="mx-5 rounded-xl bg-[#588157]/10 px-4 py-3">
+      <p class="text-sm font-semibold text-[#344E41]"><%= user.name %></p>
+      <p class="mt-0.5 truncate text-xs text-[#344E41]/50"><%= user.email %></p>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="mt-4 flex-1 overflow-y-auto px-3">
+      <% navItems.forEach((item) => { %>
+        <% const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`); %>
+        <a
+          href="<%= item.href %>"
+          class="<%= isActive ? 'bg-[#588157]/10 text-[#344E41] font-semibold' : 'text-[#344E41]/70' %> mb-1 flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition hover:bg-[#A3B18A]/15"
+        >
+          <svg class="h-5 w-5 flex-shrink-0 <%= isActive ? 'text-[#588157]' : 'text-[#A3B18A]' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <%- item.icon %>
+          </svg>
+          <%= item.label %>
+        </a>
+      <% }) %>
+    </nav>
+
+    <!-- Logout -->
+    <div class="border-t border-[#A3B18A]/20 p-3">
+      <form action="/logout" method="POST">
+        <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-red-500 transition hover:bg-red-50">
+          <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function () {
+  var openBtn = document.getElementById("sidebar-open-btn");
+  var closeBtn = document.getElementById("sidebar-close-btn");
+  var container = document.getElementById("sidebar-container");
+  var backdrop = document.getElementById("sidebar-backdrop");
+  var panel = document.getElementById("sidebar-panel");
+  if (!openBtn || !container || !panel) return;
+
+  function openSidebar() {
+    container.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(function () {
+      panel.classList.remove("translate-x-full");
+      panel.classList.add("translate-x-0");
+    });
+  }
+
+  function closeSidebar() {
+    panel.classList.remove("translate-x-0");
+    panel.classList.add("translate-x-full");
+    document.body.style.overflow = "";
+    setTimeout(function () { container.classList.add("hidden"); }, 300);
+  }
+
+  openBtn.addEventListener("click", openSidebar);
+  if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+  if (backdrop) backdrop.addEventListener("click", closeSidebar);
+})();
+</script>
+<% } %>
