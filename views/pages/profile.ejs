@@ -1,29 +1,28 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
-  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
-    <h1 class="text-3xl font-bold text-white">Profile</h1>
-    <p class="mt-2 text-slate-300">Informasi akun dan ringkasan progress.</p>
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
+  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
+    <h1 class="text-3xl font-bold text-[#344E41]">Profile</h1>
+    <p class="mt-2 text-[#344E41]/75">Informasi akun dan ringkasan progress.</p>
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
-        <p class="text-sm text-slate-400">Nama</p>
-        <p class="mt-1 text-lg font-semibold text-white"><%= user.name %></p>
+      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+        <p class="text-sm text-[#344E41]/60">Nama</p>
+        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.name %></p>
       </article>
-      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
-        <p class="text-sm text-slate-400">Email</p>
-        <p class="mt-1 text-lg font-semibold text-white"><%= user.email %></p>
+      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+        <p class="text-sm text-[#344E41]/60">Email</p>
+        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.email %></p>
       </article>
-      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
-        <p class="text-sm text-slate-400">XP</p>
-        <p class="mt-1 text-lg font-semibold text-white"><%= profile.xp %></p>
+      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+        <p class="text-sm text-[#344E41]/60">XP</p>
+        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.xp %></p>
       </article>
-      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4">
-        <p class="text-sm text-slate-400">Level / Streak</p>
-        <p class="mt-1 text-lg font-semibold text-white"><%= profile.level %> / <%= profile.streak %></p>
+      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+        <p class="text-sm text-[#344E41]/60">Level / Streak</p>
+        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.level %> / <%= profile.streak %></p>
       </article>
-      <article class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4 sm:col-span-2">
-        <p class="text-sm text-slate-400">Longest Streak</p>
-        <p class="mt-1 text-lg font-semibold text-white"><%= profile.longestStreak %> hari</p>
+      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4 sm:col-span-2">
+        <p class="text-sm text-[#344E41]/60">Longest Streak</p>
+        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.longestStreak %> hari</p>
       </article>
     </div>
   </section>
 </main>
-

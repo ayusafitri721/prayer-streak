@@ -1,23 +1,23 @@
-<header class="border-b border-white/10 bg-slate-900/70">
+<header class="border-b border-[#A3B18A]/30 bg-[#F6F1E9]/90 backdrop-blur">
   <div class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-    <a href="/" class="text-xl font-bold tracking-wide text-emerald-200">Prayer Streak</a>
+    <a href="/" class="text-xl font-bold tracking-wide text-[#344E41]">Prayer Streak</a>
 
     <% if (user) { %>
-      <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-200">
-        <a href="/dashboard" class="rounded-full px-3 py-2 hover:bg-white/10 hover:text-white">Dashboard</a>
-        <a href="/statistics" class="rounded-full px-3 py-2 hover:bg-white/10 hover:text-white">Statistik</a>
-        <a href="/achievements" class="rounded-full px-3 py-2 hover:bg-white/10 hover:text-white">Achievement</a>
-        <a href="/profile" class="rounded-full px-3 py-2 hover:bg-white/10 hover:text-white">Profile</a>
+      <nav class="flex flex-wrap items-center gap-2 text-sm text-[#344E41]">
+        <a href="/dashboard" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Dashboard</a>
+        <a href="/statistics" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Statistik</a>
+        <a href="/achievements" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Achievement</a>
+        <a href="/profile" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Profile</a>
         <form action="/logout" method="POST">
-          <button type="submit" class="rounded-full border border-red-300/30 bg-red-400/10 px-3 py-2 text-red-100 hover:bg-red-400/20">
+          <button type="submit" class="rounded-full border border-[#588157]/30 bg-white/60 px-3 py-2 text-[#588157] hover:bg-[#A3B18A]/20">
             Logout
           </button>
         </form>
       </nav>
     <% } else { %>
       <div class="flex items-center gap-2 text-sm">
-        <a href="/login" class="rounded-full px-3 py-2 text-slate-200 hover:bg-white/10 hover:text-white">Login</a>
-        <a href="/register" class="rounded-full bg-emerald-300 px-3 py-2 font-semibold text-slate-950 hover:bg-amber-300">Register</a>
+        <a href="/login" class="rounded-full px-3 py-2 text-[#344E41] hover:bg-[#A3B18A]/25">Login</a>
+        <a href="/register" class="rounded-full bg-[#588157] px-3 py-2 font-semibold text-white hover:bg-[#D4A373]">Register</a>
       </div>
     <% } %>
   </div>

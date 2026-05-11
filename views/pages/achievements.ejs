@@ -1,20 +1,19 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
-  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
-    <h1 class="text-3xl font-bold text-white">Achievements</h1>
-    <p class="mt-2 text-slate-300">Progress badge dan milestone yang kamu capai.</p>
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
+  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
+    <h1 class="text-3xl font-bold text-[#344E41]">Achievements</h1>
+    <p class="mt-2 text-[#344E41]/75">Progress badge dan milestone yang kamu capai.</p>
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <% achievements.forEach((item) => { %>
-        <article class="<%= item.unlocked ? 'border-emerald-300/40 bg-emerald-300/10' : 'border-slate-700/70 bg-slate-900/75' %> rounded-2xl border p-4">
-          <div class="flex items-center justify-between">
-            <p class="text-lg font-semibold text-white"><%= item.name %></p>
-            <span class="text-xs text-slate-200 rounded-full border border-current px-2 py-1">
+        <article class="<%= item.unlocked ? 'border-[#D4A373]/60 bg-[#D4A373]/15' : 'border-[#A3B18A]/40 bg-[#F6F1E9]' %> rounded-2xl border p-4">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-lg font-semibold text-[#344E41]"><%= item.name %></p>
+            <span class="rounded-full border border-current px-2 py-1 text-xs text-[#588157]">
               <%= item.unlocked ? "Unlocked" : "Locked" %>
             </span>
           </div>
-          <p class="mt-2 text-sm text-slate-300"><%= item.description %></p>
+          <p class="mt-2 text-sm text-[#344E41]/70"><%= item.description %></p>
         </article>
       <% }) %>
     </div>
   </section>
 </main>
-
