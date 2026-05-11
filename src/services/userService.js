@@ -146,9 +146,53 @@ async function validateUser(email, password) {
   };
 }
 
+const ADMIN_EMAIL = "admin@prayerstreak.com";
+const ADMIN_PASSWORD = "admin123";
+const ADMIN_NAME = "Admin";
+
+async function seedAdmin() {
+  const normalizedEmail = normalizeEmail(ADMIN_EMAIL);
+  const db = getPrisma();
+
+  if (!db?.user) {
+    const exists = memoryUsers.some((item) => item.email === normalizedEmail);
+    if (exists) return;
+
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS);
+    memoryUsers.push({
+      id: memoryUsers.length + 1,
+      name: ADMIN_NAME,
+      email: normalizedEmail,
+      phone: "",
+      password: passwordHash,
+    });
+    console.log(`Admin account ready: ${ADMIN_EMAIL}`);
+    return;
+  }
+
+  const exists = await db.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  });
+
+  if (exists) return;
+
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS);
+  await db.user.create({
+    data: {
+      name: ADMIN_NAME,
+      email: normalizedEmail,
+      phone: "",
+      password: passwordHash,
+    },
+  });
+  console.log(`Admin account created: ${ADMIN_EMAIL}`);
+}
+
 module.exports = {
   findById,
   findByEmail,
   createUser,
   validateUser,
+  seedAdmin,
 };

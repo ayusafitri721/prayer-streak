@@ -22,6 +22,15 @@ function sanitizeText(value) {
   return String(value).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+const QORI_MAP = {
+  "01": "Abdullah Al-Juhany",
+  "02": "Abdul Muhsin Al-Qasim",
+  "03": "Abdurrahman As-Sudais",
+  "04": "Ibrahim Al-Dossari",
+  "05": "Misyari Rasyid Al-Afasy",
+  "06": "Yasser Al-Dosari",
+};
+
 function extractAudioUrl(audioSource) {
   if (!audioSource) return null;
   if (typeof audioSource === "string") return audioSource;
@@ -36,6 +45,17 @@ function extractAudioUrl(audioSource) {
   }
 
   return null;
+}
+
+function extractAllAudioUrls(audioSource) {
+  if (!audioSource || typeof audioSource !== "object" || Array.isArray(audioSource)) return {};
+  const result = {};
+  for (const [key, value] of Object.entries(audioSource)) {
+    if (typeof value === "string" && value) {
+      result[key] = value;
+    }
+  }
+  return result;
 }
 
 function unwrapResponse(payload) {
@@ -74,12 +94,14 @@ function normalizeRelatedSurah(item) {
 }
 
 function normalizeVerse(item) {
+  const audioSource = pickFirstValue(item.audio, item.audioFull, null);
   return {
     number: Number(pickFirstValue(item.nomorAyat, item.nomor, item.number, 0)),
     arabic: pickFirstValue(item.teksArab, item.textArab, item.arab, "-"),
     latin: pickFirstValue(item.teksLatin, item.teksArabLatin, item.textLatin, item.latin, ""),
     translation: pickFirstValue(item.teksIndonesia, item.translation, item.idn, "-"),
-    audioUrl: extractAudioUrl(pickFirstValue(item.audio, item.audioFull, null)),
+    audioUrl: extractAudioUrl(audioSource),
+    audioUrls: extractAllAudioUrls(audioSource),
   };
 }
 
@@ -130,6 +152,7 @@ async function getSurahDetail(nomor) {
       previousSurah: normalizeRelatedSurah(data.suratSebelumnya),
       nextSurah: normalizeRelatedSurah(data.suratSelanjutnya),
       verses: Array.isArray(data.ayat) ? data.ayat.map(normalizeVerse) : [],
+      qoriList: QORI_MAP,
     };
   } catch (error) {
     throw normalizeError(error);

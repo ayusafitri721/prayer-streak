@@ -30,20 +30,86 @@ if (versePlayer) {
   const audio = versePlayer.querySelector("[data-verse-audio]");
   const title = versePlayer.querySelector("[data-verse-player-title]");
   const status = versePlayer.querySelector("[data-verse-player-status]");
+  const autoPlayBtn = versePlayer.querySelector("[data-verse-autoplay]");
+  const qoriSelect = versePlayer.querySelector("[data-qori-select]");
   const buttons = Array.from(document.querySelectorAll("[data-verse-play]"));
   const cards = Array.from(document.querySelectorAll("[data-verse-card]"));
   let activeVerseNumber = null;
+  let autoPlay = true;
+  let selectedQori = qoriSelect ? qoriSelect.value : "02";
+
+  if (autoPlayBtn) {
+    autoPlayBtn.addEventListener("click", () => {
+      autoPlay = !autoPlay;
+      autoPlayBtn.querySelector("[data-autoplay-label]").textContent = autoPlay ? "ON" : "OFF";
+      autoPlayBtn.classList.toggle("bg-[#588157]", autoPlay);
+      autoPlayBtn.classList.toggle("text-white", autoPlay);
+      autoPlayBtn.classList.toggle("bg-white/70", !autoPlay);
+      autoPlayBtn.classList.toggle("text-[#344E41]/80", !autoPlay);
+    });
+  }
+
+  const getAudioUrl = (button) => {
+    try {
+      const urls = JSON.parse(button.dataset.verseAudioUrls || "{}");
+      return urls[selectedQori] || button.dataset.verseAudioUrl;
+    } catch {
+      return button.dataset.verseAudioUrl;
+    }
+  };
+
+  if (qoriSelect) {
+    qoriSelect.addEventListener("change", async () => {
+      selectedQori = qoriSelect.value;
+      if (activeVerseNumber && !audio.paused) {
+        const btn = buttons.find((b) => b.dataset.verseNumber === String(activeVerseNumber));
+        if (btn) {
+          const newUrl = getAudioUrl(btn);
+          const currentTime = audio.currentTime;
+          audio.src = newUrl;
+          audio.load();
+          audio.currentTime = currentTime;
+          try { await audio.play(); } catch {}
+        }
+      }
+    });
+  }
+
+  const scrollToVerse = (verseNumber) => {
+    const card = cards.find((item) => item.dataset.verseNumber === String(verseNumber));
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   const setCardState = (verseNumber, isActive) => {
     const card = cards.find((item) => item.dataset.verseNumber === String(verseNumber));
     if (!card) return;
 
-    card.classList.toggle("border-emerald-300/40", isActive);
-    card.classList.toggle("bg-emerald-300/10", isActive);
-    card.classList.toggle("shadow-lg", isActive);
-    card.classList.toggle("shadow-emerald-900/20", isActive);
-    card.classList.toggle("border-slate-700/70", !isActive);
-    card.classList.toggle("bg-slate-900/75", !isActive);
+    card.classList.toggle("border-[#588157]/40", isActive);
+    card.classList.toggle("bg-[#588157]/10", isActive);
+    card.classList.toggle("shadow-md", isActive);
+    card.classList.toggle("border-[#A3B18A]/30", !isActive);
+    card.classList.toggle("bg-[#F6F1E9]/60", !isActive);
+  };
+
+  const getNextButton = () => {
+    const currentIndex = buttons.findIndex((btn) => btn.dataset.verseNumber === String(activeVerseNumber));
+    if (currentIndex === -1 || currentIndex >= buttons.length - 1) return null;
+    return buttons[currentIndex + 1];
+  };
+
+  const playVerse = async (verseNumber, audioUrl) => {
+    activeVerseNumber = verseNumber;
+    audio.src = audioUrl;
+    audio.load();
+    scrollToVerse(verseNumber);
+    updatePlayerText();
+    syncButtons();
+    try {
+      await audio.play();
+    } catch (error) {
+      status.textContent = "Audio gagal diputar. Coba lagi beberapa saat.";
+    }
   };
 
   const syncButtons = () => {
@@ -52,19 +118,25 @@ if (versePlayer) {
       const isPlayingCurrent = isCurrent && !audio.paused && !audio.ended;
       const isEndedCurrent = isCurrent && audio.ended;
 
-      button.textContent = isPlayingCurrent
-        ? "Pause ayat"
+      const label = button.querySelector("[data-verse-play-label]");
+      const icon = button.querySelector("[data-verse-play-icon]");
+      const labelText = isPlayingCurrent
+        ? "Pause"
         : isEndedCurrent
-          ? "Putar ulang ayat"
+          ? "Putar ulang"
           : isCurrent
-            ? "Lanjutkan ayat"
+            ? "Lanjutkan"
             : "Putar ayat";
-      button.classList.toggle("border-emerald-300/30", isCurrent);
-      button.classList.toggle("bg-emerald-300/10", isCurrent);
-      button.classList.toggle("text-emerald-100", isCurrent);
-      button.classList.toggle("border-white/10", !isCurrent);
-      button.classList.toggle("bg-white/5", !isCurrent);
-      button.classList.toggle("text-slate-200", !isCurrent);
+      if (label) label.textContent = labelText;
+      if (icon) icon.innerHTML = isPlayingCurrent
+        ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+      button.classList.toggle("border-[#588157]/40", isCurrent);
+      button.classList.toggle("bg-[#588157]/15", isCurrent);
+      button.classList.toggle("text-[#588157]", isCurrent);
+      button.classList.toggle("border-[#A3B18A]/30", !isCurrent);
+      button.classList.toggle("bg-white/70", !isCurrent);
+      button.classList.toggle("text-[#344E41]/80", !isCurrent);
     });
 
     cards.forEach((card) => setCardState(card.dataset.verseNumber, card.dataset.verseNumber === String(activeVerseNumber)));
@@ -78,22 +150,21 @@ if (versePlayer) {
     }
 
     title.textContent = `Ayat ${activeVerseNumber}`;
-    status.textContent = audio.paused ? "Audio dijeda. Tekan play untuk melanjutkan." : "Sedang memutar audio ayat terpilih.";
+    status.textContent = audio.paused ? "Audio dijeda. Tekan play untuk melanjutkan." : "Sedang memutar audio ayat...";
   };
 
   buttons.forEach((button) => {
     button.addEventListener("click", async () => {
       const verseNumber = button.dataset.verseNumber;
-      const audioUrl = button.dataset.verseAudioUrl;
+      const audioUrl = getAudioUrl(button);
       const isSameVerse = verseNumber === String(activeVerseNumber);
 
       if (!audioUrl) return;
 
       try {
         if (!isSameVerse) {
-          activeVerseNumber = verseNumber;
-          audio.src = audioUrl;
-          audio.load();
+          await playVerse(verseNumber, audioUrl);
+          return;
         }
 
         if (isSameVerse && !audio.paused) {
@@ -120,8 +191,18 @@ if (versePlayer) {
     syncButtons();
   });
 
-  audio.addEventListener("ended", () => {
-    status.textContent = `Audio ayat ${activeVerseNumber} selesai diputar.`;
+  audio.addEventListener("ended", async () => {
+    if (autoPlay) {
+      const nextBtn = getNextButton();
+      if (nextBtn && getAudioUrl(nextBtn)) {
+        status.textContent = `Melanjutkan ke ayat berikutnya...`;
+        await playVerse(nextBtn.dataset.verseNumber, getAudioUrl(nextBtn));
+        return;
+      }
+    }
+    status.textContent = autoPlay
+      ? `Semua ayat selesai diputar.`
+      : `Audio ayat ${activeVerseNumber} selesai.`;
     syncButtons();
   });
 
