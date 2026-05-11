@@ -13,9 +13,9 @@ async function showRegister(req, res) {
 }
 
 async function doRegister(req, res) {
-  const { name, email, password, confirmPassword } = req.body;
+  const { name, email, phone, password, confirmPassword } = req.body;
 
-  if (!name || !email || !password || !confirmPassword) {
+  if (!name || !email || !phone || !password || !confirmPassword) {
     req.flash("error", "Semua field wajib diisi.");
     return res.redirect("/register");
   }
@@ -25,7 +25,7 @@ async function doRegister(req, res) {
     return res.redirect("/register");
   }
 
-  const user = await createUser({ name, email, password });
+  const user = await createUser({ name, email, phone, password });
   if (!user) {
     req.flash("error", "Email sudah digunakan.");
     return res.redirect("/register");

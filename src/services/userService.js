@@ -36,7 +36,7 @@ async function findByEmail(email) {
 
   return db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, phone: true },
   });
 }
 
@@ -45,17 +45,18 @@ async function findById(id) {
 
   if (!db?.user) {
     const user = memoryUsers.find((item) => item.id === id);
-    return user ? { id: user.id, name: user.name, email: user.email } : null;
+    return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone } : null;
   }
 
   return db.user.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, phone: true },
   });
 }
 
-async function createUser({ name, email, password }) {
+async function createUser({ name, email, phone, password }) {
   const normalizedEmail = normalizeEmail(email);
+  const normalizedPhone = phone.trim();
   const db = getPrisma();
 
   if (!db?.user) {
@@ -69,11 +70,12 @@ async function createUser({ name, email, password }) {
       id: memoryUsers.length + 1,
       name: name.trim(),
       email: normalizedEmail,
+      phone: normalizedPhone,
       password: passwordHash,
     };
     memoryUsers.push(user);
 
-    return { id: user.id, name: user.name, email: user.email };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone };
   }
 
   const exists = await db.user.findUnique({
@@ -90,9 +92,10 @@ async function createUser({ name, email, password }) {
     data: {
       name: name.trim(),
       email: normalizedEmail,
+      phone: normalizedPhone,
       password: passwordHash,
     },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, phone: true },
   });
 
   return user;
@@ -117,12 +120,13 @@ async function validateUser(email, password) {
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
     };
   }
 
   const user = await db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true, password: true },
+    select: { id: true, name: true, email: true, phone: true, password: true },
   });
 
   if (!user) {
@@ -138,6 +142,7 @@ async function validateUser(email, password) {
     id: user.id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
   };
 }
 
