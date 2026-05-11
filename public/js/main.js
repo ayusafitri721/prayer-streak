@@ -210,3 +210,29 @@ if (versePlayer) {
   updatePlayerText();
 }
 
+const streakDashboard = document.querySelector("[data-streak-complete='true']");
+
+if (streakDashboard) {
+  const streakCount = streakDashboard.dataset.streakCount || "1";
+  const overlay = document.createElement("div");
+  overlay.className = "streak-celebration fixed inset-0 z-50 flex items-center justify-center bg-[#344E41]/35 px-4 backdrop-blur-sm";
+  overlay.innerHTML = `
+    <div class="streak-pop rounded-[2rem] border border-[#D4A373]/60 bg-[#F6F1E9] px-8 py-7 text-center shadow-2xl shadow-[#344E41]/25">
+      <div class="flame-badge relative mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-[#D4A373]/20">
+        <div class="flame-glow absolute inset-0 rounded-full bg-[#D4A373]/30"></div>
+        <div class="flame-core relative text-7xl">🔥</div>
+      </div>
+      <p class="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#588157]">Streak menyala</p>
+      <h2 class="mt-2 text-3xl font-bold text-[#344E41]">${streakCount} hari</h2>
+      <p class="mt-2 max-w-xs text-sm leading-6 text-[#344E41]/70">Target salat hari ini selesai.</p>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  window.setTimeout(() => {
+    overlay.classList.add("streak-celebration-hide");
+    window.setTimeout(() => overlay.remove(), 350);
+  }, 1800);
+}
+

@@ -6,6 +6,13 @@ const PRAYER_LABELS = {
   maghrib: "Maghrib",
   isya: "Isya",
 };
+const PRAYER_TIMES = {
+  shubuh: "04:45",
+  dzuhur: "11:55",
+  ashar: "15:20",
+  maghrib: "18:05",
+  isya: "19:55",
+};
 
 const XP_PER_PRAYER = 10;
 const DAILY_BONUS_XP = 25;
@@ -54,15 +61,30 @@ function prevDateString(dateString) {
   return date.toISOString().split("T")[0];
 }
 
-function getNextPrayer() {
-  const now = new Date();
-  const totalMinutes = now.getHours() * 60 + now.getMinutes();
+function timeToMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
 
-  if (totalMinutes < 360) return { name: "Shubuh", time: "04:45" };
-  if (totalMinutes < 720) return { name: "Dzuhur", time: "11:55" };
-  if (totalMinutes < 900) return { name: "Ashar", time: "15:20" };
-  if (totalMinutes < 1140) return { name: "Maghrib", time: "18:05" };
-  return { name: "Isya", time: "19:55" };
+function getCurrentMinutes(date = new Date()) {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+function canCompletePrayer(prayer, date = new Date()) {
+  return getCurrentMinutes(date) >= timeToMinutes(PRAYER_TIMES[prayer]);
+}
+
+function getNextPrayer() {
+  const totalMinutes = getCurrentMinutes();
+
+  const nextPrayer = PRAYER_KEYS.find((key) => totalMinutes < timeToMinutes(PRAYER_TIMES[key]));
+  if (!nextPrayer) return { name: "Shubuh", time: PRAYER_TIMES.shubuh, isTomorrow: true };
+
+  return {
+    name: PRAYER_LABELS[nextPrayer],
+    time: PRAYER_TIMES[nextPrayer],
+    isTomorrow: false,
+  };
 }
 
 function computeLevel(xp) {
@@ -145,7 +167,12 @@ async function getDashboardData(userId) {
 
   const todayCompleted = Object.values(todayState).filter(Boolean).length;
   const totalToday = PRAYER_KEYS.length;
-  const checklist = PRAYER_KEYS.map((key) => ({ key, label: PRAYER_LABELS[key] }));
+  const checklist = PRAYER_KEYS.map((key) => ({
+    key,
+    label: PRAYER_LABELS[key],
+    time: PRAYER_TIMES[key],
+    isAvailable: canCompletePrayer(key),
+  }));
 
   updateAchievements(state);
 
@@ -184,6 +211,15 @@ async function completePrayer(userId, prayer) {
     return {
       changed: false,
       message: "Salat ini sudah dicatat hari ini.",
+      leveledUp: false,
+      latestAchievement: state.latestAchievement,
+    };
+  }
+
+  if (!canCompletePrayer(prayer)) {
+    return {
+      changed: false,
+      message: `${PRAYER_LABELS[prayer]} belum bisa dicatat sebelum jam ${PRAYER_TIMES[prayer]}.`,
       leveledUp: false,
       latestAchievement: state.latestAchievement,
     };
