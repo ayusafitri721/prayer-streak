@@ -12,6 +12,7 @@ const dashboardRoutes = require("./routes/dashboard");
 const statisticsRoutes = require("./routes/statistics");
 const achievementsRoutes = require("./routes/achievements");
 const profileRoutes = require("./routes/profile");
+const quranRoutes = require("./routes/quran");
 
 const app = express();
 
@@ -41,5 +42,6 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/statistics", statisticsRoutes);
 app.use("/achievements", achievementsRoutes);
 app.use("/profile", profileRoutes);
+app.use("/quran", quranRoutes);
 
 module.exports = app;

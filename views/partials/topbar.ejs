@@ -1,23 +1,39 @@
 <header class="border-b border-[#A3B18A]/30 bg-[#F6F1E9]/90 backdrop-blur">
-  <div class="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-    <a href="/" class="text-xl font-bold tracking-wide text-[#344E41]">Prayer Streak</a>
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+    <a href="<%= user ? '/dashboard' : '/' %>" class="text-xl font-bold tracking-wide text-[#344E41]">Prayer Streak</a>
 
     <% if (user) { %>
-      <nav class="flex flex-wrap items-center gap-2 text-sm text-[#344E41]">
-        <a href="/dashboard" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Dashboard</a>
-        <a href="/statistics" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Statistik</a>
-        <a href="/achievements" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Achievement</a>
-        <a href="/profile" class="rounded-full px-3 py-2 hover:bg-[#A3B18A]/25">Profile</a>
+      <% const navItems = [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/statistics", label: "Statistik" },
+        { href: "/achievements", label: "Achievement" },
+        { href: "/quran", label: "Al-Qur'an" },
+        { href: "/profile", label: "Profile" },
+      ]; %>
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <% navItems.forEach((item) => { %>
+          <% const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`); %>
+          <a
+            href="<%= item.href %>"
+            class="<%= isActive ? 'border-[#588157]/35 bg-[#A3B18A]/25 text-[#344E41]' : 'border-[#A3B18A]/20 bg-white/55 text-[#344E41]' %> rounded-full border px-4 py-2 transition hover:bg-[#A3B18A]/25"
+          >
+            <%= item.label %>
+          </a>
+        <% }) %>
         <form action="/logout" method="POST">
-          <button type="submit" class="rounded-full border border-[#588157]/30 bg-white/60 px-3 py-2 text-[#588157] hover:bg-[#A3B18A]/20">
+          <button type="submit" class="rounded-full border border-[#588157]/30 bg-white/60 px-4 py-2 text-[#588157] transition hover:bg-[#A3B18A]/20">
             Logout
           </button>
         </form>
-      </nav>
+      </div>
     <% } else { %>
-      <div class="flex items-center gap-2 text-sm">
-        <a href="/login" class="rounded-full px-3 py-2 text-[#344E41] hover:bg-[#A3B18A]/25">Login</a>
-        <a href="/register" class="rounded-full bg-[#588157] px-3 py-2 font-semibold text-white hover:bg-[#D4A373]">Register</a>
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <a href="/login" class="rounded-full border border-[#A3B18A]/20 bg-white/55 px-4 py-2 text-[#344E41] transition hover:bg-[#A3B18A]/25">
+          Login
+        </a>
+        <a href="/register" class="rounded-full bg-[#588157] px-4 py-2 font-semibold text-white transition hover:bg-[#D4A373]">
+          Register
+        </a>
       </div>
     <% } %>
   </div>

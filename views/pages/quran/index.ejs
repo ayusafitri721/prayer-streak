@@ -1,0 +1,59 @@
+<main class="mx-auto mt-8 w-full max-w-6xl px-4 pb-10 sm:px-6">
+  <section class="rounded-3xl border border-emerald-200/15 bg-slate-900/85 p-6 shadow-2xl">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200">EQuran.id API v2</p>
+        <h1 class="mt-2 text-3xl font-bold text-white">Baca Al-Qur'an</h1>
+        <p class="mt-2 max-w-2xl text-slate-300">
+          Pilih surat untuk membaca ayat lengkap beserta transliterasi dan terjemahan bahasa Indonesia.
+        </p>
+      </div>
+      <label class="block w-full max-w-md">
+        <span class="mb-2 block text-sm text-slate-300">Cari surat</span>
+        <input
+          type="search"
+          placeholder="Contoh: Al-Fatihah, Yasin, 36"
+          class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-300"
+          data-surah-search
+        />
+      </label>
+    </div>
+
+    <% if (pageError) { %>
+      <div class="mt-6 rounded-2xl border border-red-300/30 bg-red-400/10 px-4 py-3 text-sm text-red-50">
+        <%= pageError %>
+      </div>
+    <% } %>
+
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <% surahs.forEach((surah) => { %>
+        <a
+          href="/quran/<%= surah.number %>"
+          class="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-5 transition hover:border-emerald-300/40 hover:bg-slate-900"
+          data-surah-card
+          data-surah-search-value="<%= `${surah.number} ${surah.nameLatin} ${surah.nameArabic} ${surah.translation}`.toLowerCase() %>"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm text-emerald-200">Surat <%= surah.number %></p>
+              <h2 class="mt-1 text-xl font-bold text-white"><%= surah.nameLatin %></h2>
+              <p class="mt-1 text-sm text-slate-300"><%= surah.translation %></p>
+            </div>
+            <p class="text-right text-2xl font-semibold text-emerald-100" dir="rtl"><%= surah.nameArabic %></p>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-200">
+            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1"><%= surah.revelation %></span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1"><%= surah.versesCount %> ayat</span>
+            <% if (surah.audioUrl) { %>
+              <span class="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-emerald-100">Audio tersedia</span>
+            <% } %>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+
+    <div class="<%= surahs.length || pageError ? 'hidden' : '' %> mt-6 rounded-2xl border border-slate-700/70 bg-slate-900/75 px-4 py-6 text-center text-slate-300" data-surah-empty>
+      Surat tidak ditemukan untuk kata kunci tersebut.
+    </div>
+  </section>
+</main>
