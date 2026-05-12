@@ -6,6 +6,7 @@ const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const flash = require("connect-flash");
 const { attachGlobals } = require("./middlewares/flash");
+const { renderNotFound, renderServerError } = require("./controllers/errorController");
 const mainRoutes = require("./routes/main");
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
@@ -47,5 +48,8 @@ app.use("/profile", profileRoutes);
 app.use("/quran", quranRoutes);
 app.use("/hadis", hadisRoutes);
 app.use("/doa", doaRoutes);
+
+app.use(renderNotFound);
+app.use(renderServerError);
 
 module.exports = app;

@@ -1,0 +1,48 @@
+<main class="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-6xl items-center px-4 py-10 sm:px-6">
+  <section class="grid w-full gap-8 rounded-[2.25rem] border border-[#A3B18A]/35 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10 lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
+    <div class="relative overflow-hidden rounded-[1.9rem] bg-[linear-gradient(160deg,_#344E41_0%,_#2D4037_55%,_#223129_100%)] p-8 text-white">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,163,115,0.24),_transparent_38%)]"></div>
+      <div class="absolute bottom-6 right-6 h-28 w-28 rounded-full border border-white/10"></div>
+      <div class="absolute left-6 top-6 h-20 w-20 rounded-full border border-[#A3B18A]/15"></div>
+
+      <div class="relative z-10">
+        <p class="text-sm font-semibold uppercase tracking-[0.35em] text-[#A3B18A]">Prayer Streak</p>
+        <div class="mt-8 flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-white/10 bg-white/10 backdrop-blur">
+          <svg class="h-10 w-10 text-[#D4A373]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.29 3.86L1.82 18a2.25 2.25 0 001.93 3.38h16.5A2.25 2.25 0 0022.18 18L13.71 3.86a2.25 2.25 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <p class="mt-8 text-sm leading-7 text-white/72">
+          Permintaanmu sudah sampai ke server, tapi sistem belum berhasil menyelesaikannya. Biasanya ini sementara dan bisa dicoba lagi.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-center">
+      <span class="inline-flex w-fit rounded-full border border-[#D4A373]/25 bg-[#D4A373]/12 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#D4A373]">
+        Error <%= errorCode %>
+      </span>
+      <h1 class="mt-5 max-w-xl text-4xl font-bold leading-tight text-[#344E41] sm:text-5xl"><%= heading %></h1>
+      <p class="mt-4 max-w-2xl text-base leading-8 text-[#344E41]/72"><%= description %></p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="<%= primaryAction.href %>" class="inline-flex items-center rounded-full bg-[#588157] px-6 py-3 font-semibold text-white shadow-lg shadow-[#588157]/20 transition hover:bg-[#4B6F4E]">
+          <%= primaryAction.label %>
+        </a>
+        <button type="button" onclick="window.location.reload()" class="inline-flex items-center rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] px-6 py-3 font-semibold text-[#344E41] transition hover:bg-[#A3B18A]/18">
+          Muat Ulang
+        </button>
+      </div>
+
+      <div class="mt-8 rounded-[1.5rem] border border-[#A3B18A]/25 bg-[#F6F1E9]/70 p-5">
+        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[#588157]">Yang Bisa Dicoba</p>
+        <ul class="mt-3 space-y-2 text-sm leading-6 text-[#344E41]/70">
+          <li>Refresh halaman beberapa saat lagi.</li>
+          <li>Kembali ke dashboard lalu buka ulang halaman ini.</li>
+          <li>Kalau error berulang, cek data input atau koneksi internet.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>

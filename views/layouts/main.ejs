@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
   </head>
 <body class="min-h-screen <%= hideTopbar ? 'bg-white' : 'bg-[#F6F1E9]' %> text-[#344E41]">
+    <%- include('../partials/splash-screen') %>
     <div class="<%= hideTopbar ? 'min-h-screen bg-white' : 'min-h-screen bg-[linear-gradient(180deg,_#F6F1E9_0%,_#F3ECDf_100%)]' %>">
       <% if (!hideTopbar) { %>
         <%- include('../partials/topbar') %>

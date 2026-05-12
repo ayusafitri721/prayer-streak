@@ -1,3 +1,46 @@
+const splashScreen = document.querySelector("[data-splash-screen]");
+
+if (splashScreen) {
+  const splashKey = "prayer-streak-splash-seen";
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hasSeenSplash = window.sessionStorage.getItem(splashKey) === "true";
+  let splashDone = false;
+
+  const hideSplash = () => {
+    if (splashDone) return;
+    splashDone = true;
+    splashScreen.classList.add("splash-hide");
+    document.body.classList.remove("overflow-hidden");
+    window.setTimeout(() => {
+      splashScreen.remove();
+    }, prefersReducedMotion ? 0 : 450);
+  };
+
+  if (hasSeenSplash) {
+    hideSplash();
+  } else {
+    document.body.classList.add("overflow-hidden");
+    const minimumDuration = prefersReducedMotion ? 0 : 1450;
+    const startTime = Date.now();
+
+    const completeSplash = () => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, minimumDuration - elapsed);
+      window.setTimeout(() => {
+        window.sessionStorage.setItem(splashKey, "true");
+        hideSplash();
+      }, remaining);
+    };
+
+    if (document.readyState === "complete") {
+      completeSplash();
+    } else {
+      window.addEventListener("load", completeSplash, { once: true });
+      window.setTimeout(completeSplash, minimumDuration + 600);
+    }
+  }
+}
+
 const surahSearchInput = document.querySelector("[data-surah-search]");
 
 if (surahSearchInput) {
