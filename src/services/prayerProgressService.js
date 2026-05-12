@@ -239,6 +239,16 @@ async function getNextPrayer(date = new Date(), todaySchedule = null, locationOv
   };
 }
 
+function buildPrayerTimelineEntries(schedule, isTomorrow = false) {
+  return PRAYER_KEYS.map((key) => ({
+    key,
+    label: PRAYER_LABELS[key],
+    time: schedule.times[key],
+    dateKey: schedule.dateKey,
+    isTomorrow,
+  }));
+}
+
 function computeLevel(xp) {
   return Math.max(1, Math.floor(xp / 100) + 1);
 }
@@ -332,6 +342,9 @@ async function getDashboardData(userId, prayerLocation = null) {
   const today = toDateString(now);
   const todayLogs = state.logsByDate.get(today) || {};
   const prayerSchedule = await getPrayerScheduleForDate(now, prayerLocation);
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(now.getDate() + 1);
+  const tomorrowPrayerSchedule = await getPrayerScheduleForDate(tomorrowDate, prayerLocation);
 
   const todayState = {
     shubuh: todayLogs.shubuh || null,
@@ -349,6 +362,10 @@ async function getDashboardData(userId, prayerLocation = null) {
     time: prayerSchedule.times[key],
     isAvailable: canCompletePrayerWithSchedule(key, prayerSchedule, now),
   }));
+  const prayerTimeline = [
+    ...buildPrayerTimelineEntries(prayerSchedule, false),
+    ...buildPrayerTimelineEntries(tomorrowPrayerSchedule, true),
+  ];
 
   updateAchievements(state);
 
@@ -360,6 +377,7 @@ async function getDashboardData(userId, prayerLocation = null) {
     todayCompleted,
     totalToday,
     nextPrayer: await getNextPrayer(now, prayerSchedule, prayerLocation),
+    prayerTimeline,
     checklist,
     todayState,
     consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),

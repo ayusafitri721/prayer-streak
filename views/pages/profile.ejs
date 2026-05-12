@@ -1,28 +1,119 @@
 <main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <h1 class="text-3xl font-bold text-[#344E41]">Profile</h1>
-    <p class="mt-2 text-[#344E41]/75">Informasi akun dan ringkasan progress.</p>
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Nama</p>
-        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.name %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Email</p>
-        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.email %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">XP</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.xp %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Level / Streak</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.level %> / <%= profile.streak %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4 sm:col-span-2">
-        <p class="text-sm text-[#344E41]/60">Longest Streak</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.longestStreak %> hari</p>
-      </article>
-    </div>
-  </section>
+  <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+    <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
+      <h1 class="text-3xl font-bold text-[#344E41]">Profile</h1>
+      <p class="mt-2 text-[#344E41]/75">Informasi akun dan ringkasan progress.</p>
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+          <p class="text-sm text-[#344E41]/60">Nama</p>
+          <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.name %></p>
+        </article>
+        <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+          <p class="text-sm text-[#344E41]/60">Email</p>
+          <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.email %></p>
+        </article>
+        <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+          <p class="text-sm text-[#344E41]/60">XP</p>
+          <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.xp %></p>
+        </article>
+        <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
+          <p class="text-sm text-[#344E41]/60">Level / Streak</p>
+          <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.level %> / <%= profile.streak %></p>
+        </article>
+        <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4 sm:col-span-2">
+          <p class="text-sm text-[#344E41]/60">Longest Streak</p>
+          <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.longestStreak %> hari</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-[#FFFDF8] p-6 shadow-2xl shadow-[#344E41]/10">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-bold uppercase tracking-[0.22em] text-[#B7792D]">Pengingat Salat</p>
+          <h2 class="mt-2 text-2xl font-bold text-[#344E41]">Pengaturan Adzan</h2>
+          <p class="mt-2 text-sm leading-6 text-[#344E41]/72">
+            Popup waktu salat tetap muncul di dashboard. Pengaturan ini mengatur apakah aplikasi memutar suara, suara browser, atau hanya popup.
+          </p>
+        </div>
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#D4A373]/16 text-[#B7792D]">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3a5 5 0 0 1 5 5v2.5c0 .9.3 1.7.9 2.3l.8.8c.4.4.1 1.1-.5 1.1H5.8c-.6 0-.9-.7-.5-1.1l.8-.8c.6-.6.9-1.4.9-2.3V8a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M9.5 18a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </div>
+
+      <form action="/profile/adhan-settings" method="post" class="mt-6 space-y-5">
+        <label class="flex items-start gap-4 rounded-[1.5rem] border border-[#D8CDBB] bg-[#F6F1E9] p-4">
+          <input
+            type="checkbox"
+            name="enabled"
+            class="mt-1 h-5 w-5 rounded border-[#A3B18A] text-[#4F7F53] focus:ring-[#4F7F53]"
+            <%= adhanSettings.enabled ? "checked" : "" %>
+          />
+          <span>
+            <span class="block text-base font-bold text-[#344E41]">Aktifkan suara otomatis</span>
+            <span class="mt-1 block text-sm leading-6 text-[#344E41]/68">
+              Saat waktu salat masuk, aplikasi akan mencoba memutar suara sesuai pilihan di bawah. Jika browser menahan autoplay, popup tetap muncul dan tombol manual tetap tersedia.
+            </span>
+          </span>
+        </label>
+
+        <div>
+          <label for="soundKey" class="text-sm font-bold uppercase tracking-[0.18em] text-[#588157]">Pilihan Suara</label>
+          <select
+            id="soundKey"
+            name="soundKey"
+            class="mt-3 w-full rounded-[1.25rem] border border-[#D8CDBB] bg-white px-4 py-3 text-sm font-semibold text-[#344E41] outline-none transition focus:border-[#4F7F53]"
+          >
+            <% adhanSoundOptions.forEach((option) => { %>
+              <option value="<%= option.key %>" <%= adhanSettings.soundKey === option.key ? "selected" : "" %>>
+                <%= option.label %>
+              </option>
+            <% }) %>
+          </select>
+          <div class="mt-3 grid gap-3">
+            <% adhanSoundOptions.forEach((option) => { %>
+              <article class="rounded-[1.25rem] border border-[#E4DCCD] bg-white px-4 py-3">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-bold text-[#344E41]"><%= option.label %></p>
+                  <span class="rounded-full bg-[#F6F1E9] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#B7792D]"><%= option.sourceLabel %></span>
+                </div>
+                <p class="mt-2 text-sm leading-6 text-[#344E41]/66"><%= option.description %></p>
+              </article>
+            <% }) %>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between gap-3">
+            <label for="volume" class="text-sm font-bold uppercase tracking-[0.18em] text-[#588157]">Volume</label>
+            <span class="rounded-full bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#344E41]"><%= adhanSettings.volume %>%</span>
+          </div>
+          <input
+            id="volume"
+            type="range"
+            name="volume"
+            min="0"
+            max="100"
+            value="<%= adhanSettings.volume %>"
+            class="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-[#D8CDBB]"
+          />
+          <p class="mt-2 text-sm text-[#344E41]/62">Volume hanya dipakai untuk opsi audio online. Mode browser voice mengikuti volume perangkat dan browser.</p>
+        </div>
+
+        <div class="rounded-[1.5rem] border border-[#D8CDBB] bg-[#FBF7EF] px-4 py-3 text-sm leading-6 text-[#344E41]/68">
+          Sumber audio online saat ini memakai koleksi publik dari Wikimedia Commons. Kalau nanti kamu mau, setting ini bisa dilanjutkan ke preferensi permanen per akun di database.
+        </div>
+
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-full bg-[#4F7F53] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#D4A373] hover:text-[#244338]"
+        >
+          Simpan Pengaturan
+        </button>
+      </form>
+    </section>
+  </div>
 </main>

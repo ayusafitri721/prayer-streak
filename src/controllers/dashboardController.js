@@ -7,9 +7,17 @@ const {
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
 const { getHijriCalendarData } = require("../services/hijriService");
+const {
+  getAdhanSettings,
+  getAdhanSoundOptions,
+  parseAdhanSettings,
+  resolveAdhanSound,
+} = require("../services/adhanSettingsService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
+  const adhanSettings = getAdhanSettings(req.session.adhanSettings);
+  const selectedAdhanSound = resolveAdhanSound(adhanSettings);
   try {
     const [data, dailyReflection] = await Promise.all([
       getDashboardData(user.id, req.session.prayerLocation || null),
@@ -23,6 +31,8 @@ async function renderDashboard(req, res) {
       userName: user.name,
       dailyReflection,
       hijriData,
+      adhanSettings,
+      selectedAdhanSound,
     });
   } catch (error) {
     req.flash("error", "Gagal memuat dashboard. Coba lagi beberapa saat.");
@@ -35,6 +45,7 @@ async function renderDashboard(req, res) {
       todayCompleted: 0,
       totalToday: 5,
       nextPrayer: { name: "Shubuh", time: "04:45" },
+      prayerTimeline: [],
       checklist: [
         { key: "shubuh", label: "Shubuh" },
         { key: "dzuhur", label: "Dzuhur" },
@@ -76,6 +87,8 @@ async function renderDashboard(req, res) {
         sourceUrl: null,
       },
       dailyReflection: null,
+      adhanSettings,
+      selectedAdhanSound,
     });
   }
 }
@@ -83,11 +96,31 @@ async function renderDashboard(req, res) {
 async function completePrayerAction(req, res) {
   const { prayer } = req.params;
   const user = req.session.user;
+  const wantsJson =
+    req.xhr ||
+    req.get("x-requested-with") === "XMLHttpRequest" ||
+    req.accepts(["html", "json"]) === "json";
   const result = await completePrayer(user.id, prayer, req.session.prayerLocation || null);
 
   if (!result.changed) {
+    if (wantsJson) {
+      return res.status(400).json({
+        ok: false,
+        message: result.message,
+      });
+    }
     req.flash("error", result.message);
   } else {
+    if (wantsJson) {
+      const dashboard = await getDashboardData(user.id, req.session.prayerLocation || null);
+      return res.json({
+        ok: true,
+        message: result.leveledUp
+          ? "Salat berhasil dicatat. Kamu juga naik level baru."
+          : "Salat berhasil dicatat.",
+        dashboard,
+      });
+    }
     req.flash("message", "Salat berhasil dicatat.");
     if (result.leveledUp) {
       req.flash("message", "Great! Kamu naik level baru.");
@@ -119,11 +152,20 @@ async function renderAchievements(req, res) {
 async function renderProfile(req, res) {
   const user = req.session.user;
   const profile = await getProfileData(user.id);
+  const adhanSettings = getAdhanSettings(req.session.adhanSettings);
   res.render("pages/profile", {
     title: "Profile - Prayer Streak",
     user,
     profile,
+    adhanSettings,
+    adhanSoundOptions: getAdhanSoundOptions(),
   });
+}
+
+function saveAdhanSettings(req, res) {
+  req.session.adhanSettings = parseAdhanSettings(req.body);
+  req.flash("message", "Pengaturan adzan berhasil diperbarui.");
+  return res.redirect("/profile");
 }
 
 module.exports = {
@@ -132,4 +174,5 @@ module.exports = {
   renderStatistics,
   renderAchievements,
   renderProfile,
+  saveAdhanSettings,
 };

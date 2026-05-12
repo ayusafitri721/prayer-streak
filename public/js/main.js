@@ -693,53 +693,597 @@ const countdownEl = document.querySelector("[data-prayer-countdown]");
 
 if (countdownEl) {
   const prayerTime = countdownEl.dataset.prayerTime;
-  const isTomorrow = countdownEl.dataset.prayerTomorrow === "true";
+  const prayerName = countdownEl.dataset.prayerName || "Salat";
+  const adhanEnabled = countdownEl.dataset.adhanEnabled === "true";
+  const adhanSoundType = countdownEl.dataset.adhanSoundType || "audio";
+  const adhanSoundLabel = countdownEl.dataset.adhanSoundLabel || "Adzan";
+  const adhanAudioUrl = countdownEl.dataset.adhanAudioUrl || "";
+  const rawPrayerTimeline = countdownEl.dataset.prayerTimeline || "[]";
+  const adhanVolume = Math.min(
+    1,
+    Math.max(0, Number.parseInt(countdownEl.dataset.adhanVolume || "80", 10) / 100)
+  );
+  const nextPrayerNameEl = countdownEl.querySelector("[data-next-prayer-name]");
+  const nextPrayerTimeEl = countdownEl.querySelector("[data-next-prayer-time]");
+  const nextPrayerStatusEl = countdownEl.querySelector("[data-next-prayer-status]");
+  const dashboardRoot = document.querySelector("[data-dashboard-root]");
+  const checklistForms = Array.from(document.querySelectorAll("[data-prayer-check-form]"));
   const display = countdownEl.querySelector("[data-countdown-display]");
   const label = countdownEl.querySelector("[data-countdown-label]");
+  const alertModal = document.querySelector("[data-prayer-alert-modal]");
+  const alertOverlay = document.querySelector("[data-prayer-alert-overlay]");
+  const alertCloseButtons = Array.from(document.querySelectorAll("[data-prayer-alert-close]"));
+  const alertPlayButton = document.querySelector("[data-prayer-alert-play]");
+  const alertAudio = document.querySelector("[data-prayer-alert-audio]");
+  const alertStatus = document.querySelector("[data-prayer-alert-status]");
+  const alertName = document.querySelector("[data-prayer-alert-name]");
+  const alertTime = document.querySelector("[data-prayer-alert-time]");
+  const alertTitle = document.querySelector("[data-prayer-alert-title]");
+  const body = document.body;
+  let userInteracted = false;
+  let currentEntryKey = prayerTime ? `${prayerName}:${prayerTime}` : "";
 
-  if (prayerTime && display && label) {
-    const [targetH, targetM] = prayerTime.split(":").map(Number);
+  const getLocalDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-    const getTarget = () => {
-      const now = new Date();
-      const target = new Date(now);
-      target.setHours(targetH, targetM, 0, 0);
-      if (isTomorrow || target <= now) {
-        target.setDate(target.getDate() + 1);
+  const parsePrayerTimeline = () => {
+    try {
+      const parsed = JSON.parse(rawPrayerTimeline);
+      if (!Array.isArray(parsed)) {
+        return [];
       }
-      return target;
+
+      return parsed
+        .filter((entry) => entry && entry.dateKey && entry.time)
+        .map((entry) => {
+          const [year, month, day] = String(entry.dateKey).split("-").map(Number);
+          const [hours, minutes] = String(entry.time).split(":").map(Number);
+          return {
+            ...entry,
+            target: new Date(year, month - 1, day, hours, minutes, 0, 0),
+            alertKey: `prayer-alert:${entry.dateKey}:${entry.key}:${entry.time}`,
+          };
+        })
+        .sort((a, b) => a.target.getTime() - b.target.getTime());
+    } catch (error) {
+      return [];
+    }
+  };
+
+  let prayerTimeline = parsePrayerTimeline();
+  let previousNow = new Date();
+  const dashboardProgressPercentEl = dashboardRoot?.querySelector("[data-dashboard-progress-percent]");
+  const dashboardProgressLabelEl = dashboardRoot?.querySelector("[data-dashboard-progress-label]");
+  const dashboardProgressBarEl = dashboardRoot?.querySelector("[data-dashboard-progress-bar]");
+  const dashboardXpTodayEl = dashboardRoot?.querySelector("[data-dashboard-xp-today]");
+  const dashboardTotalXpEl = dashboardRoot?.querySelector("[data-dashboard-total-xp]");
+  const dashboardLevelEl = dashboardRoot?.querySelector("[data-dashboard-level]");
+  const dashboardLevelHeadingEl = dashboardRoot?.querySelector("[data-dashboard-level-heading]");
+  const dashboardSalatDoneEl = dashboardRoot?.querySelector("[data-dashboard-salat-done]");
+  const dashboardStreakEl = dashboardRoot?.querySelector("[data-dashboard-streak]");
+  const dashboardLongestStreakEl = dashboardRoot?.querySelector("[data-dashboard-longest-streak]");
+  const dashboardLevelProgressLabelEl = dashboardRoot?.querySelector("[data-dashboard-level-progress-label]");
+  const dashboardLevelProgressBarEl = dashboardRoot?.querySelector("[data-dashboard-level-progress-bar]");
+
+  const showDashboardToast = (message, tone = "success") => {
+    const existing = document.getElementById("dashboard-toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "dashboard-toast";
+    toast.textContent = message;
+    toast.className = `fixed bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full px-5 py-3 text-sm font-bold text-white shadow-2xl ${
+      tone === "error" ? "bg-[#A65145]" : "bg-[#2F654D]"
+    }`;
+    document.body.appendChild(toast);
+
+    window.setTimeout(() => {
+      toast.remove();
+    }, 2600);
+  };
+
+  const setPlayButtonLabel = (buttonLabel) => {
+    if (!alertPlayButton) return;
+    alertPlayButton.innerHTML = `
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      ${buttonLabel}
+    `;
+  };
+
+  if (alertAudio) {
+    if (adhanAudioUrl) {
+      alertAudio.src = adhanAudioUrl;
+    }
+    alertAudio.volume = adhanVolume;
+  }
+
+  if (!adhanEnabled || adhanSoundType === "silent") {
+    setPlayButtonLabel("Suara Nonaktif");
+    if (alertPlayButton) {
+      alertPlayButton.disabled = true;
+      alertPlayButton.classList.add("cursor-not-allowed", "opacity-60");
+    }
+  } else if (adhanSoundType === "speech") {
+    setPlayButtonLabel("Putar Pengingat");
+  }
+
+  const unlockAudio = () => {
+    userInteracted = true;
+  };
+
+  window.addEventListener("pointerdown", unlockAudio, { once: true });
+  window.addEventListener("keydown", unlockAudio, { once: true });
+
+  const speakPrayerAlert = () => {
+    if (!("speechSynthesis" in window)) return false;
+
+    const spokenPrayerName = currentEntryKey.split(":")[0] || prayerName;
+    const utterance = new SpeechSynthesisUtterance(`Sudah masuk waktu salat ${spokenPrayerName}.`);
+    utterance.lang = "id-ID";
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    return true;
+  };
+
+  const tryPlayAlertAudio = async (manual = false) => {
+    if (!alertAudio) {
+      if (alertStatus) {
+        alertStatus.textContent = "Elemen audio adzan tidak tersedia di halaman ini.";
+      }
+      return false;
+    }
+
+    if (!adhanAudioUrl) {
+      if (alertStatus) {
+        alertStatus.textContent = "Sumber audio adzan belum tersedia untuk pilihan ini.";
+      }
+      return false;
+    }
+
+    try {
+      alertAudio.currentTime = 0;
+      await alertAudio.play();
+      if (alertStatus) {
+        alertStatus.textContent = `${adhanSoundLabel} sedang diputar.`;
+      }
+      return true;
+    } catch (error) {
+      if (alertStatus) {
+        alertStatus.textContent = manual
+          ? "Audio adzan belum bisa diputar. Coba lagi atau pilih mode suara lain di Profile."
+          : "Browser menahan autoplay audio. Tekan tombol Putar Adzan untuk memulai manual.";
+      }
+      return false;
+    }
+  };
+
+  const playConfiguredAlert = async (manual = false) => {
+    if (!adhanEnabled || adhanSoundType === "silent") {
+      if (alertStatus) {
+        alertStatus.textContent = "Popup tetap aktif, tetapi suara adzan sedang dimatikan dari halaman Profile.";
+      }
+      return false;
+    }
+
+    if (adhanSoundType === "speech") {
+      const spoken = speakPrayerAlert();
+      if (alertStatus) {
+        alertStatus.textContent = spoken
+          ? "Pengingat suara browser sedang diputar."
+          : "Browser ini belum mendukung speech synthesis.";
+      }
+      return spoken;
+    }
+
+    return tryPlayAlertAudio(manual);
+  };
+
+  const openPrayerAlert = async (entry) => {
+    if (!alertModal || !entry) return;
+    const activeAlertKey = entry.alertKey;
+    if (window.sessionStorage.getItem(activeAlertKey) === "shown") {
+      return;
+    }
+    window.sessionStorage.setItem(activeAlertKey, "shown");
+
+    if (alertName) alertName.textContent = entry.label;
+    if (alertTime) alertTime.textContent = entry.time || "--:--";
+    if (alertTitle) alertTitle.textContent = `Sudah masuk waktu ${entry.label}`;
+    currentEntryKey = `${entry.label}:${entry.time}`;
+    if (alertStatus) {
+      if (!adhanEnabled || adhanSoundType === "silent") {
+        alertStatus.textContent = "Popup aktif. Suara adzan sedang dimatikan dari pengaturan Profile.";
+      } else if (adhanSoundType === "speech") {
+        alertStatus.textContent = "Aplikasi akan membacakan pengingat dengan suara browser.";
+      } else {
+        alertStatus.textContent = `Aplikasi akan mencoba memutar ${adhanSoundLabel.toLowerCase()} otomatis jika browser mengizinkan.`;
+      }
+    }
+
+    alertModal.classList.remove("hidden");
+    alertModal.classList.add("flex");
+    body.classList.add("overflow-hidden");
+
+    if (!adhanEnabled || adhanSoundType === "silent") {
+      return;
+    }
+
+    if (adhanSoundType === "speech") {
+      await playConfiguredAlert(false);
+      return;
+    }
+
+    if (userInteracted) {
+      await playConfiguredAlert(false);
+    } else if (alertStatus) {
+      alertStatus.textContent = "Popup muncul otomatis. Tekan Putar Adzan jika browser belum mengizinkan audio.";
+    }
+  };
+
+  const closePrayerAlert = () => {
+    if (!alertModal) return;
+    alertModal.classList.add("hidden");
+    alertModal.classList.remove("flex");
+    body.classList.remove("overflow-hidden");
+    if (alertAudio) {
+      alertAudio.pause();
+      alertAudio.currentTime = 0;
+    }
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  if (alertPlayButton) {
+    alertPlayButton.addEventListener("click", () => {
+      if (!adhanEnabled || adhanSoundType === "silent") {
+        if (alertStatus) {
+          alertStatus.textContent = "Suara adzan sedang dimatikan. Ubah pengaturannya di halaman Profile.";
+        }
+        return;
+      }
+      playConfiguredAlert(true);
+    });
+  }
+
+  alertCloseButtons.forEach((button) => button.addEventListener("click", closePrayerAlert));
+  if (alertOverlay) alertOverlay.addEventListener("click", closePrayerAlert);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && alertModal && !alertModal.classList.contains("hidden")) {
+      closePrayerAlert();
+    }
+  });
+
+  const computeProgressPercent = (todayCompleted, totalToday) =>
+    totalToday > 0 ? Math.round((todayCompleted / totalToday) * 100) : 0;
+
+  const computeProgressLabel = (todayCompleted, totalToday) => {
+    const remainingToday = Math.max(totalToday - todayCompleted, 0);
+    return todayCompleted === totalToday
+      ? "Luar biasa! Semua target hari ini selesai."
+      : `${remainingToday} salat lagi untuk menyelesaikan target hari ini.`;
+  };
+
+  const computeLevelProgress = (xpValue, levelValue) => {
+    const levelBase = Math.max(0, (levelValue - 1) * 100);
+    const levelTarget = Math.max(levelValue * 100, 100);
+    const levelRange = Math.max(levelTarget - levelBase, 1);
+
+    return {
+      levelTarget,
+      levelProgress: Math.min(
+        100,
+        Math.max(0, Math.round(((xpValue - levelBase) / levelRange) * 100))
+      ),
     };
+  };
 
-    const pad = (n) => String(n).padStart(2, "0");
+  const getTodayPrayerEntry = (prayerKey, now = new Date()) =>
+    prayerTimeline.find(
+      (entry) => entry.key === prayerKey && entry.dateKey === getLocalDateKey(now)
+    ) || null;
 
-    const tick = () => {
-      const now = new Date();
-      const diff = getTarget() - now;
+  const setRowMode = (form, mode) => {
+    form.classList.remove(
+      "border-[#BFD2B1]",
+      "bg-[#F2F7EC]",
+      "border-[#E2D8C8]",
+      "bg-[#FFF9F0]",
+      "border-[#C9D7B8]",
+      "bg-[#F8FBF3]"
+    );
 
-      if (diff <= 0) {
-        display.textContent = "Waktunya!";
-        label.textContent = "sudah masuk waktu salat";
+    if (mode === "done") {
+      form.classList.add("border-[#BFD2B1]", "bg-[#F2F7EC]");
+    } else if (mode === "locked") {
+      form.classList.add("border-[#E2D8C8]", "bg-[#FFF9F0]");
+    } else {
+      form.classList.add("border-[#C9D7B8]", "bg-[#F8FBF3]");
+    }
+  };
+
+  const applyChecklistRowState = (form, state) => {
+    const indexPill = form.querySelector("[data-prayer-index-pill]");
+    const icon = form.querySelector("[data-prayer-icon]");
+    const statusBadge = form.querySelector("[data-prayer-status-badge]");
+    const note = form.querySelector("[data-prayer-note]");
+    const submitButton = form.querySelector("[data-prayer-submit]");
+    const checkIndicator = form.querySelector("[data-prayer-check-indicator]");
+    const timeLabel = form.querySelector("[data-prayer-time-label]");
+    const isDone = Boolean(state.completedAt);
+    const isAvailable = Boolean(state.isAvailable);
+    const isLocked = !isDone && !isAvailable;
+
+    form.dataset.prayerCompleted = isDone ? "true" : "false";
+    form.dataset.prayerAvailable = isAvailable ? "true" : "false";
+
+    if (timeLabel && state.time) {
+      timeLabel.textContent = state.time;
+    }
+
+    setRowMode(form, isDone ? "done" : isLocked ? "locked" : "ready");
+
+    if (indexPill) {
+      indexPill.classList.toggle("bg-[#4F7F53]", isDone);
+      indexPill.classList.toggle("text-white", isDone);
+      indexPill.classList.toggle("bg-white", !isDone);
+      indexPill.classList.toggle("text-[#4F7F53]", !isDone);
+    }
+
+    if (icon) {
+      icon.classList.toggle("text-[#4F7F53]", isDone);
+      icon.classList.toggle("text-[#A3B18A]", !isDone);
+    }
+
+    if (statusBadge) {
+      statusBadge.classList.remove(
+        "bg-[#4F7F53]",
+        "text-white",
+        "bg-[#EDE5D8]",
+        "text-[#244338]/58",
+        "bg-[#D4A373]/16",
+        "text-[#B7792D]"
+      );
+
+      if (isDone) {
+        statusBadge.textContent = "Selesai";
+        statusBadge.classList.add("bg-[#4F7F53]", "text-white");
+      } else if (isLocked) {
+        statusBadge.textContent = "Belum masuk waktu";
+        statusBadge.classList.add("bg-[#EDE5D8]", "text-[#244338]/58");
+      } else {
+        statusBadge.textContent = "Siap dicatat";
+        statusBadge.classList.add("bg-[#D4A373]/16", "text-[#B7792D]");
+      }
+    }
+
+    if (note) {
+      note.textContent = isDone
+        ? `Dicatat jam ${state.completedAt}`
+        : isLocked
+          ? `Tombol aktif setelah jam ${state.time}.`
+          : "Sudah masuk waktu, catat setelah selesai salat.";
+    }
+
+    if (submitButton) {
+      submitButton.disabled = isDone || isLocked;
+      submitButton.classList.toggle("hidden", isDone || isLocked);
+      if (!isDone && !isLocked) {
+        submitButton.textContent = "Checklist";
+      }
+    }
+
+    if (checkIndicator) {
+      checkIndicator.classList.toggle("bg-[#4F7F53]", isDone);
+      checkIndicator.classList.toggle("text-white", isDone);
+      checkIndicator.classList.toggle("bg-white", !isDone);
+      checkIndicator.classList.toggle("text-[#A3B18A]", !isDone);
+    }
+  };
+
+  const updateChecklistAvailability = (now = new Date()) => {
+    checklistForms.forEach((form) => {
+      if (form.dataset.prayerCompleted === "true") {
         return;
       }
 
-      const totalSec = Math.floor(diff / 1000);
+      const entry = getTodayPrayerEntry(form.dataset.prayerKey, now);
+      const currentTime =
+        entry?.time || form.querySelector("[data-prayer-time-label]")?.textContent || "--:--";
+      const isAvailable = entry
+        ? now.getTime() >= entry.target.getTime()
+        : form.dataset.prayerAvailable === "true";
+
+      applyChecklistRowState(form, {
+        time: currentTime,
+        isAvailable,
+        completedAt: null,
+      });
+    });
+  };
+
+  const applyDashboardState = (dashboard) => {
+    if (!dashboard || typeof dashboard !== "object") {
+      return;
+    }
+
+    if (Array.isArray(dashboard.prayerTimeline) && dashboard.prayerTimeline.length) {
+      prayerTimeline = dashboard.prayerTimeline
+        .map((entry) => {
+          const [year, month, day] = String(entry.dateKey).split("-").map(Number);
+          const [hours, minutes] = String(entry.time).split(":").map(Number);
+          return {
+            ...entry,
+            target: new Date(year, month - 1, day, hours, minutes, 0, 0),
+            alertKey: `prayer-alert:${entry.dateKey}:${entry.key}:${entry.time}`,
+          };
+        })
+        .sort((a, b) => a.target.getTime() - b.target.getTime());
+      countdownEl.dataset.prayerTimeline = JSON.stringify(dashboard.prayerTimeline);
+    }
+
+    const progressPercent = computeProgressPercent(dashboard.todayCompleted, dashboard.totalToday);
+    const progressLabel = computeProgressLabel(dashboard.todayCompleted, dashboard.totalToday);
+    const levelProgressData = computeLevelProgress(dashboard.xp, dashboard.level);
+
+    if (dashboardProgressPercentEl) dashboardProgressPercentEl.textContent = `${progressPercent}%`;
+    if (dashboardProgressLabelEl) dashboardProgressLabelEl.textContent = progressLabel;
+    if (dashboardProgressBarEl) {
+      dashboardProgressBarEl.style.width = `${progressPercent}%`;
+      dashboardProgressBarEl.style.setProperty("--progress-width", `${progressPercent}%`);
+    }
+    if (dashboardXpTodayEl) dashboardXpTodayEl.textContent = `${dashboard.todayCompleted * 10} XP`;
+    if (dashboardTotalXpEl) dashboardTotalXpEl.textContent = `${dashboard.xp} XP`;
+    if (dashboardLevelEl) dashboardLevelEl.textContent = String(dashboard.level);
+    if (dashboardLevelHeadingEl) dashboardLevelHeadingEl.textContent = `Level ${dashboard.level}`;
+    if (dashboardSalatDoneEl) {
+      dashboardSalatDoneEl.textContent = `${dashboard.todayCompleted} / ${dashboard.totalToday}`;
+    }
+    if (dashboardStreakEl) dashboardStreakEl.textContent = String(dashboard.streak);
+    if (dashboardLongestStreakEl) {
+      dashboardLongestStreakEl.textContent = `Terbaik: ${dashboard.longestStreak || dashboard.streak} hari`;
+    }
+    if (dashboardLevelProgressLabelEl) {
+      dashboardLevelProgressLabelEl.textContent = `${dashboard.xp} / ${levelProgressData.levelTarget} XP`;
+    }
+    if (dashboardLevelProgressBarEl) {
+      dashboardLevelProgressBarEl.style.width = `${levelProgressData.levelProgress}%`;
+      dashboardLevelProgressBarEl.style.setProperty(
+        "--progress-width",
+        `${levelProgressData.levelProgress}%`
+      );
+    }
+
+    checklistForms.forEach((form) => {
+      const prayerKey = form.dataset.prayerKey;
+      const checklistItem = Array.isArray(dashboard.checklist)
+        ? dashboard.checklist.find((item) => item.key === prayerKey)
+        : null;
+
+      applyChecklistRowState(form, {
+        time:
+          checklistItem?.time ||
+          form.querySelector("[data-prayer-time-label]")?.textContent ||
+          "--:--",
+        isAvailable: Boolean(checklistItem?.isAvailable),
+        completedAt: dashboard.todayState?.[prayerKey] || null,
+      });
+    });
+  };
+
+  checklistForms.forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const submitButton = form.querySelector("[data-prayer-submit]");
+      if (!submitButton || submitButton.disabled) {
+        return;
+      }
+
+      const originalLabel = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = "Menyimpan...";
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.message || "Gagal mencatat salat.");
+        }
+
+        applyDashboardState(payload.dashboard);
+        updateChecklistAvailability(new Date());
+        showDashboardToast(payload.message || "Salat berhasil dicatat.");
+      } catch (error) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalLabel;
+        showDashboardToast(error.message || "Gagal mencatat salat.", "error");
+      }
+    });
+  });
+
+  if (display && label && prayerTimeline.length) {
+    const pad = (n) => String(n).padStart(2, "0");
+
+    const findNextEntry = (now) =>
+      prayerTimeline.find((entry) => entry.target.getTime() > now.getTime()) || null;
+
+    const updateNextPrayerCard = (entry, now) => {
+      if (!entry) {
+        if (nextPrayerNameEl) nextPrayerNameEl.textContent = "Jadwal selesai";
+        if (nextPrayerTimeEl) nextPrayerTimeEl.textContent = "-";
+        if (nextPrayerStatusEl) nextPrayerStatusEl.textContent = "Perlu refresh";
+        display.textContent = "--:--:--";
+        label.textContent = "Tidak ada jadwal berikutnya";
+        return;
+      }
+
+      currentEntryKey = `${entry.label}:${entry.time}`;
+      if (nextPrayerNameEl) nextPrayerNameEl.textContent = entry.label;
+      if (nextPrayerTimeEl) nextPrayerTimeEl.textContent = entry.time;
+      if (nextPrayerStatusEl) {
+        nextPrayerStatusEl.textContent = entry.dateKey === getLocalDateKey(now) ? "Berjalan" : "Besok";
+      }
+    };
+
+    const tick = async () => {
+      const now = new Date();
+      const crossedEntry = prayerTimeline.find(
+        (entry) =>
+          previousNow.getTime() < entry.target.getTime() &&
+          now.getTime() >= entry.target.getTime()
+      );
+
+      if (crossedEntry) {
+        await openPrayerAlert(crossedEntry);
+      }
+
+      const nextEntry = findNextEntry(now);
+      updateNextPrayerCard(nextEntry, now);
+      updateChecklistAvailability(now);
+
+      if (!nextEntry) {
+        previousNow = now;
+        return;
+      }
+
+      const diff = nextEntry.target.getTime() - now.getTime();
+      const totalSec = Math.max(0, Math.floor(diff / 1000));
       const h = Math.floor(totalSec / 3600);
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
 
       display.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+      label.textContent =
+        h > 0
+          ? `${h} jam ${m} menit lagi`
+          : m > 0
+            ? `${m} menit ${s} detik lagi`
+            : `${s} detik lagi`;
 
-      if (h > 0) {
-        label.textContent = `${h} jam ${m} menit lagi`;
-      } else if (m > 0) {
-        label.textContent = `${m} menit ${s} detik lagi`;
-      } else {
-        label.textContent = `${s} detik lagi`;
-      }
+      previousNow = now;
     };
 
+    updateNextPrayerCard(findNextEntry(previousNow), previousNow);
+    updateChecklistAvailability(previousNow);
     tick();
-    setInterval(tick, 1000);
+    setInterval(() => {
+      tick().catch(() => {});
+    }, 1000);
+  } else if (display && label && prayerTime) {
+    display.textContent = "--:--:--";
+    label.textContent = `Menuju adzan ${prayerName}`;
   }
 }
 
