@@ -7,17 +7,9 @@ const {
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
 const { getHijriCalendarData } = require("../services/hijriService");
-const {
-  getAdhanSettings,
-  getAdhanSoundOptions,
-  parseAdhanSettings,
-  resolveAdhanSound,
-} = require("../services/adhanSettingsService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
-  const adhanSettings = getAdhanSettings(req.session.adhanSettings);
-  const selectedAdhanSound = resolveAdhanSound(adhanSettings);
   try {
     const [data, dailyReflection] = await Promise.all([
       getDashboardData(user.id, req.session.prayerLocation || null),
@@ -31,8 +23,6 @@ async function renderDashboard(req, res) {
       userName: user.name,
       dailyReflection,
       hijriData,
-      adhanSettings,
-      selectedAdhanSound,
     });
   } catch (error) {
     req.flash("error", "Gagal memuat dashboard. Coba lagi beberapa saat.");
@@ -87,8 +77,6 @@ async function renderDashboard(req, res) {
         sourceUrl: null,
       },
       dailyReflection: null,
-      adhanSettings,
-      selectedAdhanSound,
     });
   }
 }
@@ -152,20 +140,11 @@ async function renderAchievements(req, res) {
 async function renderProfile(req, res) {
   const user = req.session.user;
   const profile = await getProfileData(user.id);
-  const adhanSettings = getAdhanSettings(req.session.adhanSettings);
   res.render("pages/profile", {
     title: "Profile - Prayer Streak",
     user,
     profile,
-    adhanSettings,
-    adhanSoundOptions: getAdhanSoundOptions(),
   });
-}
-
-function saveAdhanSettings(req, res) {
-  req.session.adhanSettings = parseAdhanSettings(req.body);
-  req.flash("message", "Pengaturan adzan berhasil diperbarui.");
-  return res.redirect("/profile");
 }
 
 module.exports = {
@@ -174,5 +153,4 @@ module.exports = {
   renderStatistics,
   renderAchievements,
   renderProfile,
-  saveAdhanSettings,
 };

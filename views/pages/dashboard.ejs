@@ -224,11 +224,6 @@
         data-prayer-name="<%= nextPrayer.name %>"
         data-prayer-tomorrow="<%= nextPrayer.isTomorrow ? 'true' : 'false' %>"
         data-prayer-timeline='<%- JSON.stringify(prayerTimeline || []) %>'
-        data-adhan-enabled="<%= adhanSettings.enabled ? 'true' : 'false' %>"
-        data-adhan-sound-type="<%= selectedAdhanSound.type %>"
-        data-adhan-sound-label="<%= selectedAdhanSound.label %>"
-        data-adhan-audio-url="<%= selectedAdhanSound.audioUrl || '' %>"
-        data-adhan-volume="<%= adhanSettings.volume %>"
       >
         <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(212,163,115,0.28),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.07),transparent_45%)]"></div>
         <div class="pointer-events-none absolute right-5 top-8 h-16 w-16 rounded-full bg-[#D4A373] shadow-[0_0_40px_rgba(212,163,115,0.38)]"></div>
@@ -286,10 +281,6 @@
               <% } %>
             </div>
           <% } %>
-
-          <div class="mt-4 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white/78 backdrop-blur">
-            <p>Mode adzan: <span class="font-bold text-[#D9E7D1]"><%= adhanSettings.enabled ? selectedAdhanSound.label : "Suara nonaktif" %></span></p>
-          </div>
         </div>
       </section>
 
@@ -523,21 +514,15 @@
         </div>
 
         <div class="mt-5 flex flex-wrap gap-3">
-          <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#4F7F53] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#D4A373] hover:text-[#244338]" data-prayer-alert-play>
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-            Putar Adzan
-          </button>
           <button type="button" class="inline-flex items-center gap-2 rounded-full border border-[#D8CDBB] bg-white px-5 py-3 text-sm font-bold text-[#244338] transition hover:bg-[#F6F1E9]" data-prayer-alert-close>
-            Nanti Saja
+            Tutup
           </button>
         </div>
 
         <p class="mt-4 text-sm text-[#244338]/60" data-prayer-alert-status>
-          Aplikasi akan mencoba memutar audio adzan otomatis jika browser mengizinkan.
+          Notifikasi ini akan muncul sekali setiap kali masuk waktu salat pada halaman yang sedang terbuka.
         </p>
       </div>
-
-      <audio preload="auto" data-prayer-alert-audio <% if (selectedAdhanSound.audioUrl) { %>src="<%= selectedAdhanSound.audioUrl %>"<% } %>></audio>
     </section>
   </div>
 </main>

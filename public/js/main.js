@@ -694,15 +694,7 @@ const countdownEl = document.querySelector("[data-prayer-countdown]");
 if (countdownEl) {
   const prayerTime = countdownEl.dataset.prayerTime;
   const prayerName = countdownEl.dataset.prayerName || "Salat";
-  const adhanEnabled = countdownEl.dataset.adhanEnabled === "true";
-  const adhanSoundType = countdownEl.dataset.adhanSoundType || "audio";
-  const adhanSoundLabel = countdownEl.dataset.adhanSoundLabel || "Adzan";
-  const adhanAudioUrl = countdownEl.dataset.adhanAudioUrl || "";
   const rawPrayerTimeline = countdownEl.dataset.prayerTimeline || "[]";
-  const adhanVolume = Math.min(
-    1,
-    Math.max(0, Number.parseInt(countdownEl.dataset.adhanVolume || "80", 10) / 100)
-  );
   const nextPrayerNameEl = countdownEl.querySelector("[data-next-prayer-name]");
   const nextPrayerTimeEl = countdownEl.querySelector("[data-next-prayer-time]");
   const nextPrayerStatusEl = countdownEl.querySelector("[data-next-prayer-status]");
@@ -713,14 +705,11 @@ if (countdownEl) {
   const alertModal = document.querySelector("[data-prayer-alert-modal]");
   const alertOverlay = document.querySelector("[data-prayer-alert-overlay]");
   const alertCloseButtons = Array.from(document.querySelectorAll("[data-prayer-alert-close]"));
-  const alertPlayButton = document.querySelector("[data-prayer-alert-play]");
-  const alertAudio = document.querySelector("[data-prayer-alert-audio]");
   const alertStatus = document.querySelector("[data-prayer-alert-status]");
   const alertName = document.querySelector("[data-prayer-alert-name]");
   const alertTime = document.querySelector("[data-prayer-alert-time]");
   const alertTitle = document.querySelector("[data-prayer-alert-title]");
   const body = document.body;
-  let userInteracted = false;
   let currentEntryKey = prayerTime ? `${prayerName}:${prayerTime}` : "";
 
   const getLocalDateKey = (date) => {
@@ -786,102 +775,6 @@ if (countdownEl) {
     }, 2600);
   };
 
-  const setPlayButtonLabel = (buttonLabel) => {
-    if (!alertPlayButton) return;
-    alertPlayButton.innerHTML = `
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-      ${buttonLabel}
-    `;
-  };
-
-  if (alertAudio) {
-    if (adhanAudioUrl) {
-      alertAudio.src = adhanAudioUrl;
-    }
-    alertAudio.volume = adhanVolume;
-  }
-
-  if (!adhanEnabled || adhanSoundType === "silent") {
-    setPlayButtonLabel("Suara Nonaktif");
-    if (alertPlayButton) {
-      alertPlayButton.disabled = true;
-      alertPlayButton.classList.add("cursor-not-allowed", "opacity-60");
-    }
-  } else if (adhanSoundType === "speech") {
-    setPlayButtonLabel("Putar Pengingat");
-  }
-
-  const unlockAudio = () => {
-    userInteracted = true;
-  };
-
-  window.addEventListener("pointerdown", unlockAudio, { once: true });
-  window.addEventListener("keydown", unlockAudio, { once: true });
-
-  const speakPrayerAlert = () => {
-    if (!("speechSynthesis" in window)) return false;
-
-    const spokenPrayerName = currentEntryKey.split(":")[0] || prayerName;
-    const utterance = new SpeechSynthesisUtterance(`Sudah masuk waktu salat ${spokenPrayerName}.`);
-    utterance.lang = "id-ID";
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    return true;
-  };
-
-  const tryPlayAlertAudio = async (manual = false) => {
-    if (!alertAudio) {
-      if (alertStatus) {
-        alertStatus.textContent = "Elemen audio adzan tidak tersedia di halaman ini.";
-      }
-      return false;
-    }
-
-    if (!adhanAudioUrl) {
-      if (alertStatus) {
-        alertStatus.textContent = "Sumber audio adzan belum tersedia untuk pilihan ini.";
-      }
-      return false;
-    }
-
-    try {
-      alertAudio.currentTime = 0;
-      await alertAudio.play();
-      if (alertStatus) {
-        alertStatus.textContent = `${adhanSoundLabel} sedang diputar.`;
-      }
-      return true;
-    } catch (error) {
-      if (alertStatus) {
-        alertStatus.textContent = manual
-          ? "Audio adzan belum bisa diputar. Coba lagi atau pilih mode suara lain di Profile."
-          : "Browser menahan autoplay audio. Tekan tombol Putar Adzan untuk memulai manual.";
-      }
-      return false;
-    }
-  };
-
-  const playConfiguredAlert = async (manual = false) => {
-    if (!adhanEnabled || adhanSoundType === "silent") {
-      if (alertStatus) {
-        alertStatus.textContent = "Popup tetap aktif, tetapi suara adzan sedang dimatikan dari halaman Profile.";
-      }
-      return false;
-    }
-
-    if (adhanSoundType === "speech") {
-      const spoken = speakPrayerAlert();
-      if (alertStatus) {
-        alertStatus.textContent = spoken
-          ? "Pengingat suara browser sedang diputar."
-          : "Browser ini belum mendukung speech synthesis.";
-      }
-      return spoken;
-    }
-
-    return tryPlayAlertAudio(manual);
-  };
-
   const openPrayerAlert = async (entry) => {
     if (!alertModal || !entry) return;
     const activeAlertKey = entry.alertKey;
@@ -895,33 +788,12 @@ if (countdownEl) {
     if (alertTitle) alertTitle.textContent = `Sudah masuk waktu ${entry.label}`;
     currentEntryKey = `${entry.label}:${entry.time}`;
     if (alertStatus) {
-      if (!adhanEnabled || adhanSoundType === "silent") {
-        alertStatus.textContent = "Popup aktif. Suara adzan sedang dimatikan dari pengaturan Profile.";
-      } else if (adhanSoundType === "speech") {
-        alertStatus.textContent = "Aplikasi akan membacakan pengingat dengan suara browser.";
-      } else {
-        alertStatus.textContent = `Aplikasi akan mencoba memutar ${adhanSoundLabel.toLowerCase()} otomatis jika browser mengizinkan.`;
-      }
+      alertStatus.textContent = `Sudah masuk waktu ${entry.label}. Semoga dimudahkan untuk segera menunaikannya.`;
     }
 
     alertModal.classList.remove("hidden");
     alertModal.classList.add("flex");
     body.classList.add("overflow-hidden");
-
-    if (!adhanEnabled || adhanSoundType === "silent") {
-      return;
-    }
-
-    if (adhanSoundType === "speech") {
-      await playConfiguredAlert(false);
-      return;
-    }
-
-    if (userInteracted) {
-      await playConfiguredAlert(false);
-    } else if (alertStatus) {
-      alertStatus.textContent = "Popup muncul otomatis. Tekan Putar Adzan jika browser belum mengizinkan audio.";
-    }
   };
 
   const closePrayerAlert = () => {
@@ -929,26 +801,7 @@ if (countdownEl) {
     alertModal.classList.add("hidden");
     alertModal.classList.remove("flex");
     body.classList.remove("overflow-hidden");
-    if (alertAudio) {
-      alertAudio.pause();
-      alertAudio.currentTime = 0;
-    }
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
   };
-
-  if (alertPlayButton) {
-    alertPlayButton.addEventListener("click", () => {
-      if (!adhanEnabled || adhanSoundType === "silent") {
-        if (alertStatus) {
-          alertStatus.textContent = "Suara adzan sedang dimatikan. Ubah pengaturannya di halaman Profile.";
-        }
-        return;
-      }
-      playConfiguredAlert(true);
-    });
-  }
 
   alertCloseButtons.forEach((button) => button.addEventListener("click", closePrayerAlert));
   if (alertOverlay) alertOverlay.addEventListener("click", closePrayerAlert);
