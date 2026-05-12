@@ -1,28 +1,112 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <h1 class="text-3xl font-bold text-[#344E41]">Statistik Progres</h1>
-    <p class="mt-2 text-[#344E41]/75">Ringkasan performa konsistensi salat 5 waktu.</p>
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Total salat selesai minggu ini</p>
-        <p class="mt-2 text-2xl font-bold text-[#588157]"><%= totalThisWeek %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Persentase konsistensi</p>
-        <p class="mt-2 text-2xl font-bold text-[#588157]"><%= consistencyPercent %>%</p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Hari full completed</p>
-        <p class="mt-2 text-2xl font-bold text-[#588157]"><%= fullDays %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Streak aktif</p>
-        <p class="mt-2 text-2xl font-bold text-[#588157]"><%= activeStreak %> hari</p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Longest streak</p>
-        <p class="mt-2 text-2xl font-bold text-[#588157]"><%= longestStreak %> hari</p>
-      </article>
+<%
+  const weeklyPercent = Math.min(consistencyPercent, 100);
+  const fullDayLabel = fullDays === 1 ? "hari" : "hari";
+  const bestDayText = bestDay && bestDay.completed > 0
+    ? `${bestDay.label}, ${bestDay.completed}/${bestDay.total} salat`
+    : "Belum ada data minggu ini";
+%>
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 text-[#344E41] sm:px-6 lg:py-8">
+  <section class="overflow-hidden rounded-[2rem] border border-[#A3B18A]/35 bg-white/85 shadow-xl shadow-[#344E41]/8">
+    <div class="grid gap-6 p-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+      <div>
+        <p class="text-sm font-semibold text-[#588157]">Statistik mingguan</p>
+        <h1 class="mt-2 text-3xl font-bold text-[#344E41] sm:text-4xl">Progress Konsistensi</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#344E41]/70">
+          Lihat pola salat minggu ini, streak aktif, dan seberapa dekat kamu dengan target 35 salat dalam 7 hari.
+        </p>
+      </div>
+
+      <div class="rounded-[1.5rem] bg-[#344E41] p-5 text-white">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm text-[#A3B18A]">Konsistensi</p>
+            <p class="mt-1 text-4xl font-bold"><%= weeklyPercent %>%</p>
+          </div>
+          <p class="text-right text-sm text-white/70"><%= totalThisWeek %>/<%= weeklyTarget %> salat</p>
+        </div>
+        <div class="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
+          <div class="h-full rounded-full bg-[#D4A373]" style="width: <%= weeklyPercent %>%"></div>
+        </div>
+      </div>
     </div>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <article class="rounded-[1.5rem] border border-[#A3B18A]/35 bg-white/85 p-5 shadow-lg shadow-[#344E41]/5">
+      <p class="text-sm text-[#344E41]/60">Total minggu ini</p>
+      <p class="mt-2 text-3xl font-bold text-[#588157]"><%= totalThisWeek %></p>
+      <p class="mt-1 text-sm text-[#344E41]/55"><%= remainingThisWeek %> lagi menuju target penuh</p>
+    </article>
+    <article class="rounded-[1.5rem] border border-[#A3B18A]/35 bg-white/85 p-5 shadow-lg shadow-[#344E41]/5">
+      <p class="text-sm text-[#344E41]/60">Hari full completed</p>
+      <p class="mt-2 text-3xl font-bold text-[#588157]"><%= fullDays %></p>
+      <p class="mt-1 text-sm text-[#344E41]/55"><%= fullDays %> <%= fullDayLabel %> selesai 5/5</p>
+    </article>
+    <article class="rounded-[1.5rem] border border-[#A3B18A]/35 bg-white/85 p-5 shadow-lg shadow-[#344E41]/5">
+      <p class="text-sm text-[#344E41]/60">Streak aktif</p>
+      <p class="mt-2 text-3xl font-bold text-[#588157]"><%= activeStreak %></p>
+      <p class="mt-1 text-sm text-[#344E41]/55">hari berjalan</p>
+    </article>
+    <article class="rounded-[1.5rem] border border-[#A3B18A]/35 bg-white/85 p-5 shadow-lg shadow-[#344E41]/5">
+      <p class="text-sm text-[#344E41]/60">Longest streak</p>
+      <p class="mt-2 text-3xl font-bold text-[#588157]"><%= longestStreak %></p>
+      <p class="mt-1 text-sm text-[#344E41]/55">rekor terbaik</p>
+    </article>
+  </section>
+
+  <section class="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
+    <div class="rounded-[2rem] border border-[#A3B18A]/35 bg-white/85 p-6 shadow-xl shadow-[#344E41]/8">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-bold text-[#344E41]">Grafik 7 Hari</h2>
+          <p class="mt-1 text-sm text-[#344E41]/65">Jumlah salat yang dicatat per hari.</p>
+        </div>
+        <span class="w-fit rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-4 py-2 text-sm font-semibold text-[#588157]">
+          Target 5/hari
+        </span>
+      </div>
+
+      <div class="mt-8 grid grid-cols-7 items-end gap-3">
+        <% weeklyBreakdown.forEach((day, index) => { %>
+          <% const hasProgress = day.completed > 0; %>
+          <div class="<%= hasProgress ? 'opacity-100' : 'opacity-55' %> flex min-h-56 flex-col items-center justify-end gap-3 transition hover:opacity-100">
+            <div class="<%= hasProgress ? 'bg-[#A3B18A]/18' : 'bg-[#A3B18A]/10' %> flex h-40 w-full items-end justify-center rounded-full p-1">
+              <div
+                class="<%= day.isFull ? 'bg-[#D4A373]' : hasProgress ? 'bg-[#588157]' : 'bg-[#A3B18A]/35' %> stats-bar w-full rounded-full transition-all"
+                style="--bar-height: <%= Math.max(day.percent, hasProgress ? 14 : 4) %>%; animation-delay: <%= index * 90 %>ms;"
+                title="<%= day.completed %>/<%= day.total %> salat"
+              ></div>
+            </div>
+            <div class="text-center">
+              <p class="<%= hasProgress ? 'bg-[#588157] text-white' : 'bg-[#F6F1E9] text-[#344E41]/55' %> rounded-full px-2.5 py-1 text-xs font-bold"><%= day.completed %>/<%= day.total %></p>
+              <p class="<%= hasProgress ? 'text-[#344E41]' : 'text-[#344E41]/45' %> mt-2 text-xs font-semibold"><%= day.label %></p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <aside class="flex flex-col gap-5">
+      <div class="rounded-[2rem] bg-[#344E41] p-6 text-white shadow-xl shadow-[#344E41]/15">
+        <p class="text-sm font-semibold text-[#A3B18A]">Hari terbaik</p>
+        <h2 class="mt-2 text-2xl font-bold"><%= bestDayText %></h2>
+        <p class="mt-3 text-sm leading-6 text-white/70">Gunakan pola hari terbaikmu sebagai patokan untuk menjaga ritme minggu ini.</p>
+      </div>
+
+      <div class="rounded-[2rem] border border-[#D4A373]/40 bg-[#D4A373]/15 p-6">
+        <p class="text-sm font-semibold text-[#344E41]/70">Insight</p>
+        <% if (weeklyPercent >= 80) { %>
+          <p class="mt-2 text-xl font-bold text-[#344E41]">Ritmemu sudah kuat.</p>
+          <p class="mt-2 text-sm leading-6 text-[#344E41]/70">Pertahankan konsistensi dan fokus menjaga salat yang belum rutin.</p>
+        <% } else if (weeklyPercent >= 40) { %>
+          <p class="mt-2 text-xl font-bold text-[#344E41]">Progress mulai terbentuk.</p>
+          <p class="mt-2 text-sm leading-6 text-[#344E41]/70">Coba kejar satu hari full completed untuk menguatkan streak.</p>
+        <% } else { %>
+          <p class="mt-2 text-xl font-bold text-[#344E41]">Mulai dari satu checklist.</p>
+          <p class="mt-2 text-sm leading-6 text-[#344E41]/70">Fokus mencatat salat berikutnya dulu, tidak perlu mengejar semuanya sekaligus.</p>
+        <% } %>
+      </div>
+    </aside>
   </section>
 </main>

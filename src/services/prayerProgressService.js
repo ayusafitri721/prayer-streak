@@ -15,7 +15,7 @@ const PRAYER_TIMES = {
 };
 
 const XP_PER_PRAYER = 10;
-const DAILY_BONUS_XP = 25;
+const DAILY_BONUS_XP = 50;
 
 const achievementsSeed = [
   { slug: "first-step", name: "First Step", description: "Checklist salat pertama" },
@@ -122,6 +122,38 @@ function countThisWeek(state) {
   return total;
 }
 
+function getWeeklyBreakdown(state) {
+  const today = new Date();
+  const labels = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+  const days = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - i);
+    const dayKey = toDateString(day);
+    const logs = state.logsByDate.get(dayKey) || {};
+    const completed = Object.values(logs).filter(Boolean).length;
+
+    days.push({
+      date: dayKey,
+      label: labels[day.getDay()],
+      completed,
+      total: PRAYER_KEYS.length,
+      percent: Math.round((completed / PRAYER_KEYS.length) * 100),
+      isFull: completed === PRAYER_KEYS.length,
+    });
+  }
+
+  return days;
+}
+
+function getBestDay(weeklyBreakdown) {
+  return weeklyBreakdown.reduce((best, day) => {
+    if (!best || day.completed > best.completed) return day;
+    return best;
+  }, null);
+}
+
 function updateAchievements(state) {
   const today = toDateString(new Date());
   const todayLogs = state.logsByDate.get(today) || {};
@@ -180,6 +212,12 @@ async function getDashboardData(userId) {
     xp: state.xp,
     level: state.level,
     streak: state.streak,
+    longestStreak: state.longestStreak,
+    totalCompletedSalat: totalCompletedSalatInState(state),
+    weeklyBreakdown: getWeeklyBreakdown(state),
+    nextLevelTarget: state.level * 100,
+    currentLevelBase: (state.level - 1) * 100,
+    dailyBonusXp: DAILY_BONUS_XP,
     todayCompleted,
     totalToday,
     nextPrayer: getNextPrayer(),
@@ -267,13 +305,22 @@ async function completePrayer(userId, prayer) {
 
 async function getStatsData(userId) {
   const state = getUserState(userId);
+  const weeklyBreakdown = getWeeklyBreakdown(state);
+  const totalThisWeek = countThisWeek(state);
+  const weeklyTarget = PRAYER_KEYS.length * 7;
+  const consistencyPercent = Math.round((totalThisWeek / weeklyTarget) * 100);
+  const bestDay = getBestDay(weeklyBreakdown);
 
   return {
-    totalThisWeek: countThisWeek(state),
-    consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),
+    totalThisWeek,
+    weeklyTarget,
+    remainingThisWeek: Math.max(weeklyTarget - totalThisWeek, 0),
+    consistencyPercent,
     fullDays: fullCompletedDays(state),
     activeStreak: state.streak,
     longestStreak: state.longestStreak,
+    weeklyBreakdown,
+    bestDay,
   };
 }
 
