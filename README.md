@@ -156,7 +156,7 @@ Entitas inti:
 - bcrypt
 - axios
 - dayjs
-- Aladhan API
+- EQuran Shalat API
 
 ## 21. Setup Environment (Ringkas)
 - Buat database dengan nama: `prayer_streak`

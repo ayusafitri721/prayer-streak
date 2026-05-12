@@ -743,12 +743,44 @@ if (countdownEl) {
   }
 }
 
+const hijriCalendarModal = document.querySelector("[data-hijri-calendar-modal]");
+
+if (hijriCalendarModal) {
+  const openButtons = Array.from(document.querySelectorAll("[data-open-hijri-calendar]"));
+  const closeButtons = Array.from(hijriCalendarModal.querySelectorAll("[data-close-hijri-calendar]"));
+  const overlay = hijriCalendarModal.querySelector("[data-hijri-calendar-overlay]");
+  const body = document.body;
+
+  const openModal = () => {
+    hijriCalendarModal.classList.remove("hidden");
+    hijriCalendarModal.classList.add("flex");
+    body.classList.add("overflow-hidden");
+  };
+
+  const closeModal = () => {
+    hijriCalendarModal.classList.add("hidden");
+    hijriCalendarModal.classList.remove("flex");
+    body.classList.remove("overflow-hidden");
+  };
+
+  openButtons.forEach((button) => button.addEventListener("click", openModal));
+  closeButtons.forEach((button) => button.addEventListener("click", closeModal));
+  if (overlay) overlay.addEventListener("click", closeModal);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !hijriCalendarModal.classList.contains("hidden")) {
+      closeModal();
+    }
+  });
+}
+
 // ── Kompas Arah Kiblat ──────────────────────────────────────────────
 const qiblaCompass = document.querySelector("[data-qibla-compass]");
 
 if (qiblaCompass) {
   const KAABA_LAT = 21.4225;
   const KAABA_LNG = 39.8262;
+  const prayerLocationNeedsSync = qiblaCompass.dataset.prayerLocationSync !== "ready";
+  let locationSyncInFlight = false;
 
   const needle = qiblaCompass.querySelector("[data-qibla-needle]");
   const bearingText = qiblaCompass.querySelector("[data-qibla-bearing]");
@@ -773,6 +805,30 @@ if (qiblaCompass) {
 
   const rotateNeedle = (deg) => {
     needle.setAttribute("style", `transform-origin:100px 100px;transform:rotate(${deg}deg);transition:transform 0.3s ease-out`);
+  };
+
+  const syncPrayerLocation = async (latitude, longitude) => {
+    if (!prayerLocationNeedsSync || locationSyncInFlight) return;
+    locationSyncInFlight = true;
+
+    try {
+      const response = await fetch("/location/prayer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ latitude, longitude }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (response.ok && payload && payload.ok && payload.changed) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Prayer location sync failed:", error);
+    } finally {
+      locationSyncInFlight = false;
+    }
   };
 
   const startOrientation = (qiblaBearing) => {
@@ -821,6 +877,7 @@ if (qiblaCompass) {
         bearingText.textContent = `${rounded}° ${bearingToLabel(bearing)}`;
         rotateNeedle(bearing);
         startOrientation(bearing);
+        syncPrayerLocation(latitude, longitude);
       },
       () => {
         bearingText.textContent = "Izinkan akses lokasi untuk melihat arah kiblat";

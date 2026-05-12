@@ -8,6 +8,7 @@ function attachGlobals(req, res, next) {
   res.locals.pageTitle = req.path === "/" ? "Prayer Streak" : null;
   res.locals.hideTopbar = false;
   res.locals.currentPath = req.path;
+  res.locals.prayerSessionLocation = req.session.prayerLocation || null;
 
   next();
 }

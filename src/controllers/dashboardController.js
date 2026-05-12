@@ -6,20 +6,23 @@ const {
   getProfileData,
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
+const { getHijriCalendarData } = require("../services/hijriService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
   try {
     const [data, dailyReflection] = await Promise.all([
-      getDashboardData(user.id, user.name),
+      getDashboardData(user.id, req.session.prayerLocation || null),
       Promise.resolve(getDailyReflection()),
     ]);
+    const hijriData = await getHijriCalendarData(new Date());
 
     return res.render("pages/dashboard", {
       title: "Dashboard - Prayer Streak",
       ...data,
       userName: user.name,
       dailyReflection,
+      hijriData,
     });
   } catch (error) {
     req.flash("error", "Gagal memuat dashboard. Coba lagi beberapa saat.");
@@ -51,6 +54,27 @@ async function renderDashboard(req, res) {
       fullDays: 0,
       streakActive: false,
       latestAchievement: null,
+      prayerLocationLabel: null,
+      prayerLocationSourceType: "fallback",
+      prayerTimeWarning: "Jadwal salat dinamis belum berhasil dimuat. Aplikasi memakai jadwal cadangan.",
+      prayerTimeSource: "Jadwal default aplikasi",
+      prayerTimeSourceUrl: "https://equran.id/apidev/shalat",
+      hijriData: {
+        today: {
+          weekdayLabel: "",
+          day: null,
+          monthLabel: "",
+          year: "",
+          fullLabel: "",
+        },
+        calendar: {
+          monthLabel: "Kalender Hijriyah",
+          entries: [],
+        },
+        warning: "Kalender Hijriyah belum berhasil dimuat.",
+        sourceName: "Fallback Lokal",
+        sourceUrl: null,
+      },
       dailyReflection: null,
     });
   }
@@ -59,7 +83,7 @@ async function renderDashboard(req, res) {
 async function completePrayerAction(req, res) {
   const { prayer } = req.params;
   const user = req.session.user;
-  const result = await completePrayer(user.id, prayer);
+  const result = await completePrayer(user.id, prayer, req.session.prayerLocation || null);
 
   if (!result.changed) {
     req.flash("error", result.message);

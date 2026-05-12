@@ -163,7 +163,8 @@ Variabel penting di `.env.example`:
 Catatan:
 
 - `DATABASE_URL` dipakai oleh Prisma melalui `schema.prisma` dan `prisma.config.ts`
-- `PRAYER_API_BASE_URL` sudah disiapkan, tapi belum dipakai di kode aktif
+- `PRAYER_API_BASE_URL` dipakai untuk jadwal salat dinamis lewat EQuran Shalat API
+- lokasi utama jadwal salat diambil dari browser user dan disimpan di session; env dipakai sebagai fallback, default-nya `DKI Jakarta / Kota Jakarta`
 - Session secret punya fallback default di `src/app.js`, tetapi untuk production sebaiknya wajib lewat env
 
 ## Database dan Data Layer
@@ -236,7 +237,7 @@ Service eksternal yang aktif:
 
 Integrasi yang terlihat disiapkan tapi belum aktif:
 
-- Aladhan API lewat `PRAYER_API_BASE_URL`
+- EQuran Shalat API lewat `PRAYER_API_BASE_URL`
 
 ## Frontend Notes
 
@@ -281,7 +282,7 @@ Temuan tooling:
 - Seed admin menggunakan credential hardcoded default
 - Tidak ada test untuk auth, progress, atau integrasi API
 - Tidak ada pemisahan config production/dev yang kuat
-- `PRAYER_API_BASE_URL` belum dipakai, jadi jadwal salat saat ini masih hardcoded di service
+- jadwal salat sekarang diambil dari EQuran Shalat API dengan fallback ke jadwal default aplikasi saat API gagal
 
 ## Siap untuk Fitur Baru
 

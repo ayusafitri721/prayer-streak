@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 const PRAYER_KEYS = ["shubuh", "dzuhur", "ashar", "maghrib", "isya"];
 const PRAYER_LABELS = {
   shubuh: "Shubuh",
@@ -6,16 +8,25 @@ const PRAYER_LABELS = {
   maghrib: "Maghrib",
   isya: "Isya",
 };
-const PRAYER_TIMES = {
+const DEFAULT_PRAYER_TIMES = {
   shubuh: "04:45",
   dzuhur: "11:55",
   ashar: "15:20",
   maghrib: "18:05",
   isya: "19:55",
 };
+const PRAYER_API_BASE_URL = process.env.PRAYER_API_BASE_URL || "https://equran.id/api/v2";
+const PRAYER_PROVINCE = process.env.PRAYER_PROVINCE || "DKI Jakarta";
+const PRAYER_KABKOTA = process.env.PRAYER_KABKOTA || "Kota Jakarta";
+const PRAYER_API_DOCS_URL = "https://equran.id/apidev/shalat";
+const PRAYER_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
+const prayerApi = axios.create({
+  baseURL: PRAYER_API_BASE_URL,
+  timeout: 10000,
+});
 
 const XP_PER_PRAYER = 10;
-const DAILY_BONUS_XP = 50;
+const DAILY_BONUS_XP = 25;
 
 const achievementsSeed = [
   { slug: "first-step", name: "First Step", description: "Checklist salat pertama" },
@@ -27,9 +38,38 @@ const achievementsSeed = [
 ];
 
 const users = new Map();
+const prayerScheduleCache = new Map();
 
 function toDateString(date) {
   return date.toISOString().split("T")[0];
+}
+
+function formatLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getLocationConfig(locationOverride = null) {
+  if (locationOverride?.provinsi && locationOverride?.kabkota) {
+    return {
+      provinsi: locationOverride.provinsi,
+      kabkota: locationOverride.kabkota,
+      sourceType: "browser",
+    };
+  }
+
+  return {
+    provinsi: PRAYER_PROVINCE,
+    kabkota: PRAYER_KABKOTA,
+    sourceType: "fallback",
+  };
+}
+
+function getPrayerCacheKey(date = new Date(), locationOverride = null) {
+  const location = getLocationConfig(locationOverride);
+  return `${location.provinsi}::${location.kabkota}::${date.getFullYear()}-${date.getMonth() + 1}`;
 }
 
 function getInitialState() {
@@ -62,7 +102,7 @@ function prevDateString(dateString) {
 }
 
 function timeToMinutes(time) {
-  const [hours, minutes] = time.split(":").map(Number);
+  const [hours, minutes] = String(time || "00:00").split(":").map(Number);
   return hours * 60 + minutes;
 }
 
@@ -70,20 +110,132 @@ function getCurrentMinutes(date = new Date()) {
   return date.getHours() * 60 + date.getMinutes();
 }
 
-function canCompletePrayer(prayer, date = new Date()) {
-  return getCurrentMinutes(date) >= timeToMinutes(PRAYER_TIMES[prayer]);
+function getFallbackPrayerSchedule(date = new Date(), reason = null, locationOverride = null) {
+  const location = getLocationConfig(locationOverride);
+  return {
+    dateKey: formatLocalDateKey(date),
+    locationLabel: `${location.kabkota}, ${location.provinsi}`,
+    sourceName: "Jadwal default aplikasi",
+    sourceUrl: PRAYER_API_DOCS_URL,
+    warning: reason,
+    locationSourceType: location.sourceType,
+    times: { ...DEFAULT_PRAYER_TIMES },
+  };
 }
 
-function getNextPrayer() {
-  const totalMinutes = getCurrentMinutes();
+function normalizePrayerScheduleEntry(entry, date = new Date(), metadata = {}) {
+  return {
+    dateKey: entry.tanggal_lengkap || formatLocalDateKey(date),
+    locationLabel: [metadata.kabkota, metadata.provinsi].filter(Boolean).join(", "),
+    sourceName: "EQuran Shalat API",
+    sourceUrl: PRAYER_API_DOCS_URL,
+    warning: null,
+    times: {
+      shubuh: entry.subuh || DEFAULT_PRAYER_TIMES.shubuh,
+      dzuhur: entry.dzuhur || DEFAULT_PRAYER_TIMES.dzuhur,
+      ashar: entry.ashar || DEFAULT_PRAYER_TIMES.ashar,
+      maghrib: entry.maghrib || DEFAULT_PRAYER_TIMES.maghrib,
+      isya: entry.isya || DEFAULT_PRAYER_TIMES.isya,
+    },
+  };
+}
 
-  const nextPrayer = PRAYER_KEYS.find((key) => totalMinutes < timeToMinutes(PRAYER_TIMES[key]));
-  if (!nextPrayer) return { name: "Shubuh", time: PRAYER_TIMES.shubuh, isTomorrow: true };
+async function fetchMonthlyPrayerSchedulesForLocation(date = new Date(), locationOverride = null) {
+  const location = getLocationConfig(locationOverride);
+  const cacheKey = getPrayerCacheKey(date, location);
+  const cached = prayerScheduleCache.get(cacheKey);
+  const now = Date.now();
+
+  if (cached && now - cached.fetchedAt < PRAYER_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  const response = await prayerApi.post("/shalat", {
+    provinsi: location.provinsi,
+    kabkota: location.kabkota,
+    bulan: date.getMonth() + 1,
+    tahun: date.getFullYear(),
+  });
+
+  const payload = response.data?.data;
+  const jadwal = payload?.jadwal;
+
+  if (!payload || !Array.isArray(jadwal) || !jadwal.length) {
+    throw new Error("Prayer schedule API returned an invalid response.");
+  }
+
+  const normalized = jadwal.map((entry) => ({
+    ...normalizePrayerScheduleEntry(entry, date, payload),
+    locationSourceType: location.sourceType,
+  }));
+
+  prayerScheduleCache.set(cacheKey, {
+    fetchedAt: now,
+    data: normalized,
+  });
+
+  return normalized;
+}
+
+async function getPrayerScheduleForDate(date = new Date(), locationOverride = null) {
+  try {
+    const schedules = await fetchMonthlyPrayerSchedulesForLocation(date, locationOverride);
+    const dateKey = formatLocalDateKey(date);
+    const exactMatch = schedules.find((entry) => entry.dateKey === dateKey);
+
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    return getFallbackPrayerSchedule(
+      date,
+      "Jadwal salat harian tidak ditemukan untuk tanggal ini.",
+      locationOverride
+    );
+  } catch (error) {
+    return getFallbackPrayerSchedule(
+      date,
+      "Jadwal salat dari EQuran sedang tidak tersedia. Aplikasi memakai jadwal cadangan.",
+      locationOverride
+    );
+  }
+}
+
+function canCompletePrayerWithSchedule(prayer, schedule, date = new Date()) {
+  return getCurrentMinutes(date) >= timeToMinutes(schedule.times[prayer]);
+}
+
+async function getNextPrayer(date = new Date(), todaySchedule = null, locationOverride = null) {
+  const activeSchedule = todaySchedule || (await getPrayerScheduleForDate(date, locationOverride));
+  const totalMinutes = getCurrentMinutes(date);
+  const nextPrayerKey = PRAYER_KEYS.find(
+    (key) => totalMinutes < timeToMinutes(activeSchedule.times[key])
+  );
+
+  if (nextPrayerKey) {
+    return {
+      name: PRAYER_LABELS[nextPrayerKey],
+      time: activeSchedule.times[nextPrayerKey],
+      isTomorrow: false,
+      locationLabel: activeSchedule.locationLabel,
+      locationSourceType: activeSchedule.locationSourceType,
+      sourceName: activeSchedule.sourceName,
+      sourceUrl: activeSchedule.sourceUrl,
+    };
+  }
+
+  const tomorrow = new Date(date);
+  tomorrow.setDate(date.getDate() + 1);
+  const tomorrowSchedule = await getPrayerScheduleForDate(tomorrow, locationOverride);
 
   return {
-    name: PRAYER_LABELS[nextPrayer],
-    time: PRAYER_TIMES[nextPrayer],
-    isTomorrow: false,
+    name: PRAYER_LABELS.shubuh,
+    time: tomorrowSchedule.times.shubuh,
+    isTomorrow: true,
+    locationLabel: tomorrowSchedule.locationLabel,
+    locationSourceType: tomorrowSchedule.locationSourceType,
+    sourceName: tomorrowSchedule.sourceName,
+    sourceUrl: tomorrowSchedule.sourceUrl,
   };
 }
 
@@ -122,42 +274,32 @@ function countThisWeek(state) {
   return total;
 }
 
-function getWeeklyBreakdown(state) {
-  const today = new Date();
-  const labels = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+function buildWeeklyBreakdown(state) {
   const days = [];
+  const today = new Date();
 
-  for (let i = 6; i >= 0; i--) {
+  for (let offset = 6; offset >= 0; offset -= 1) {
     const day = new Date(today);
-    day.setDate(today.getDate() - i);
+    day.setDate(today.getDate() - offset);
+
     const dayKey = toDateString(day);
     const logs = state.logsByDate.get(dayKey) || {};
     const completed = Object.values(logs).filter(Boolean).length;
 
     days.push({
-      date: dayKey,
-      label: labels[day.getDay()],
+      date: day.toISOString(),
+      label: day.toLocaleDateString("id-ID", { weekday: "short" }),
       completed,
-      total: PRAYER_KEYS.length,
-      percent: Math.round((completed / PRAYER_KEYS.length) * 100),
-      isFull: completed === PRAYER_KEYS.length,
+      isFull: completed >= PRAYER_KEYS.length,
     });
   }
 
   return days;
 }
 
-function getBestDay(weeklyBreakdown) {
-  return weeklyBreakdown.reduce((best, day) => {
-    if (!best || day.completed > best.completed) return day;
-    return best;
-  }, null);
-}
-
 function updateAchievements(state) {
   const today = toDateString(new Date());
   const todayLogs = state.logsByDate.get(today) || {};
-  const todayCompleted = Object.values(todayLogs).filter(Boolean).length;
   const fullDayReached = Array.from(state.logsByDate.values()).some(
     (dayLog) => Object.values(dayLog).filter(Boolean).length >= PRAYER_KEYS.length
   );
@@ -184,10 +326,12 @@ function updateAchievements(state) {
   return unlockedNow;
 }
 
-async function getDashboardData(userId) {
+async function getDashboardData(userId, prayerLocation = null) {
   const state = getUserState(userId);
-  const today = toDateString(new Date());
+  const now = new Date();
+  const today = toDateString(now);
   const todayLogs = state.logsByDate.get(today) || {};
+  const prayerSchedule = await getPrayerScheduleForDate(now, prayerLocation);
 
   const todayState = {
     shubuh: todayLogs.shubuh || null,
@@ -202,8 +346,8 @@ async function getDashboardData(userId) {
   const checklist = PRAYER_KEYS.map((key) => ({
     key,
     label: PRAYER_LABELS[key],
-    time: PRAYER_TIMES[key],
-    isAvailable: canCompletePrayer(key),
+    time: prayerSchedule.times[key],
+    isAvailable: canCompletePrayerWithSchedule(key, prayerSchedule, now),
   }));
 
   updateAchievements(state);
@@ -213,14 +357,9 @@ async function getDashboardData(userId) {
     level: state.level,
     streak: state.streak,
     longestStreak: state.longestStreak,
-    totalCompletedSalat: totalCompletedSalatInState(state),
-    weeklyBreakdown: getWeeklyBreakdown(state),
-    nextLevelTarget: state.level * 100,
-    currentLevelBase: (state.level - 1) * 100,
-    dailyBonusXp: DAILY_BONUS_XP,
     todayCompleted,
     totalToday,
-    nextPrayer: getNextPrayer(),
+    nextPrayer: await getNextPrayer(now, prayerSchedule, prayerLocation),
     checklist,
     todayState,
     consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),
@@ -228,10 +367,20 @@ async function getDashboardData(userId) {
     fullDays: fullCompletedDays(state),
     streakActive: state.streak > 0,
     latestAchievement: state.latestAchievement,
+    prayerLocationLabel: prayerSchedule.locationLabel,
+    prayerLocationSourceType: prayerSchedule.locationSourceType,
+    prayerTimeWarning: prayerSchedule.warning,
+    prayerTimeSource: prayerSchedule.sourceName,
+    prayerTimeSourceUrl: prayerSchedule.sourceUrl,
+    dailyBonusXp: DAILY_BONUS_XP,
+    currentLevelBase: (state.level - 1) * 100,
+    nextLevelTarget: state.level * 100,
+    totalCompletedSalat: totalCompletedSalatInState(state),
+    weeklyBreakdown: buildWeeklyBreakdown(state),
   };
 }
 
-async function completePrayer(userId, prayer) {
+async function completePrayer(userId, prayer, prayerLocation = null) {
   if (!PRAYER_KEYS.includes(prayer)) {
     return {
       changed: false,
@@ -242,7 +391,9 @@ async function completePrayer(userId, prayer) {
   }
 
   const state = getUserState(userId);
-  const today = toDateString(new Date());
+  const now = new Date();
+  const today = toDateString(now);
+  const prayerSchedule = await getPrayerScheduleForDate(now, prayerLocation);
   const todayLogs = state.logsByDate.get(today) || {};
 
   if (todayLogs[prayer]) {
@@ -254,17 +405,16 @@ async function completePrayer(userId, prayer) {
     };
   }
 
-  if (!canCompletePrayer(prayer)) {
+  if (!canCompletePrayerWithSchedule(prayer, prayerSchedule, now)) {
     return {
       changed: false,
-      message: `${PRAYER_LABELS[prayer]} belum bisa dicatat sebelum jam ${PRAYER_TIMES[prayer]}.`,
+      message: `${PRAYER_LABELS[prayer]} belum bisa dicatat sebelum jam ${prayerSchedule.times[prayer]}.`,
       leveledUp: false,
       latestAchievement: state.latestAchievement,
     };
   }
 
-  const prevXp = state.xp;
-  todayLogs[prayer] = new Date().toLocaleTimeString("id-ID", {
+  todayLogs[prayer] = now.toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -305,22 +455,13 @@ async function completePrayer(userId, prayer) {
 
 async function getStatsData(userId) {
   const state = getUserState(userId);
-  const weeklyBreakdown = getWeeklyBreakdown(state);
-  const totalThisWeek = countThisWeek(state);
-  const weeklyTarget = PRAYER_KEYS.length * 7;
-  const consistencyPercent = Math.round((totalThisWeek / weeklyTarget) * 100);
-  const bestDay = getBestDay(weeklyBreakdown);
 
   return {
-    totalThisWeek,
-    weeklyTarget,
-    remainingThisWeek: Math.max(weeklyTarget - totalThisWeek, 0),
-    consistencyPercent,
+    totalThisWeek: countThisWeek(state),
+    consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),
     fullDays: fullCompletedDays(state),
     activeStreak: state.streak,
     longestStreak: state.longestStreak,
-    weeklyBreakdown,
-    bestDay,
   };
 }
 
