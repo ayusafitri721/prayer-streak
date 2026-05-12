@@ -14,6 +14,7 @@ const achievementsRoutes = require("./routes/achievements");
 const profileRoutes = require("./routes/profile");
 const quranRoutes = require("./routes/quran");
 const hadisRoutes = require("./routes/hadis");
+const doaRoutes = require("./routes/doa");
 
 const app = express();
 
@@ -45,5 +46,6 @@ app.use("/achievements", achievementsRoutes);
 app.use("/profile", profileRoutes);
 app.use("/quran", quranRoutes);
 app.use("/hadis", hadisRoutes);
+app.use("/doa", doaRoutes);
 
 module.exports = app;
