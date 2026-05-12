@@ -1,238 +1,235 @@
-<main class="min-h-screen bg-[#F6F1E9] text-[#344E41]">
-  <section class="relative overflow-hidden bg-[#14251f] text-white">
-    <div class="absolute inset-0 opacity-25">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(212,163,115,0.34),transparent_28%),linear-gradient(120deg,rgba(20,37,31,0.82),rgba(20,37,31,0.96))]"></div>
-      <div class="absolute -right-20 top-10 h-80 w-80 rounded-full border border-[#D4A373]/30"></div>
-      <div class="absolute left-8 top-24 h-52 w-52 rounded-full border border-[#A3B18A]/20"></div>
+﻿<main class="min-h-screen bg-[#F6F1E9] text-[#344E41]">
+  <section class="relative isolate min-h-[610px] overflow-hidden bg-[#11140e] text-white" data-home-carousel>
+    <div class="absolute inset-0">
+      <div class="home-hero-slide absolute inset-0 bg-cover bg-center opacity-100 transition-opacity duration-1000" data-home-slide style="background-image: url('/assets/home-slide-1.png');"></div>
+      <div class="home-hero-slide absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000" data-home-slide style="background-image: url('/assets/home-slide-2.png');"></div>
+      <div class="home-hero-slide absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000" data-home-slide style="background-image: url('/assets/home-slide-3.png');"></div>
     </div>
+    <div class="absolute inset-0 bg-black/22"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.14)_46%,rgba(0,0,0,0.44)_100%)]"></div>
 
-    <header class="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-      <a href="/" class="flex items-center gap-3">
-        <span class="grid h-12 w-12 place-items-center rounded-b-2xl rounded-t-sm bg-[#D4A373] text-xl font-black text-[#14251f] shadow-lg shadow-black/20">PS</span>
-        <span>
-          <span class="block text-xl font-black tracking-wide">Prayer Streak</span>
-          <span class="block text-xs font-semibold uppercase tracking-[0.24em] text-[#D4A373]">Habit Salat</span>
-        </span>
-      </a>
-
-      <nav class="hidden items-center gap-8 text-sm font-semibold text-white/80 md:flex">
-        <a href="#fitur" class="transition hover:text-[#D4A373]">Fitur</a>
-        <a href="#progress" class="transition hover:text-[#D4A373]">Progress</a>
-        <a href="#konsep" class="transition hover:text-[#D4A373]">Konsep</a>
+    <header class="relative z-20 mx-auto flex max-w-5xl items-center justify-center px-5 pt-8">
+      <nav class="flex items-center gap-7 text-[11px] font-black uppercase tracking-[0.22em] text-white/78">
+        <a href="/" class="text-[#A3B18A]">Home</a>
+        <a href="#fitur" class="hidden transition hover:text-[#A3B18A] sm:inline">Fitur</a>
+        <a href="#progress" class="hidden transition hover:text-[#A3B18A] sm:inline">Progress</a>
+        <a href="#konsep" class="hidden transition hover:text-[#A3B18A] sm:inline">Konsep</a>
+        <a href="/login" class="transition hover:text-[#A3B18A]">Login</a>
+        <a href="/register" class="transition hover:text-[#A3B18A]">Register</a>
       </nav>
-
-      <div class="flex items-center gap-3">
-        <a href="/login" class="hidden rounded-full border border-white/20 px-5 py-2.5 text-sm font-bold text-white/90 transition hover:border-[#D4A373] hover:text-[#D4A373] sm:inline-flex">Login</a>
-        <a href="/register" class="rounded-full bg-[#D4A373] px-5 py-2.5 text-sm font-black text-[#14251f] shadow-lg shadow-[#D4A373]/20 transition hover:bg-[#e4b987]">Register</a>
-      </div>
     </header>
 
-    <div class="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-6 pb-20 pt-12 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-24 lg:pt-20">
-      <div>
-        <div class="mb-8 inline-flex rounded-full border border-[#D4A373]/40 bg-white/8 px-5 py-2 text-xs font-black uppercase tracking-[0.28em] text-[#D4A373] backdrop-blur">
-          Islamic Habit Tracker
+    <div class="relative z-10 mx-auto flex min-h-[500px] max-w-4xl flex-col items-center justify-center px-5 pb-10 pt-16 text-center">
+      <p class="mb-4 text-xs font-black text-[#A3B18A]">الله</p>
+      <h1 class="max-w-3xl font-serif text-3xl font-black uppercase leading-[1.12] tracking-wide text-white sm:text-4xl lg:text-5xl">
+        Bangun Konsistensi Salat dengan Tenang
+      </h1>
+      <p class="mt-4 text-xs font-semibold text-white/62 sm:text-sm">Prayer Streak, Habit Tracker Ibadah Harian</p>
+      <p class="mt-5 max-w-xl text-sm font-medium leading-7 text-white/76">
+        Catat salat 5 waktu, jaga streak, kumpulkan XP, dan lihat progres ibadahmu setiap hari.
+      </p>
+      <a href="/register" class="mt-8 inline-flex rounded-sm bg-[#A3B18A] px-7 py-3 text-xs font-black uppercase tracking-wide text-[#344E41] shadow-xl shadow-black/25 transition hover:bg-[#C9D7B8]">
+        Become a Member
+      </a>
+      <div class="mt-10 flex items-center gap-2">
+        <button type="button" class="h-2 w-7 rounded-full bg-[#A3B18A] transition-all" data-home-dot aria-label="Slide 1"></button>
+        <button type="button" class="h-2 w-2 rounded-full bg-white/45 transition-all" data-home-dot aria-label="Slide 2"></button>
+        <button type="button" class="h-2 w-2 rounded-full bg-white/45 transition-all" data-home-dot aria-label="Slide 3"></button>
+      </div>
+    </div>
+  </section>
+
+  <section id="fitur" class="relative overflow-hidden bg-[#F6F1E9]">
+    <div class="relative mx-auto grid max-w-7xl lg:grid-cols-[360px_minmax(0,1fr)]">
+      <aside class="relative overflow-hidden px-8 py-10 text-[#F6F1E9] sm:px-10">
+        <img src="/assets/feature-bg-dome.png" alt="" class="absolute inset-0 h-full w-full scale-[1.45] object-cover object-center opacity-[0.18]">
+        <div class="absolute inset-0 bg-[#344E41]/72"></div>
+        <div class="relative">
+          <p class="text-center text-sm font-black text-[#D4A373]">الله</p>
+          <h2 class="mt-3 text-center font-serif text-4xl font-black uppercase leading-tight">Prayer Times</h2>
+          <p class="mt-4 text-center text-sm font-bold text-white/90">Prayer times in Jakarta</p>
+          <p class="mt-2 text-center text-sm text-white/68">Today</p>
+
+          <div class="mt-8 divide-y divide-white/18 text-sm font-bold">
+            <% [
+              ["Fajr", "04:35 AM"],
+              ["Sunrise", "05:48 AM"],
+              ["Dhuhr", "11:54 AM"],
+              ["Asr", "03:10 PM"],
+              ["Maghrib", "05:54 PM"],
+              ["Isha'a", "07:03 PM"]
+            ].forEach((row) => { %>
+              <div class="flex items-center justify-between py-2.5">
+                <span><%= row[0] %></span>
+                <span><%= row[1] %></span>
+              </div>
+            <% }) %>
+          </div>
+
+          <p class="mt-5 text-center text-xs font-bold text-white/68">Powered by Prayer Streak</p>
         </div>
+      </aside>
 
-        <h1 class="max-w-4xl text-5xl font-black leading-tight text-white sm:text-6xl lg:text-7xl">
-          Bangun konsistensi salat dengan cara yang tenang.
-        </h1>
-
-        <p class="mt-7 max-w-2xl text-lg leading-8 text-white/76">
-          Prayer Streak membantu kamu mencatat salat 5 waktu, menjaga streak harian, mengumpulkan XP, dan melihat progres ibadah tanpa terasa menghakimi.
-        </p>
-
-        <div class="mt-10 flex flex-col gap-4 sm:flex-row">
-          <a href="/register" class="inline-flex items-center justify-center rounded-full bg-[#D4A373] px-8 py-4 text-base font-black text-[#14251f] shadow-xl shadow-black/20 transition hover:bg-[#e4b987]">
-            Mulai Tracking
+      <div class="relative min-h-[430px] overflow-hidden px-8 py-12 sm:px-14 lg:py-16">
+        <img src="/assets/feature-bg-kaaba.png" alt="" class="absolute inset-0 h-full w-full object-cover object-center opacity-[0.5] saturate-[0.92]">
+        <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(246,241,233,0.96)_0%,rgba(246,241,233,0.76)_52%,rgba(246,241,233,0.26)_100%)]"></div>
+        <div class="relative max-w-2xl">
+          <p class="text-sm font-black text-[#A3B18A]">الله</p>
+          <h2 class="mt-4 font-serif text-4xl font-black uppercase leading-tight text-[#344E41] sm:text-[3.4rem]">
+            Welcome to Prayer Streak
+          </h2>
+          <p class="mt-6 max-w-2xl text-base font-semibold leading-8 text-[#344E41]/62">
+            Prayer Streak bukan hanya aplikasi jadwal salat. Aplikasi ini membantu kamu membangun kebiasaan ibadah melalui checklist harian, streak, XP, level, achievement, dan statistik progres.
+          </p>
+          <p class="mt-4 max-w-2xl text-base font-semibold leading-8 text-[#344E41]/62">
+            Fokusnya sederhana: membuat konsistensi salat terasa lebih ringan, personal, dan mudah dipantau setiap hari.
+          </p>
+          <a href="/register" class="mt-8 inline-flex rounded-md bg-[#588157] px-7 py-3 text-sm font-black text-white shadow-lg shadow-[#344E41]/10 transition hover:bg-[#344E41]">
+            Read More
           </a>
-          <a href="/login" class="inline-flex items-center justify-center rounded-full border border-white/20 px-8 py-4 text-base font-bold text-white transition hover:border-[#D4A373] hover:text-[#D4A373]">
-            Masuk Akun
-          </a>
-        </div>
-      </div>
-
-      <div class="relative">
-        <div class="absolute -inset-6 rounded-[2.5rem] bg-[#D4A373]/12 blur-2xl"></div>
-        <div class="relative overflow-hidden rounded-[2rem] border border-[#D4A373]/30 bg-[#F6F1E9] p-8 shadow-2xl shadow-black/30">
-          <div class="absolute right-0 top-0 h-44 w-44 rounded-bl-[5rem] bg-[#D4A373]"></div>
-          <img src="/assets/mosque-landing.svg" alt="Ilustrasi masjid Prayer Streak" class="relative z-10 mx-auto h-auto w-full max-w-md">
-          <div class="relative z-10 mt-8 grid grid-cols-3 gap-3">
-            <div class="rounded-2xl bg-white p-4 text-center shadow-sm">
-              <p class="text-2xl font-black text-[#588157]">5</p>
-              <p class="text-xs font-bold text-[#344E41]/70">Salat</p>
-            </div>
-            <div class="rounded-2xl bg-white p-4 text-center shadow-sm">
-              <p class="text-2xl font-black text-[#D4A373]">XP</p>
-              <p class="text-xs font-bold text-[#344E41]/70">Reward</p>
-            </div>
-            <div class="rounded-2xl bg-white p-4 text-center shadow-sm">
-              <p class="text-2xl font-black text-[#588157]">7</p>
-              <p class="text-xs font-bold text-[#344E41]/70">Streak</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="fitur" class="bg-white py-20">
-    <div class="mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
-      <div>
-        <p class="text-sm font-black uppercase tracking-[0.25em] text-[#D4A373]">What We Provide</p>
-        <h2 class="mt-4 text-4xl font-black leading-tight text-[#14251f] sm:text-5xl">Pendamping kecil untuk ibadah harian.</h2>
-        <p class="mt-5 text-lg leading-8 text-[#344E41]/75">
-          Fokus utama Prayer Streak bukan sekadar mengingatkan waktu salat, tapi membantu kamu melihat kebiasaan harian secara jelas dan membangun konsistensi pelan-pelan.
-        </p>
+  <section id="progress" class="bg-white py-20">
+    <div class="mx-auto max-w-7xl px-5 text-center lg:px-8">
+      <p class="text-2xl font-black text-[#D4A373]">الله</p>
+      <h2 class="mt-4 font-serif text-4xl font-black uppercase tracking-wide text-[#344E41] sm:text-5xl">
+        Konsep Prayer Streak
+      </h2>
+
+      <div class="mt-20 grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="flex flex-col items-center">
+          <div class="grid h-24 w-24 place-items-center text-[#588157]">
+            <svg viewBox="0 0 96 96" class="h-24 w-24 fill-none stroke-current stroke-[2.4]">
+              <path d="M20 30c10-6 19-5 28 1v37c-9-6-18-7-28-1V30Z"/>
+              <path d="M48 31c9-6 18-7 28-1v37c-10-6-19-5-28 1V31Z"/>
+              <path d="M17 74c11-7 21-7 31-1 10-6 20-6 31 1"/>
+            </svg>
+          </div>
+          <h3 class="mt-7 font-serif text-xl font-black uppercase text-[#588157]">Jadwal Salat</h3>
+          <p class="mt-6 max-w-[13rem] text-base font-semibold leading-8 text-[#344E41]/58">
+            Lihat waktu salat hari ini dan salat berikutnya dalam tampilan yang ringan.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center">
+          <div class="grid h-24 w-24 place-items-center text-[#D4A373]">
+            <svg viewBox="0 0 96 96" class="h-24 w-24 fill-none stroke-current stroke-[2.4]">
+              <path d="M57 18a28 28 0 1 0 21 45 25 25 0 1 1-21-45Z"/>
+              <path d="m67 43 4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1 4-8Z"/>
+            </svg>
+          </div>
+          <h3 class="mt-7 font-serif text-xl font-black uppercase text-[#D4A373]">Checklist Harian</h3>
+          <p class="mt-6 max-w-[13rem] text-base font-semibold leading-8 text-[#344E41]/58">
+            Catat salat 5 waktu setelah masuk waktunya agar kebiasaanmu lebih terpantau.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center">
+          <div class="grid h-24 w-24 place-items-center text-[#588157]">
+            <svg viewBox="0 0 96 96" class="h-24 w-24 fill-none stroke-current stroke-[2.4]">
+              <path d="M20 72V43l28-22 28 22v29"/>
+              <path d="M32 72V50h32v22"/>
+              <path d="M42 72V57h12v15"/>
+              <path d="M28 39V25h10v7"/>
+              <path d="M64 39V25h10v18"/>
+              <path d="M38 36h20"/>
+            </svg>
+          </div>
+          <h3 class="mt-7 font-serif text-xl font-black uppercase text-[#588157]">Streak & XP</h3>
+          <p class="mt-6 max-w-[13rem] text-base font-semibold leading-8 text-[#344E41]/58">
+            Kumpulkan XP, naik level, dan jaga streak saat target salat harian selesai.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center">
+          <div class="grid h-24 w-24 place-items-center text-[#D4A373]">
+            <svg viewBox="0 0 96 96" class="h-24 w-24 fill-none stroke-current stroke-[2.4]">
+              <path d="M48 22c-9 0-16 7-16 16s7 16 16 16 16-7 16-16-7-16-16-16Z"/>
+              <path d="M29 78c4-13 11-20 19-20s15 7 19 20"/>
+              <path d="m70 22 4-8 4 8 8 4-8 4-4 8-4-8-8-4 8-4Z"/>
+              <path d="m22 52 3-6 3 6 6 3-6 3-3 6-3-6-6-3 6-3Z"/>
+            </svg>
+          </div>
+          <h3 class="mt-7 font-serif text-xl font-black uppercase text-[#D4A373]">Achievement</h3>
+          <p class="mt-6 max-w-[13rem] text-base font-semibold leading-8 text-[#344E41]/58">
+            Buka badge sederhana dari milestone seperti full day, streak, dan level baru.
+          </p>
+        </div>
       </div>
 
-      <div class="grid gap-5 sm:grid-cols-2">
-        <article class="rounded-[1.5rem] border border-[#A3B18A]/40 bg-[#F6F1E9] p-6 shadow-sm">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#D4A373] text-2xl">✓</div>
-          <h3 class="text-xl font-black text-[#14251f]">Checklist Salat</h3>
-          <p class="mt-3 leading-7 text-[#344E41]/72">Catat salat harian dengan status yang mudah dipahami dan tidak membuat dashboard terasa ramai.</p>
-        </article>
-
-        <article class="rounded-[1.5rem] border border-[#A3B18A]/40 bg-[#F6F1E9] p-6 shadow-sm">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#D4A373] text-2xl">↗</div>
-          <h3 class="text-xl font-black text-[#14251f]">Streak Harian</h3>
-          <p class="mt-3 leading-7 text-[#344E41]/72">Lihat konsistensi dari hari ke hari setelah menyelesaikan salat 5 waktu dalam satu hari.</p>
-        </article>
-
-        <article class="rounded-[1.5rem] border border-[#A3B18A]/40 bg-[#F6F1E9] p-6 shadow-sm">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#D4A373] text-2xl">★</div>
-          <h3 class="text-xl font-black text-[#14251f]">XP dan Level</h3>
-          <p class="mt-3 leading-7 text-[#344E41]/72">Setiap catatan ibadah memberi progres yang terasa ringan, personal, dan tetap suportif.</p>
-        </article>
-
-        <article class="rounded-[1.5rem] border border-[#A3B18A]/40 bg-[#F6F1E9] p-6 shadow-sm">
-          <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#D4A373] text-2xl">◷</div>
-          <h3 class="text-xl font-black text-[#14251f]">Jadwal Otomatis</h3>
-          <p class="mt-3 leading-7 text-[#344E41]/72">Aplikasi menyiapkan jadwal salat hari ini agar tracking tetap sesuai waktu salat.</p>
-        </article>
-      </div>
+      <a href="/register" class="mt-16 inline-flex rounded-md bg-[#588157] px-10 py-4 text-base font-black text-white shadow-lg shadow-[#344E41]/10 transition hover:bg-[#344E41]">
+        View More
+      </a>
     </div>
   </section>
 
-  <section id="progress" class="relative overflow-hidden bg-[#F6F1E9] py-24">
-    <div class="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_20%_20%,rgba(212,163,115,0.22),transparent_28%),radial-gradient(circle_at_80%_60%,rgba(163,177,138,0.24),transparent_26%)]"></div>
+  <footer id="konsep" class="relative overflow-hidden bg-[#120F0B] text-white">
+    <img src="/assets/feature-bg-kaaba.png" alt="" class="absolute inset-0 h-full w-full object-cover object-center opacity-[0.26]">
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,15,11,0.98)_0%,rgba(18,15,11,0.82)_48%,rgba(18,15,11,0.62)_100%)]"></div>
 
-    <div class="relative mx-auto max-w-7xl px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
-        <p class="text-sm font-black uppercase tracking-[0.25em] text-[#D4A373]">Progress Tracking</p>
-        <h2 class="mt-4 text-4xl font-black text-[#14251f] sm:text-5xl">Dashboard yang fokus dan mudah dibaca.</h2>
-      </div>
+    <div class="relative mx-auto max-w-7xl px-5 py-20 text-center lg:px-8">
+      <p class="text-3xl font-black text-[#D4A373]">الله</p>
+      <h2 class="mt-4 font-serif text-4xl font-black uppercase tracking-wide sm:text-5xl">Prayer Streak</h2>
+      <p class="mt-4 text-lg font-semibold text-white/55">Bangun konsistensi salat harian dengan tracking yang ringan.</p>
 
-      <div class="mt-14 grid gap-6 lg:grid-cols-3">
-        <div class="rounded-[2rem] bg-[#344E41] p-7 text-white shadow-xl shadow-[#344E41]/15 lg:col-span-2">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p class="font-bold text-[#D4A373]">Hari ini</p>
-              <h3 class="mt-2 text-3xl font-black">3 dari 5 salat</h3>
-            </div>
-            <span class="rounded-full bg-[#D4A373] px-5 py-2 text-sm font-black text-[#14251f]">Level 2</span>
-          </div>
+      <form class="mx-auto mt-10 flex max-w-2xl overflow-hidden rounded-lg bg-white/10 text-left ring-1 ring-white/10">
+        <input type="email" placeholder="Email kamu" class="min-w-0 flex-1 bg-transparent px-6 py-5 text-base font-semibold text-white placeholder:text-white/45 outline-none">
+        <button type="button" class="bg-[#588157] px-8 py-5 text-base font-black text-white transition hover:bg-[#A3B18A] hover:text-[#344E41]">
+          Sign Up
+        </button>
+      </form>
 
-          <div class="mt-8 space-y-4">
-            <div class="flex items-center justify-between rounded-2xl bg-white/10 p-5">
-              <span class="text-lg font-black">Shubuh</span>
-              <span class="rounded-full bg-[#A3B18A] px-4 py-1.5 text-sm font-black text-[#14251f]">Selesai</span>
-            </div>
-            <div class="flex items-center justify-between rounded-2xl bg-white/10 p-5">
-              <span class="text-lg font-black">Dzuhur</span>
-              <span class="rounded-full bg-[#A3B18A] px-4 py-1.5 text-sm font-black text-[#14251f]">Selesai</span>
-            </div>
-            <div class="flex items-center justify-between rounded-2xl bg-white/10 p-5">
-              <span class="text-lg font-black">Ashar</span>
-              <span class="rounded-full border border-white/20 px-4 py-1.5 text-sm font-black text-white/80">Menunggu</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-[2rem] border border-[#A3B18A]/50 bg-white p-7 shadow-xl shadow-[#344E41]/8">
-          <p class="font-black uppercase tracking-[0.2em] text-[#D4A373]">Streak</p>
-          <div class="mt-8 grid h-32 w-32 place-items-center rounded-full bg-[#F6F1E9] text-center ring-8 ring-[#A3B18A]/30">
-            <span>
-              <span class="block text-4xl font-black text-[#588157]">7</span>
-              <span class="block text-sm font-black text-[#344E41]/70">hari</span>
-            </span>
-          </div>
-          <p class="mt-8 text-lg font-bold leading-8 text-[#344E41]">Tetap tenang. Fokus menyelesaikan salat hari ini terlebih dahulu.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="konsep" class="bg-white py-24">
-    <div class="mx-auto max-w-7xl px-6 lg:px-8">
-      <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div class="relative mx-auto w-full max-w-md">
-          <div class="absolute inset-8 rounded-[4rem] border-4 border-[#D4A373]"></div>
-          <div class="relative overflow-hidden rounded-[4rem] bg-[#F6F1E9] p-10 shadow-2xl shadow-[#344E41]/10">
-            <img src="/assets/mosque-landing.svg" alt="Konsep islami Prayer Streak" class="w-full">
+      <div class="mt-20 grid gap-10 text-center sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <h3 class="font-serif text-2xl font-black uppercase">Menu</h3>
+          <div class="mt-6 space-y-3 text-base font-semibold text-white/52">
+            <a href="/" class="block transition hover:text-[#A3B18A]">Home</a>
+            <a href="#fitur" class="block transition hover:text-[#A3B18A]">Fitur</a>
+            <a href="#progress" class="block transition hover:text-[#A3B18A]">Progress</a>
+            <a href="/login" class="block transition hover:text-[#A3B18A]">Login</a>
+            <a href="/register" class="block transition hover:text-[#A3B18A]">Register</a>
           </div>
         </div>
 
         <div>
-          <p class="text-sm font-black uppercase tracking-[0.25em] text-[#D4A373]">Core Concept</p>
-          <h2 class="mt-4 text-4xl font-black leading-tight text-[#14251f] sm:text-5xl">Gamification yang suportif, bukan kompetisi berlebihan.</h2>
-          <div class="mt-8 grid gap-4">
-            <div class="rounded-2xl border border-[#A3B18A]/45 bg-[#F6F1E9] p-5">
-              <h3 class="font-black text-[#14251f]">+10 XP setiap salat</h3>
-              <p class="mt-2 text-[#344E41]/72">Setiap checklist memberi progres kecil yang terasa nyata.</p>
-            </div>
-            <div class="rounded-2xl border border-[#A3B18A]/45 bg-[#F6F1E9] p-5">
-              <h3 class="font-black text-[#14251f]">Bonus saat 5 waktu selesai</h3>
-              <p class="mt-2 text-[#344E41]/72">Hari penuh akan menjaga streak dan membuka achievement tertentu.</p>
-            </div>
-            <div class="rounded-2xl border border-[#A3B18A]/45 bg-[#F6F1E9] p-5">
-              <h3 class="font-black text-[#14251f]">Statistik sederhana</h3>
-              <p class="mt-2 text-[#344E41]/72">Progress mingguan dibuat visual agar lebih mudah dievaluasi.</p>
-            </div>
+          <h3 class="font-serif text-2xl font-black uppercase">Fitur</h3>
+          <div class="mt-6 space-y-3 text-base font-semibold text-white/52">
+            <p>Jadwal salat</p>
+            <p>Checklist harian</p>
+            <p>Streak & XP</p>
+            <p>Achievement</p>
+            <p>Statistik</p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-serif text-2xl font-black uppercase">Kontak</h3>
+          <div class="mt-6 space-y-3 text-base font-semibold text-white/52">
+            <p>Prayer Streak App</p>
+            <p>Habit Tracker Islami</p>
+            <p>Jakarta, Indonesia</p>
+            <p>support@prayerstreak.test</p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-serif text-2xl font-black uppercase">Akun</h3>
+          <div class="mt-6 space-y-3 text-base font-semibold text-white/52">
+            <a href="/login" class="block transition hover:text-[#A3B18A]">Masuk</a>
+            <a href="/register" class="block transition hover:text-[#A3B18A]">Daftar</a>
+            <a href="/dashboard" class="block transition hover:text-[#A3B18A]">Dashboard</a>
+            <a href="/statistics" class="block transition hover:text-[#A3B18A]">Statistik</a>
           </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="bg-[#064d3d] py-16 text-white">
-    <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-      <div>
-        <p class="text-sm font-black uppercase tracking-[0.25em] text-[#D4A373]">Mulai dari hari ini</p>
-        <h2 class="mt-3 text-3xl font-black sm:text-4xl">Siap membangun kebiasaan salat yang lebih konsisten?</h2>
-      </div>
-      <a href="/register" class="inline-flex w-fit rounded-full bg-[#D4A373] px-8 py-4 text-base font-black text-[#14251f] shadow-lg shadow-black/15 transition hover:bg-[#e4b987]">
-        Join Prayer Streak
-      </a>
-    </div>
-  </section>
-
-  <footer class="bg-[#05382d] py-12 text-white">
-    <div class="mx-auto grid max-w-7xl gap-10 px-6 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-      <div>
-        <div class="grid h-16 w-16 place-items-center rounded-b-3xl rounded-t-md bg-[#D4A373] text-2xl font-black text-[#14251f]">PS</div>
-        <p class="mt-5 max-w-sm text-sm leading-7 text-white/70">Prayer Streak adalah aplikasi habit tracker islami untuk membantu menjaga konsistensi salat harian.</p>
-      </div>
-      <div>
-        <h3 class="font-black text-[#D4A373]">Informasi</h3>
-        <p class="mt-4 text-sm leading-7 text-white/70">Checklist salat, streak, XP, level, achievement, dan statistik progres dalam satu web app.</p>
-      </div>
-      <div>
-        <h3 class="font-black text-[#D4A373]">Navigasi</h3>
-        <div class="mt-4 grid gap-3 text-sm text-white/70">
-          <a href="/login" class="hover:text-[#D4A373]">Login</a>
-          <a href="/register" class="hover:text-[#D4A373]">Register</a>
-          <a href="#fitur" class="hover:text-[#D4A373]">Fitur</a>
-        </div>
-      </div>
-      <div>
-        <h3 class="font-black text-[#D4A373]">Tema</h3>
-        <div class="mt-4 flex gap-2">
-          <span class="h-9 w-9 rounded-full bg-[#A3B18A]"></span>
-          <span class="h-9 w-9 rounded-full bg-[#588157]"></span>
-          <span class="h-9 w-9 rounded-full bg-[#D4A373]"></span>
-          <span class="h-9 w-9 rounded-full bg-[#F6F1E9]"></span>
-        </div>
-      </div>
+    <div class="relative border-t border-white/10 px-5 py-8 text-center text-base font-semibold text-white/46">
+      Copyright © 2026 Prayer Streak. All rights reserved.
     </div>
   </footer>
 </main>
+

@@ -1286,3 +1286,33 @@ if (qiblaCompass) {
   }
 }
 
+// Home hero carousel
+const homeCarousel = document.querySelector("[data-home-carousel]");
+if (homeCarousel) {
+  const slides = Array.from(homeCarousel.querySelectorAll("[data-home-slide]"));
+  const dots = Array.from(homeCarousel.querySelectorAll("[data-home-dot]"));
+  let activeIndex = 0;
+
+  const setActiveSlide = (nextIndex) => {
+    activeIndex = nextIndex;
+    slides.forEach((slide, index) => {
+      slide.style.opacity = index === activeIndex ? "1" : "0";
+    });
+    dots.forEach((dot, index) => {
+      dot.classList.toggle("w-7", index === activeIndex);
+      dot.classList.toggle("w-2", index !== activeIndex);
+      dot.classList.toggle("bg-[#D4A373]", index === activeIndex);
+      dot.classList.toggle("bg-white/45", index !== activeIndex);
+    });
+  };
+
+  if (slides.length > 1) {
+    dots.forEach((dot, index) => {
+      dot.addEventListener("click", () => setActiveSlide(index));
+    });
+    setInterval(() => {
+      setActiveSlide((activeIndex + 1) % slides.length);
+    }, 4500);
+  }
+}
+
