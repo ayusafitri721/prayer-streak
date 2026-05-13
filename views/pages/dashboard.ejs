@@ -171,7 +171,7 @@
                   <% } else if (isLocked) { %>
                     <span data-prayer-status-badge class="rounded-full bg-[#EDE5D8] px-3 py-1 text-xs font-black text-[#244338]/58">Belum masuk waktu</span>
                   <% } else { %>
-                    <span data-prayer-status-badge class="rounded-full bg-[#D4A373]/16 px-3 py-1 text-xs font-black text-[#B7792D]">Siap dicatat</span>
+                    <span data-prayer-status-badge class="rounded-full bg-[#A3B18A]/24 px-3 py-1 text-xs font-black text-[#2F654D]">Siap dicatat</span>
                   <% } %>
                 </div>
                 <p class="mt-1 text-sm text-[#244338]/60" data-prayer-note>
@@ -185,7 +185,7 @@
                 </p>
               </div>
 
-              <button type="submit" data-prayer-submit class="<%= isDone || isLocked ? 'hidden' : 'bg-[#4F7F53] text-white hover:bg-[#D4A373] hover:text-[#244338]' %> rounded-full px-5 py-2.5 text-sm font-black transition" <%= isDone || isLocked ? "disabled" : "" %>>
+              <button type="submit" data-prayer-submit class="<%= isDone || isLocked ? 'hidden' : 'bg-[#4F7F53] text-white shadow-sm shadow-[#4F7F53]/20 hover:bg-[#3E6A43]' %> rounded-full px-5 py-2.5 text-sm font-black transition" <%= isDone || isLocked ? "disabled" : "" %>>
                 Checklist
               </button>
 

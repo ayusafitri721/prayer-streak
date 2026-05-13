@@ -1243,7 +1243,9 @@ if (countdownEl) {
         "bg-[#EDE5D8]",
         "text-[#244338]/58",
         "bg-[#D4A373]/16",
-        "text-[#B7792D]"
+        "text-[#B7792D]",
+        "bg-[#A3B18A]/24",
+        "text-[#2F654D]"
       );
 
       if (isDone) {
@@ -1254,7 +1256,7 @@ if (countdownEl) {
         statusBadge.classList.add("bg-[#EDE5D8]", "text-[#244338]/58");
       } else {
         statusBadge.textContent = "Siap dicatat";
-        statusBadge.classList.add("bg-[#D4A373]/16", "text-[#B7792D]");
+        statusBadge.classList.add("bg-[#A3B18A]/24", "text-[#2F654D]");
       }
     }
 
