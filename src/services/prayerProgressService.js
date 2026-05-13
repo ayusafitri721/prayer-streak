@@ -300,6 +300,8 @@ function buildWeeklyBreakdown(state) {
       date: day.toISOString(),
       label: day.toLocaleDateString("id-ID", { weekday: "short" }),
       completed,
+      total: PRAYER_KEYS.length,
+      percent: Math.round((completed / PRAYER_KEYS.length) * 100),
       isFull: completed >= PRAYER_KEYS.length,
     });
   }
@@ -473,13 +475,24 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
 
 async function getStatsData(userId) {
   const state = getUserState(userId);
+  const weeklyBreakdown = buildWeeklyBreakdown(state);
+  const totalThisWeek = countThisWeek(state);
+  const weeklyTarget = PRAYER_KEYS.length * 7;
+  const bestDay = weeklyBreakdown.reduce(
+    (best, day) => (day.completed > best.completed ? day : best),
+    { label: "", completed: 0, total: PRAYER_KEYS.length }
+  );
 
   return {
-    totalThisWeek: countThisWeek(state),
-    consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),
+    totalThisWeek,
+    weeklyTarget,
+    remainingThisWeek: Math.max(weeklyTarget - totalThisWeek, 0),
+    consistencyPercent: Math.round((totalThisWeek / weeklyTarget) * 100),
     fullDays: fullCompletedDays(state),
     activeStreak: state.streak,
     longestStreak: state.longestStreak,
+    weeklyBreakdown,
+    bestDay,
   };
 }
 
