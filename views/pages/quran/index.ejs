@@ -8,7 +8,10 @@
     .filter(Boolean);
 %>
 
-<main class="mx-auto mt-6 w-full max-w-6xl px-4 pb-12 sm:px-6">
+<main
+  class="mx-auto mt-6 w-full max-w-6xl px-4 pb-12 sm:px-6"
+  data-quran-home
+>
   <section class="relative overflow-hidden rounded-[2.25rem] border border-[#A3B18A]/35 bg-[radial-gradient(circle_at_top_left,_rgba(163,177,138,0.18),_transparent_32%),linear-gradient(145deg,_rgba(255,255,255,0.96)_0%,_rgba(246,241,233,0.94)_48%,_rgba(255,255,255,0.92)_100%)] p-6 shadow-2xl shadow-[#344E41]/10 sm:p-8">
     <div class="absolute -right-12 top-0 h-40 w-40 rounded-full border border-[#A3B18A]/20"></div>
     <div class="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-[#A3B18A]/10 blur-2xl"></div>
@@ -95,6 +98,42 @@
     </div>
   <% } %>
 
+  <% if (user) { %>
+    <section class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+      <article class="rounded-[1.9rem] border border-[#588157]/18 bg-[linear-gradient(145deg,_rgba(88,129,87,0.12)_0%,_rgba(255,255,255,0.96)_100%)] p-5 shadow-xl shadow-[#344E41]/6" data-quran-last-read-card>
+        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#588157]/70">Lanjut Baca</p>
+        <h2 class="mt-3 text-2xl font-bold text-[#244338]" data-quran-last-read-title>Belum ada bacaan terakhir</h2>
+        <p class="mt-2 text-sm leading-6 text-[#344E41]/66" data-quran-last-read-summary>Ayat yang terakhir kamu buka akan muncul di sini.</p>
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-xs" data-quran-last-read-meta></div>
+        <a
+          href="/quran"
+          class="mt-5 inline-flex items-center gap-2 rounded-full bg-[#588157] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#466B47]"
+          data-quran-last-read-link
+        >
+          Buka lagi
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </article>
+
+      <article class="rounded-[1.9rem] border border-[#A3B18A]/30 bg-white/82 p-5 shadow-xl shadow-[#344E41]/5" data-quran-bookmark-panel>
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#344E41]/45">Bookmark Saya</p>
+            <h2 class="mt-2 text-2xl font-bold text-[#244338]">Ayat yang disimpan</h2>
+          </div>
+          <span class="rounded-full border border-[#A3B18A]/25 bg-[#F6F1E9] px-3 py-1 text-xs font-medium text-[#344E41]/62" data-quran-bookmark-count>0 bookmark</span>
+        </div>
+        <div class="mt-4 space-y-3" data-quran-bookmark-list>
+          <div class="rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58">
+            Belum ada bookmark ayat. Simpan dari halaman detail surat untuk memunculkannya di sini.
+          </div>
+        </div>
+      </article>
+    </section>
+  <% } %>
+
   <section class="mt-5 rounded-[2rem] border border-[#A3B18A]/35 bg-white/80 p-5 shadow-2xl shadow-[#344E41]/8 sm:p-6">
     <div class="flex flex-col gap-3 border-b border-[#A3B18A]/20 pb-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
@@ -115,6 +154,10 @@
           class="group relative overflow-hidden rounded-[1.7rem] border border-[#A3B18A]/30 bg-[linear-gradient(160deg,_rgba(246,241,233,0.9)_0%,_rgba(255,255,255,0.98)_100%)] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#588157]/40 hover:shadow-lg hover:shadow-[#344E41]/10"
           data-surah-card
           data-surah-search-value="<%= `${surah.number} ${surah.nameLatin} ${surah.nameArabic} ${surah.translation}`.toLowerCase() %>"
+          data-surah-number="<%= surah.number %>"
+          data-surah-name-latin="<%= surah.nameLatin %>"
+          data-surah-name-arabic="<%= surah.nameArabic %>"
+          data-surah-translation="<%= surah.translation %>"
         >
           <div class="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-[#A3B18A]/10 blur-2xl transition group-hover:bg-[#588157]/12"></div>
 

@@ -138,6 +138,7 @@ function buildFallbackHijriData(date = new Date()) {
       monthLabel: parts.month || "",
       year: parts.year || "",
       fullLabel: `${date.toLocaleDateString("id-ID", { weekday: "long" })}, ${parts.day || ""} ${parts.month || ""} ${parts.year || ""} H`.trim(),
+      holidays: [],
     },
     calendar: {
       monthLabel: `${parts.month || ""} ${parts.year || ""} H`.trim(),
@@ -270,6 +271,7 @@ async function getHijriCalendarData(date = new Date()) {
         monthLabel: hijriMonthLabel,
         year: todayEntry.hijri.year,
         fullLabel: `${date.toLocaleDateString("id-ID", { weekday: "long" })}, ${todayEntry.hijri.day} ${hijriMonthLabel} ${todayEntry.hijri.year} H`,
+        holidays: Array.isArray(todayEntry.hijri.holidays) ? todayEntry.hijri.holidays : [],
       },
       calendar: await buildHijriCalendarMonth({
         hijriMonthNumber,
@@ -310,6 +312,7 @@ async function getHijriCalendarMonthData({ month, year, date = new Date() } = {}
         monthLabel: todayMonthLabel,
         year: todayEntry.hijri.year,
         fullLabel: `${date.toLocaleDateString("id-ID", { weekday: "long" })}, ${todayEntry.hijri.day} ${todayMonthLabel} ${todayEntry.hijri.year} H`,
+        holidays: Array.isArray(todayEntry.hijri.holidays) ? todayEntry.hijri.holidays : [],
       },
       calendar: await buildHijriCalendarMonth({
         hijriMonthNumber,

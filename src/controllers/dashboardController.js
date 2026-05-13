@@ -67,6 +67,7 @@ async function renderDashboard(req, res) {
           monthLabel: "",
           year: "",
           fullLabel: "",
+          holidays: [],
         },
         calendar: {
           monthLabel: "Kalender Hijriyah",

@@ -193,6 +193,86 @@ if (authTransitionType) {
   }, splashVisible && !prefersReducedMotion ? 1550 : 120);
 }
 
+const quranUserId = document.body?.dataset.userId || "";
+const quranStorageEnabled = Boolean(quranUserId);
+const quranStorageScope = quranStorageEnabled ? `user:${quranUserId}` : "guest";
+
+const readStoredJson = (key, fallback) => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeStoredJson = (key, value) => {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+};
+
+const getQuranStorageKey = (suffix) => `prayer-streak:quran:${quranStorageScope}:${suffix}`;
+const getLastReadVerse = () =>
+  quranStorageEnabled ? readStoredJson(getQuranStorageKey("last-read"), null) : null;
+const setLastReadVerse = (payload) => {
+  if (!quranStorageEnabled) return;
+  if (!payload?.surahNumber || !payload?.verseNumber) return;
+  writeStoredJson(getQuranStorageKey("last-read"), {
+    ...payload,
+    savedAt: new Date().toISOString(),
+  });
+  window.dispatchEvent(new CustomEvent("quran-storage-updated"));
+};
+
+const getBookmarkedVerses = () =>
+  quranStorageEnabled
+    ? readStoredJson(getQuranStorageKey("bookmarks"), [])
+        .filter((item) => item?.surahNumber && item?.verseNumber)
+        .sort((left, right) => new Date(right.savedAt || 0) - new Date(left.savedAt || 0))
+    : [];
+
+const setBookmarkedVerses = (items) => {
+  if (!quranStorageEnabled) return;
+  writeStoredJson(
+    getQuranStorageKey("bookmarks"),
+    Array.isArray(items) ? items.slice(0, 40) : []
+  );
+  window.dispatchEvent(new CustomEvent("quran-storage-updated"));
+};
+
+const getBookmarkId = (surahNumber, verseNumber) => `${surahNumber}:${verseNumber}`;
+
+const isVerseBookmarked = (surahNumber, verseNumber) =>
+  getBookmarkedVerses().some(
+    (item) => item.id === getBookmarkId(Number(surahNumber), Number(verseNumber))
+  );
+
+const toggleVerseBookmark = (payload) => {
+  if (!quranStorageEnabled) return false;
+  const currentBookmarks = getBookmarkedVerses();
+  const bookmarkId = getBookmarkId(payload.surahNumber, payload.verseNumber);
+  const existingIndex = currentBookmarks.findIndex((item) => item.id === bookmarkId);
+
+  if (existingIndex >= 0) {
+    currentBookmarks.splice(existingIndex, 1);
+    setBookmarkedVerses(currentBookmarks);
+    return false;
+  }
+
+  currentBookmarks.unshift({
+    id: bookmarkId,
+    ...payload,
+    savedAt: new Date().toISOString(),
+  });
+  setBookmarkedVerses(
+    currentBookmarks.filter(
+      (item, index, items) => index === items.findIndex((candidate) => candidate.id === item.id)
+    )
+  );
+  return true;
+};
+
 const surahSearchInput = document.querySelector("[data-surah-search]");
 
 if (surahSearchInput) {
@@ -219,6 +299,223 @@ if (surahSearchInput) {
   applyFilter();
 }
 
+const quranHome = document.querySelector("[data-quran-home]");
+
+if (quranHome && false) {
+  const lastReadCard = quranHome.querySelector("[data-quran-last-read-card]");
+  const lastReadTitle = quranHome.querySelector("[data-quran-last-read-title]");
+  const lastReadSummary = quranHome.querySelector("[data-quran-last-read-summary]");
+  const lastReadMeta = quranHome.querySelector("[data-quran-last-read-meta]");
+  const lastReadLink = quranHome.querySelector("[data-quran-last-read-link]");
+  const bookmarkList = quranHome.querySelector("[data-quran-bookmark-list]");
+  const bookmarkCount = quranHome.querySelector("[data-quran-bookmark-count]");
+
+  const formatBookmarkPills = (entry) => `
+    <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+      Ayat ${entry.verseNumber}
+    </span>
+    <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+      Surat ${entry.surahNumber}
+    </span>
+  `;
+
+  const renderLastReadCard = () => {
+    if (!lastReadCard || !lastReadTitle || !lastReadSummary || !lastReadMeta || !lastReadLink) return;
+
+    const lastRead = getLastReadVerse();
+    if (!lastRead) {
+      lastReadTitle.textContent = "Belum ada bacaan terakhir";
+      lastReadSummary.textContent = "Ayat yang terakhir kamu buka akan muncul di sini supaya kamu bisa lanjut tanpa cari ulang.";
+      lastReadMeta.innerHTML = `
+        <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+          Mulai dari surat mana saja
+        </span>
+      `;
+      lastReadLink.href = "/quran";
+      return;
+    }
+
+    lastReadTitle.textContent = `${lastRead.surahNameLatin || "Surat"} - Ayat ${lastRead.verseNumber}`;
+    lastReadSummary.textContent =
+      lastRead.translation || "Buka lagi posisi bacaan terakhirmu dari halaman detail surat.";
+    lastReadMeta.innerHTML = formatBookmarkPills(lastRead);
+    lastReadLink.href = `/quran/${lastRead.surahNumber}#verse-${lastRead.verseNumber}`;
+  };
+
+  const renderBookmarkList = () => {
+    if (!bookmarkList || !bookmarkCount) return;
+
+    const bookmarks = getBookmarkedVerses();
+    bookmarkCount.textContent = `${bookmarks.length} bookmark`;
+
+    if (!bookmarks.length) {
+      bookmarkList.innerHTML = `
+        <div class="rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58">
+          Belum ada bookmark ayat. Simpan dari halaman detail surat untuk memunculkannya di sini.
+        </div>
+      `;
+      return;
+    }
+
+    bookmarkList.innerHTML = bookmarks
+      .slice(0, 4)
+      .map(
+        (entry) => `
+          <a
+            href="/quran/${entry.surahNumber}#verse-${entry.verseNumber}"
+            class="group block rounded-2xl border border-[#A3B18A]/25 bg-[#F6F1E9]/70 px-4 py-4 transition hover:border-[#588157]/35 hover:bg-[#588157]/8"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-[#244338]">${entry.surahNameLatin || "Surat"} • Ayat ${entry.verseNumber}</p>
+                <p class="mt-1 text-xs text-[#344E41]/60">${entry.surahNameArabic || ""}</p>
+                <p class="mt-2 line-clamp-2 text-sm leading-6 text-[#344E41]/65">${entry.translation || "Bookmark ayat tersimpan."}</p>
+              </div>
+              <span class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#A3B18A]/25 bg-white text-[#588157] transition group-hover:border-[#588157]/35 group-hover:bg-[#588157] group-hover:text-white">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </a>
+        `
+      )
+      .join("");
+  };
+
+  renderLastReadCard();
+  renderBookmarkList();
+}
+
+if (quranHome) {
+  const lastReadTitle = quranHome.querySelector("[data-quran-last-read-title]");
+  const lastReadSummary = quranHome.querySelector("[data-quran-last-read-summary]");
+  const lastReadMeta = quranHome.querySelector("[data-quran-last-read-meta]");
+  const lastReadLink = quranHome.querySelector("[data-quran-last-read-link]");
+  const bookmarkList = quranHome.querySelector("[data-quran-bookmark-list]");
+  const bookmarkCount = quranHome.querySelector("[data-quran-bookmark-count]");
+
+  const renderLastRead = () => {
+    if (!lastReadTitle || !lastReadSummary || !lastReadMeta || !lastReadLink) return;
+
+    const lastRead = getLastReadVerse();
+    if (!lastRead) {
+      lastReadTitle.textContent = "Belum ada bacaan terakhir";
+      lastReadSummary.textContent =
+        "Ayat yang terakhir kamu buka akan muncul di sini supaya kamu bisa lanjut tanpa cari ulang.";
+      lastReadMeta.innerHTML = `
+        <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+          Mulai dari surat mana saja
+        </span>
+      `;
+      lastReadLink.href = "/quran";
+      return;
+    }
+
+    lastReadTitle.textContent = `${lastRead.surahNameLatin || "Surat"} - Ayat ${lastRead.verseNumber}`;
+    lastReadSummary.textContent =
+      lastRead.translation || "Buka lagi posisi bacaan terakhirmu dari halaman detail surat.";
+    lastReadMeta.innerHTML = `
+      <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+        Ayat ${lastRead.verseNumber}
+      </span>
+      <span class="rounded-full border border-[#A3B18A]/25 bg-white/80 px-3 py-1 text-xs font-medium text-[#344E41]/65">
+        Surat ${lastRead.surahNumber}
+      </span>
+    `;
+    lastReadLink.href = `/quran/${lastRead.surahNumber}#verse-${lastRead.verseNumber}`;
+  };
+
+  const renderBookmarks = () => {
+    if (!bookmarkList || !bookmarkCount) return;
+
+    const bookmarks = getBookmarkedVerses();
+    bookmarkCount.textContent = `${bookmarks.length} bookmark`;
+
+    if (!bookmarks.length) {
+      bookmarkList.innerHTML = `
+        <div class="rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58">
+          Belum ada bookmark ayat. Simpan dari halaman detail surat untuk memunculkannya di sini.
+        </div>
+      `;
+      return;
+    }
+
+    bookmarkList.innerHTML = bookmarks
+      .slice(0, 4)
+      .map(
+        (entry) => `
+          <article class="rounded-2xl border border-[#A3B18A]/25 bg-[#F6F1E9]/70 px-4 py-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-[#244338]">${entry.surahNameLatin || "Surat"} - Ayat ${entry.verseNumber}</p>
+                <p class="mt-1 text-xs text-[#344E41]/60">${entry.surahNameArabic || ""}</p>
+                <p class="mt-2 line-clamp-2 text-sm leading-6 text-[#344E41]/65">${entry.translation || "Bookmark ayat tersimpan."}</p>
+              </div>
+              <button
+                type="button"
+                data-quran-bookmark-remove
+                data-surah-number="${entry.surahNumber}"
+                data-verse-number="${entry.verseNumber}"
+                class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#A3B18A]/25 bg-white text-[#588157] transition hover:border-[#588157]/35 hover:bg-[#588157]/12"
+                aria-label="Hapus bookmark ayat ${entry.verseNumber}"
+                title="Hapus bookmark"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 6L6 18" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <a
+              href="/quran/${entry.surahNumber}#verse-${entry.verseNumber}"
+              class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-[#588157] transition hover:text-[#3E6B4E]"
+            >
+              Buka ayat
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </article>
+        `
+      )
+      .join("");
+  };
+
+  const renderQuranHome = () => {
+    renderLastRead();
+    renderBookmarks();
+  };
+
+  bookmarkList?.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-quran-bookmark-remove]");
+    if (!removeButton) return;
+
+    const surahNumber = Number(removeButton.dataset.surahNumber || 0);
+    const verseNumber = Number(removeButton.dataset.verseNumber || 0);
+    if (!surahNumber || !verseNumber) return;
+
+    const nextBookmarks = getBookmarkedVerses().filter(
+      (item) => !(Number(item.surahNumber) === surahNumber && Number(item.verseNumber) === verseNumber)
+    );
+    setBookmarkedVerses(nextBookmarks);
+  });
+
+  window.addEventListener("quran-storage-updated", renderQuranHome);
+  window.addEventListener("storage", (event) => {
+    if (
+      event.key &&
+      event.key !== getQuranStorageKey("last-read") &&
+      event.key !== getQuranStorageKey("bookmarks")
+    ) {
+      return;
+    }
+    renderQuranHome();
+  });
+
+  renderQuranHome();
+}
+
 const versePlayer = document.querySelector("[data-verse-player]");
 
 if (versePlayer) {
@@ -226,10 +523,18 @@ if (versePlayer) {
   const title = versePlayer.querySelector("[data-verse-player-title]");
   const status = versePlayer.querySelector("[data-verse-player-status]");
   const qoriSelect = versePlayer.querySelector("[data-qori-select]");
+  const verseSectionEl = document.querySelector("[data-verse-section]");
   const buttons = Array.from(document.querySelectorAll("[data-verse-play]"));
+  const bookmarkButtons = Array.from(document.querySelectorAll("[data-verse-bookmark]"));
   const cards = Array.from(document.querySelectorAll("[data-verse-card]"));
+  const lastReadBanner = document.querySelector("[data-quran-last-read-banner]");
+  const lastReadBannerTitle = document.querySelector("[data-quran-last-read-banner-title]");
+  const lastReadBannerSummary = document.querySelector("[data-quran-last-read-banner-summary]");
+  const lastReadBannerLink = document.querySelector("[data-quran-last-read-banner-link]");
   const timingCache = new Map();
   const surahNumber = Number(versePlayer.dataset.surahNumber || 0);
+  const surahNameLatin = verseSectionEl?.dataset.surahNameLatin || "";
+  const surahNameArabic = verseSectionEl?.dataset.surahNameArabic || "";
   let activeVerseNumber = null;
   let selectedQori = qoriSelect?.value || "02";
 
@@ -268,6 +573,72 @@ if (versePlayer) {
     card.classList.toggle("shadow-md", isActive);
     card.classList.toggle("border-[#A3B18A]/30", !isActive);
     card.classList.toggle("bg-[#F6F1E9]/60", !isActive);
+  };
+
+  const getVerseCard = (verseNumber) =>
+    cards.find((item) => item.dataset.verseNumber === String(verseNumber));
+
+  const getVersePayload = (card) => {
+    if (!card) return null;
+
+    return {
+      surahNumber,
+      surahNameLatin,
+      surahNameArabic,
+      verseNumber: Number(card.dataset.verseNumber),
+      arabic: card.dataset.verseArabic || "",
+      latin: card.dataset.verseLatin || "",
+      translation: card.dataset.verseTranslation || "",
+    };
+  };
+
+  const syncBookmarkButtons = () => {
+    bookmarkButtons.forEach((button) => {
+      const verseNumber = Number(button.dataset.verseNumber);
+      const icon = button.querySelector("[data-verse-bookmark-icon]");
+      const bookmarked = isVerseBookmarked(surahNumber, verseNumber);
+
+      button.classList.toggle("border-[#588157]/35", bookmarked);
+      button.classList.toggle("bg-[#588157]/12", bookmarked);
+      button.classList.toggle("text-[#588157]", bookmarked);
+      button.classList.toggle("border-[#A3B18A]/30", !bookmarked);
+      button.classList.toggle("bg-white/70", !bookmarked);
+      button.classList.toggle("text-[#344E41]/55", !bookmarked);
+      button.setAttribute(
+        "aria-label",
+        bookmarked ? `Hapus bookmark ayat ${verseNumber}` : `Simpan bookmark ayat ${verseNumber}`
+      );
+      button.title = bookmarked ? "Hapus bookmark" : "Simpan bookmark";
+
+      if (icon) {
+        icon.innerHTML = bookmarked
+          ? '<path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Z"/>'
+          : '<path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Zm2.75-1.25c-.69 0-1.25.56-1.25 1.25v14.52l3.5-2.24 3.5 2.24V4.75c0-.69-.56-1.25-1.25-1.25h-4.5Z"/>';
+      }
+    });
+  };
+
+  const syncLastReadBanner = () => {
+    if (!lastReadBanner || !lastReadBannerTitle || !lastReadBannerSummary || !lastReadBannerLink) return;
+
+    const lastRead = getLastReadVerse();
+    if (!lastRead || Number(lastRead.surahNumber) !== surahNumber) {
+      lastReadBanner.classList.add("hidden");
+      return;
+    }
+
+    lastReadBanner.classList.remove("hidden");
+    lastReadBannerTitle.textContent = `Ayat ${lastRead.verseNumber} • ${lastRead.surahNameLatin || surahNameLatin}`;
+    lastReadBannerSummary.textContent =
+      lastRead.translation || "Posisi bacaan terakhir kamu akan tersimpan di sini.";
+    lastReadBannerLink.href = `/quran/${lastRead.surahNumber}#verse-${lastRead.verseNumber}`;
+  };
+
+  const persistLastRead = (verseNumber) => {
+    const payload = getVersePayload(getVerseCard(verseNumber));
+    if (!payload) return;
+    setLastReadVerse(payload);
+    syncLastReadBanner();
   };
 
   const syncButtons = () => {
@@ -539,7 +910,9 @@ if (versePlayer) {
   const setActiveVerse = (verseNumber, options = {}) => {
     if (!verseNumber) return;
     activeVerseNumber = verseNumber;
+    persistLastRead(verseNumber);
     syncButtons();
+    syncBookmarkButtons();
     updatePlayerText();
     if (options.scroll) {
       scrollToVerse(verseNumber);
@@ -619,6 +992,21 @@ if (versePlayer) {
       }
 
       await jumpToVerse(verseNumber);
+    });
+  });
+
+  bookmarkButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const card = button.closest("[data-verse-card]");
+      const payload = getVersePayload(card);
+      if (!payload) return;
+
+      const isSaved = toggleVerseBookmark(payload);
+      if (isSaved) {
+        setLastReadVerse(payload);
+      }
+      syncBookmarkButtons();
+      syncLastReadBanner();
     });
   });
 
@@ -708,7 +1096,43 @@ if (versePlayer) {
     updatePlayerText();
   }
 
+  const hashVerseMatch = window.location.hash.match(/^#verse-(\d+)$/);
+  if (hashVerseMatch) {
+    const hashVerseNumber = Number(hashVerseMatch[1]);
+    const hashCard = getVerseCard(hashVerseNumber);
+    if (hashCard) {
+      window.setTimeout(() => {
+        hashCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        setCardState(hashVerseNumber, true);
+        persistLastRead(hashVerseNumber);
+      }, 120);
+    }
+  }
+
+  if (verseSectionEl && "IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio);
+
+        if (!visibleEntries.length) return;
+        const verseNumber = Number(visibleEntries[0].target.dataset.verseNumber);
+        if (!verseNumber || verseNumber === activeVerseNumber) return;
+        persistLastRead(verseNumber);
+      },
+      {
+        rootMargin: "-35% 0px -35% 0px",
+        threshold: [0.35, 0.6],
+      }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+  }
+
   syncButtons();
+  syncBookmarkButtons();
+  syncLastReadBanner();
   updatePlayerText();
 }
 
@@ -749,6 +1173,21 @@ if (verseSection && contextMenu && shareCard) {
   const surahNameLatin = verseSection.dataset.surahNameLatin;
   const surahNameArabic = verseSection.dataset.surahNameArabic;
   const surahNumber = verseSection.dataset.surahNumber;
+
+  const buildVerseText = (card) => {
+    if (!card) return "";
+
+    const arabic = card.dataset.verseArabic;
+    const latin = card.dataset.verseLatin;
+    const translation = card.dataset.verseTranslation;
+    const verseNum = card.dataset.verseNumber;
+    const info = `QS. ${surahNameLatin} (${surahNameArabic}) : ${verseNum}`;
+
+    let text = arabic + "\n\n";
+    if (latin) text += latin + "\n\n";
+    text += translation + "\n\n" + info;
+    return text;
+  };
 
   // ── Toast notification ──
   const showToast = (message) => {
@@ -843,16 +1282,7 @@ if (verseSection && contextMenu && shareCard) {
   // ── Copy text ──
   contextMenu.querySelector('[data-action="copy-text"]').addEventListener("click", () => {
     if (!activeCard) return;
-
-    const arabic = activeCard.dataset.verseArabic;
-    const latin = activeCard.dataset.verseLatin;
-    const translation = activeCard.dataset.verseTranslation;
-    const verseNum = activeCard.dataset.verseNumber;
-    const info = `QS. ${surahNameLatin} (${surahNameArabic}) : ${verseNum}`;
-
-    let text = arabic + "\n\n";
-    if (latin) text += latin + "\n\n";
-    text += translation + "\n\n" + info;
+    const text = buildVerseText(activeCard);
 
     navigator.clipboard.writeText(text).then(() => {
       showToast("Teks ayat berhasil disalin");
@@ -861,6 +1291,29 @@ if (verseSection && contextMenu && shareCard) {
     });
 
     hideContextMenu();
+  });
+
+  contextMenu.querySelector('[data-action="share-text"]').addEventListener("click", async () => {
+    if (!activeCard) return;
+
+    const text = buildVerseText(activeCard);
+    hideContextMenu();
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `QS. ${surahNameLatin} ayat ${activeCard.dataset.verseNumber}`,
+          text,
+        });
+        showToast("Teks ayat berhasil dibagikan");
+        return;
+      }
+
+      await navigator.clipboard.writeText(text);
+      showToast("Bagikan teks belum didukung. Teks disalin ke clipboard");
+    } catch {
+      showToast("Gagal membagikan teks ayat");
+    }
   });
 
   // ── Generate image helper ──

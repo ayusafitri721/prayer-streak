@@ -21,6 +21,8 @@
   });
   const safeHijriData = hijriData || {};
   const hijriToday = safeHijriData.today?.fullLabel || "";
+  const hijriTodaySpecials = Array.isArray(safeHijriData.today?.holidays) ? safeHijriData.today.holidays : [];
+  const hijriTodaySpecial = hijriTodaySpecials[0] || null;
   const hijriCalendar = safeHijriData.calendar || { monthLabel: "Kalender Hijriyah", entries: [] };
   const hijriWarning = safeHijriData.warning || null;
   const hijriSourceName = safeHijriData.sourceName || null;
@@ -40,7 +42,7 @@
 
 <main class="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-28 pt-5 text-[#244338] sm:px-6 lg:py-6" data-streak-complete="<%= isDailyComplete ? 'true' : 'false' %>" data-streak-count="<%= streak %>" data-dashboard-root>
   <section class="grid gap-5 lg:grid-cols-[minmax(0,1.48fr)_minmax(340px,0.72fr)]">
-    <div class="flex flex-col gap-5">
+    <div class="order-2 flex flex-col gap-5 lg:order-1">
       <section class="dashboard-card-enter rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.10)] sm:p-6">
         <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -216,7 +218,7 @@
       </section>
     </div>
 
-    <aside class="flex flex-col gap-5">
+    <aside class="order-1 flex flex-col gap-5 lg:order-2">
       <section
         class="dashboard-card-enter relative overflow-hidden rounded-[1.75rem] bg-[#2F5946] p-6 text-white shadow-[0_18px_45px_rgba(52,78,65,0.18)]"
         data-prayer-countdown
@@ -254,6 +256,17 @@
             </button>
             <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Tanggal Islam hari ini</span>
           </div>
+          <% if (hijriTodaySpecial) { %>
+            <div class="mt-3 inline-flex max-w-full items-start gap-2 rounded-2xl border border-[#D4A373]/25 bg-[#D4A373]/12 px-3 py-2 text-left text-sm text-[#F6E6CF]">
+              <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#D4A373]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m12 3 2.2 4.4 4.8.7-3.5 3.4.8 4.8L12 14.8 7.7 17l.8-4.8L5 8.8l4.8-.7L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+              <div class="min-w-0">
+                <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A373]">Momen Hijriyah</p>
+                <p class="mt-1 line-clamp-2 text-sm font-semibold text-[#F6E6CF]"><%= hijriTodaySpecial %></p>
+              </div>
+            </div>
+          <% } %>
           <% if (nextPrayer.time) { %>
             <p class="mt-5 text-4xl font-black text-[#D4A373]" data-countdown-display>--:--:--</p>
             <p class="mt-1 text-sm font-semibold text-white/72" data-countdown-label>Menuju adzan <%= nextPrayer.name %></p>
@@ -533,10 +546,6 @@
             Tutup
           </button>
         </div>
-
-        <p class="mt-4 text-sm text-[#244338]/60" data-prayer-alert-status>
-          Notifikasi ini akan muncul sekali setiap kali masuk waktu salat pada halaman yang sedang terbuka.
-        </p>
       </div>
     </section>
   </div>

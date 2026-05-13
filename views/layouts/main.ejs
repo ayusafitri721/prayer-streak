@@ -38,6 +38,7 @@
   class="min-h-screen <%= hideTopbar ? 'bg-white' : 'bg-[#F6F1E9]' %> text-[#344E41]"
   data-page-transition-type="<%= pageTransition?.type || '' %>"
   data-page-transition-name="<%= pageTransition?.name || '' %>"
+  data-user-id="<%= user?.id || '' %>"
 >
     <%- include('../partials/splash-screen') %>
     <div class="<%= hideTopbar ? 'min-h-screen bg-white' : 'min-h-screen bg-[linear-gradient(180deg,_#F6F1E9_0%,_#F3ECDf_100%)]' %>">
