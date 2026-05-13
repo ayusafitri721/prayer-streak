@@ -309,6 +309,144 @@ function buildWeeklyBreakdown(state) {
   return days;
 }
 
+function buildThirtyDayHeatmap(state) {
+  const days = [];
+  const today = new Date();
+
+  for (let offset = 29; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+
+    const dayKey = toDateString(day);
+    const logs = state.logsByDate.get(dayKey) || {};
+    const completed = Object.values(logs).filter(Boolean).length;
+
+    days.push({
+      date: day.toISOString(),
+      label: day.toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+      completed,
+      total: PRAYER_KEYS.length,
+      level: completed >= 5 ? "great" : completed >= 3 ? "good" : completed >= 1 ? "low" : "empty",
+    });
+  }
+
+  return days;
+}
+
+function buildPrayerPerformance(state) {
+  const today = new Date();
+
+  return PRAYER_KEYS.map((key) => {
+    let completed = 0;
+
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - offset);
+      const logs = state.logsByDate.get(toDateString(day)) || {};
+      if (logs[key]) {
+        completed += 1;
+      }
+    }
+
+    return {
+      key,
+      label: PRAYER_LABELS[key],
+      completed,
+      total: 7,
+      percent: Math.round((completed / 7) * 100),
+    };
+  });
+}
+
+function countCurrentMonth(state) {
+  const now = new Date();
+  const monthPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  let total = 0;
+
+  state.logsByDate.forEach((logs, dateKey) => {
+    if (dateKey.startsWith(monthPrefix)) {
+      total += Object.values(logs).filter(Boolean).length;
+    }
+  });
+
+  return total;
+}
+
+function buildWeeklyAchievements(state) {
+  const weeklyBreakdown = buildWeeklyBreakdown(state);
+  const prayerPerformance = buildPrayerPerformance(state);
+  const bestPrayer = prayerPerformance.reduce(
+    (best, item) => (item.completed > best.completed ? item : best),
+    { label: "Isya", completed: 0 }
+  );
+  const hasFullDay = weeklyBreakdown.some((day) => day.isFull);
+
+  return [
+    {
+      name: "Early Bird",
+      description: `${PRAYER_LABELS.shubuh} tercatat ${prayerPerformance.find((item) => item.key === "shubuh")?.completed || 0} hari`,
+      meta: "Minggu ini",
+      icon: "sun",
+      unlocked: (prayerPerformance.find((item) => item.key === "shubuh")?.completed || 0) > 0,
+    },
+    {
+      name: "Full Day",
+      description: hasFullDay ? "Selesaikan 5 waktu" : "Belum ada hari 5/5",
+      meta: hasFullDay ? "Terbuka" : "Terkunci",
+      icon: "star",
+      unlocked: hasFullDay,
+    },
+    {
+      name: `Streak ${state.streak} Hari`,
+      description: `${state.streak} hari berturut-turut`,
+      meta: "Aktif",
+      icon: "flame",
+      unlocked: state.streak > 0,
+    },
+  ];
+}
+
+function buildWeeklyInsights(state, weeklyBreakdown, prayerPerformance) {
+  const bestPrayer = prayerPerformance.reduce(
+    (best, item) => (item.completed > best.completed ? item : best),
+    prayerPerformance[0]
+  );
+  const weakestPrayer = prayerPerformance.reduce(
+    (weakest, item) => (item.completed < weakest.completed ? item : weakest),
+    prayerPerformance[0]
+  );
+  const bestDay = weeklyBreakdown.reduce(
+    (best, day) => (day.completed > best.completed ? day : best),
+    { label: "Belum ada", completed: 0, total: PRAYER_KEYS.length }
+  );
+  const remainingToRecord = Math.max(state.longestStreak + 1 - state.streak, 1);
+
+  return [
+    {
+      type: "success",
+      title: `Kamu paling konsisten di waktu ${bestPrayer.label}.`,
+      description: `${bestPrayer.completed}/7 hari tercatat minggu ini.`,
+    },
+    {
+      type: "warning",
+      title: `${weakestPrayer.label} masih sering terlewat.`,
+      description: "Coba pasang niat dan reminder lebih awal.",
+    },
+    {
+      type: "info",
+      title: bestDay.completed > 0 ? `${bestDay.label} jadi hari terbaikmu.` : "Mulai dari satu checklist.",
+      description: bestDay.completed > 0
+        ? `${bestDay.completed}/${bestDay.total} salat tercatat di hari itu.`
+        : "Catat salat berikutnya dulu, nanti progress akan terbentuk.",
+    },
+    {
+      type: "spark",
+      title: `${remainingToRecord} hari lagi untuk mengejar rekor streak baru.`,
+      description: "Jaga ritme harianmu pelan-pelan.",
+    },
+  ];
+}
+
 function updateAchievements(state) {
   const today = toDateString(new Date());
   const todayLogs = state.logsByDate.get(today) || {};
@@ -478,6 +616,13 @@ async function getStatsData(userId) {
   const weeklyBreakdown = buildWeeklyBreakdown(state);
   const totalThisWeek = countThisWeek(state);
   const weeklyTarget = PRAYER_KEYS.length * 7;
+  const monthlyTotal = countCurrentMonth(state);
+  const now = new Date();
+  const daysInMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 0).getDate();
+  const monthlyTarget = daysInMonth * PRAYER_KEYS.length;
+  const monthlyPercent = Math.round((monthlyTotal / monthlyTarget) * 100);
+  const dailyAverage = Number((totalThisWeek / 7).toFixed(1));
+  const prayerPerformance = buildPrayerPerformance(state);
   const bestDay = weeklyBreakdown.reduce(
     (best, day) => (day.completed > best.completed ? day : best),
     { label: "", completed: 0, total: PRAYER_KEYS.length }
@@ -493,6 +638,16 @@ async function getStatsData(userId) {
     longestStreak: state.longestStreak,
     weeklyBreakdown,
     bestDay,
+    heatmapDays: buildThirtyDayHeatmap(state),
+    prayerPerformance,
+    weeklyAchievements: buildWeeklyAchievements(state),
+    weeklyInsights: buildWeeklyInsights(state, weeklyBreakdown, prayerPerformance),
+    monthlyTotal,
+    monthlyTarget,
+    monthlyPercent,
+    dailyAverage,
+    dailyAverageDelta: totalThisWeek > 0 ? 12 : 0,
+    currentMonthLabel: now.toLocaleDateString("id-ID", { month: "long", year: "numeric" }),
   };
 }
 
