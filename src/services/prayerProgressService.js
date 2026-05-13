@@ -1,4 +1,5 @@
 const axios = require("axios");
+const prisma = require("../utils/prisma");
 
 const PRAYER_KEYS = ["shubuh", "dzuhur", "ashar", "maghrib", "isya"];
 const PRAYER_LABELS = {
@@ -27,6 +28,9 @@ const prayerApi = axios.create({
 
 const XP_PER_PRAYER = 10;
 const DAILY_BONUS_XP = 25;
+const MAX_STREAK_PROTECTION = 3;
+const RESTORE_CHALLENGE_TARGET = 3;
+const ON_TIME_GRACE_MINUTES = 30;
 
 const achievementsSeed = [
   { slug: "first-step", name: "First Step", description: "Checklist salat pertama" },
@@ -37,11 +41,14 @@ const achievementsSeed = [
   { slug: "level-5", name: "Level 5 Reached", description: "Mencapai level 5" },
 ];
 
-const users = new Map();
 const prayerScheduleCache = new Map();
 
 function toDateString(date) {
-  return date.toISOString().split("T")[0];
+  if (!(date instanceof Date)) {
+    return String(date).split("T")[0];
+  }
+
+  return formatLocalDateKey(date);
 }
 
 function formatLocalDateKey(date = new Date()) {
@@ -72,6 +79,19 @@ function getPrayerCacheKey(date = new Date(), locationOverride = null) {
   return `${location.provinsi}::${location.kabkota}::${date.getFullYear()}-${date.getMonth() + 1}`;
 }
 
+function dateKeyToDbDate(dateKey) {
+  return new Date(`${dateKey}T00:00:00.000Z`);
+}
+
+function formatPrayerLogTime(date) {
+  if (!date) return null;
+
+  return date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function getInitialState() {
   return {
     xp: 0,
@@ -79,20 +99,292 @@ function getInitialState() {
     streak: 0,
     longestStreak: 0,
     logsByDate: new Map(),
+    onTimeByDate: new Map(),
     achievements: new Set(),
     unlockedAt: new Map(),
     lastFullDayDate: null,
     latestAchievement: null,
+    streakProtection: MAX_STREAK_PROTECTION,
+    restoreChallengeActive: false,
+    restoreChallengeProgress: 0,
+    restoreChallengeTarget: RESTORE_CHALLENGE_TARGET,
+    restoreReflectionDone: false,
   };
 }
 
-function getUserState(userId) {
-  const id = Number(userId);
-  if (!users.has(id)) {
-    users.set(id, getInitialState());
+function nextDateString(dateString) {
+  const date = new Date(`${dateString}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().split("T")[0];
+}
+
+function startOfTodayKey() {
+  return formatLocalDateKey(new Date());
+}
+
+function daysBetweenDateKeys(startDateKey, endDateKey) {
+  const days = [];
+  let cursor = startDateKey;
+
+  while (cursor <= endDateKey) {
+    days.push(cursor);
+    cursor = nextDateString(cursor);
   }
 
-  return users.get(id);
+  return days;
+}
+
+function buildStateFromLogs(logs, streakDays = [], user = null) {
+  const state = getInitialState();
+
+  logs.forEach((log) => {
+    const dateKey = toDateString(log.date);
+    const dayLogs = state.logsByDate.get(dateKey) || {};
+    dayLogs[log.prayerType] = formatPrayerLogTime(log.prayedAt) || "Tercatat";
+    state.logsByDate.set(dateKey, dayLogs);
+    if (log.isOnTime) {
+      const onTimeLogs = state.onTimeByDate.get(dateKey) || {};
+      onTimeLogs[log.prayerType] = true;
+      state.onTimeByDate.set(dateKey, onTimeLogs);
+    }
+    state.xp += log.xpEarned || XP_PER_PRAYER;
+  });
+
+  const fullDates = Array.from(state.logsByDate.entries())
+    .filter(([, dayLogs]) => Object.values(dayLogs).filter(Boolean).length >= PRAYER_KEYS.length)
+    .map(([dateKey]) => dateKey)
+    .sort();
+  const protectedDates = streakDays
+    .filter((day) => day.status === "PROTECTED")
+    .map((day) => toDateString(day.date))
+    .sort();
+  const streakEligibleDates = Array.from(new Set([...fullDates, ...protectedDates])).sort();
+
+  state.lastFullDayDate = fullDates.at(-1) || null;
+  state.streakProtection = user?.streakProtection ?? MAX_STREAK_PROTECTION;
+  state.restoreChallengeActive = Boolean(user?.restoreChallengeActive);
+  state.restoreChallengeProgress = user?.restoreChallengeProgress ?? 0;
+  state.restoreChallengeTarget = RESTORE_CHALLENGE_TARGET;
+  state.restoreReflectionDone =
+    Boolean(user?.restoreReflectionDone) &&
+    user?.restoreReflectionDate &&
+    toDateString(user.restoreReflectionDate) === startOfTodayKey();
+
+  let longestStreak = 0;
+  let runningStreak = 0;
+  let previousDate = null;
+
+  streakEligibleDates.forEach((dateKey) => {
+    if (previousDate && nextDateString(previousDate) === dateKey) {
+      runningStreak += 1;
+    } else {
+      runningStreak = 1;
+    }
+
+    longestStreak = Math.max(longestStreak, runningStreak);
+    previousDate = dateKey;
+  });
+
+  state.longestStreak = longestStreak;
+
+  const lastStreakDate = streakEligibleDates.at(-1) || null;
+
+  if (lastStreakDate) {
+    const today = formatLocalDateKey(new Date());
+    const yesterday = prevDateString(today);
+
+    if (lastStreakDate === today || lastStreakDate === yesterday) {
+      let streak = 0;
+      let cursor = lastStreakDate;
+      const streakDateSet = new Set(streakEligibleDates);
+
+      while (streakDateSet.has(cursor)) {
+        streak += 1;
+        cursor = prevDateString(cursor);
+      }
+
+      state.streak = streak;
+    }
+  }
+
+  state.level = computeLevel(state.xp);
+  updateAchievements(state);
+
+  return state;
+}
+
+async function evaluateStreakDays(userId) {
+  const id = Number(userId);
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      streakProtection: true,
+      restoreChallengeActive: true,
+      restoreChallengeProgress: true,
+      restoreReflectionDone: true,
+      restoreReflectionDate: true,
+      lastStreakEvaluatedDate: true,
+    },
+  });
+
+  if (!user) return;
+
+  const todayKey = startOfTodayKey();
+  const yesterdayKey = prevDateString(todayKey);
+
+  if (user.lastStreakEvaluatedDate && toDateString(user.lastStreakEvaluatedDate) >= yesterdayKey) {
+    return;
+  }
+
+  const firstLog = await prisma.prayerLog.findFirst({
+    where: {
+      userId: id,
+      status: true,
+    },
+    orderBy: { date: "asc" },
+    select: { date: true },
+  });
+
+  if (!firstLog) {
+    await prisma.user.update({
+      where: { id },
+      data: { lastStreakEvaluatedDate: dateKeyToDbDate(yesterdayKey) },
+    });
+    return;
+  }
+
+  const startDateKey = user.lastStreakEvaluatedDate
+    ? nextDateString(toDateString(user.lastStreakEvaluatedDate))
+    : toDateString(firstLog.date);
+  const daysToEvaluate = daysBetweenDateKeys(startDateKey, yesterdayKey);
+
+  let protection = user.streakProtection;
+  let restoreActive = user.restoreChallengeActive;
+  let restoreProgress = user.restoreChallengeProgress;
+  let restoreReflectionDone = user.restoreReflectionDone;
+  let restoreReflectionDate = user.restoreReflectionDate ? toDateString(user.restoreReflectionDate) : null;
+
+  for (const dateKey of daysToEvaluate) {
+    const existing = await prisma.streakDay.findUnique({
+      where: {
+        userId_date: {
+          userId: id,
+          date: dateKeyToDbDate(dateKey),
+        },
+      },
+    });
+
+    if (existing) continue;
+
+    const completedCount = await prisma.prayerLog.count({
+      where: {
+        userId: id,
+        status: true,
+        date: dateKeyToDbDate(dateKey),
+      },
+    });
+    const onTimeCount = await prisma.prayerLog.count({
+      where: {
+        userId: id,
+        status: true,
+        isOnTime: true,
+        date: dateKeyToDbDate(dateKey),
+      },
+    });
+    const reflectionDoneForDay = restoreReflectionDone && restoreReflectionDate === dateKey;
+
+    let status = "BROKEN";
+    let protectionUsed = false;
+
+    if (
+      restoreActive &&
+      completedCount >= PRAYER_KEYS.length &&
+      onTimeCount >= 3 &&
+      reflectionDoneForDay
+    ) {
+      status = "FULL";
+      protection = Math.min(MAX_STREAK_PROTECTION, protection + 1);
+      restoreActive = false;
+      restoreProgress = RESTORE_CHALLENGE_TARGET;
+      restoreReflectionDone = false;
+      restoreReflectionDate = null;
+    } else if (restoreActive) {
+      status = "BROKEN";
+      restoreActive = false;
+      restoreProgress = 0;
+      restoreReflectionDone = false;
+      restoreReflectionDate = null;
+    } else if (completedCount >= PRAYER_KEYS.length) {
+      status = "FULL";
+    } else if (completedCount === PRAYER_KEYS.length - 1 && protection > 0 && !restoreActive) {
+      status = "PROTECTED";
+      protection -= 1;
+      protectionUsed = true;
+
+      if (protection === 0) {
+        restoreActive = true;
+        restoreProgress = 0;
+      }
+    } else {
+      status = "BROKEN";
+      restoreActive = false;
+      restoreProgress = 0;
+    }
+
+    await prisma.streakDay.create({
+      data: {
+        userId: id,
+        date: dateKeyToDbDate(dateKey),
+        completedCount,
+        status,
+        protectionUsed,
+        restoreProgressAfter: restoreProgress,
+      },
+    });
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: {
+      streakProtection: protection,
+      restoreChallengeActive: restoreActive,
+      restoreChallengeProgress: restoreProgress,
+      restoreReflectionDone,
+      restoreReflectionDate: restoreReflectionDate ? dateKeyToDbDate(restoreReflectionDate) : null,
+      lastStreakEvaluatedDate: dateKeyToDbDate(yesterdayKey),
+    },
+  });
+}
+
+async function getUserState(userId) {
+  await evaluateStreakDays(userId);
+
+  const user = await prisma.user.findUnique({
+    where: { id: Number(userId) },
+    select: {
+      streakProtection: true,
+      restoreChallengeActive: true,
+      restoreChallengeProgress: true,
+      restoreReflectionDone: true,
+      restoreReflectionDate: true,
+    },
+  });
+  const logs = await prisma.prayerLog.findMany({
+    where: {
+      userId: Number(userId),
+      status: true,
+    },
+    orderBy: [{ date: "asc" }, { prayedAt: "asc" }],
+  });
+  const streakDays = await prisma.streakDay.findMany({
+    where: {
+      userId: Number(userId),
+    },
+    orderBy: { date: "asc" },
+  });
+
+  return buildStateFromLogs(logs, streakDays, user);
 }
 
 function prevDateString(dateString) {
@@ -203,6 +495,65 @@ async function getPrayerScheduleForDate(date = new Date(), locationOverride = nu
 
 function canCompletePrayerWithSchedule(prayer, schedule, date = new Date()) {
   return getCurrentMinutes(date) >= timeToMinutes(schedule.times[prayer]);
+}
+
+function isPrayerOnTimeWithSchedule(prayer, schedule, date = new Date()) {
+  const currentMinutes = getCurrentMinutes(date);
+  const prayerMinutes = timeToMinutes(schedule.times[prayer]);
+  return currentMinutes >= prayerMinutes && currentMinutes <= prayerMinutes + ON_TIME_GRACE_MINUTES;
+}
+
+function buildRestoreChallengeTasks(state, today) {
+  const todayLogs = state.logsByDate.get(today) || {};
+  const onTimeLogs = state.onTimeByDate.get(today) || {};
+  const completedCount = Object.values(todayLogs).filter(Boolean).length;
+  const onTimeCount = Object.values(onTimeLogs).filter(Boolean).length;
+  const reflectionDone = state.restoreReflectionDone;
+
+  return {
+    completedCount,
+    onTimeCount,
+    reflectionDone,
+    fullDayDone: completedCount >= PRAYER_KEYS.length,
+    onTimeDone: onTimeCount >= 3,
+    progress: [completedCount >= PRAYER_KEYS.length, onTimeCount >= 3, reflectionDone].filter(Boolean).length,
+    target: RESTORE_CHALLENGE_TARGET,
+  };
+}
+
+async function tryCompleteRestoreChallengeToday(userId) {
+  const id = Number(userId);
+  const state = await getUserState(id);
+
+  if (!state.restoreChallengeActive) {
+    return state;
+  }
+
+  const today = startOfTodayKey();
+  const tasks = buildRestoreChallengeTasks(state, today);
+
+  if (!tasks.fullDayDone || !tasks.onTimeDone || !tasks.reflectionDone) {
+    await prisma.user.update({
+      where: { id },
+      data: {
+        restoreChallengeProgress: tasks.progress,
+      },
+    });
+    return state;
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: {
+      streakProtection: Math.min(MAX_STREAK_PROTECTION, state.streakProtection + 1),
+      restoreChallengeActive: false,
+      restoreChallengeProgress: 0,
+      restoreReflectionDone: false,
+      restoreReflectionDate: null,
+    },
+  });
+
+  return getUserState(id);
 }
 
 async function getNextPrayer(date = new Date(), todaySchedule = null, locationOverride = null) {
@@ -360,7 +711,7 @@ function buildPrayerPerformance(state) {
 
 function countCurrentMonth(state) {
   const now = new Date();
-  const monthPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   let total = 0;
 
   state.logsByDate.forEach((logs, dateKey) => {
@@ -477,7 +828,7 @@ function updateAchievements(state) {
 }
 
 async function getDashboardData(userId, prayerLocation = null) {
-  const state = getUserState(userId);
+  const state = await getUserState(userId);
   const now = new Date();
   const today = toDateString(now);
   const todayLogs = state.logsByDate.get(today) || {};
@@ -493,6 +844,7 @@ async function getDashboardData(userId, prayerLocation = null) {
     maghrib: todayLogs.maghrib || null,
     isya: todayLogs.isya || null,
   };
+  const restoreChallengeTasks = buildRestoreChallengeTasks(state, today);
 
   const todayCompleted = Object.values(todayState).filter(Boolean).length;
   const totalToday = PRAYER_KEYS.length;
@@ -535,6 +887,14 @@ async function getDashboardData(userId, prayerLocation = null) {
     nextLevelTarget: state.level * 100,
     totalCompletedSalat: totalCompletedSalatInState(state),
     weeklyBreakdown: buildWeeklyBreakdown(state),
+    streakProtection: state.streakProtection,
+    maxStreakProtection: MAX_STREAK_PROTECTION,
+    restoreChallengeActive: state.restoreChallengeActive,
+    restoreChallengeProgress: state.restoreChallengeActive
+      ? restoreChallengeTasks.progress
+      : state.restoreChallengeProgress,
+    restoreChallengeTarget: state.restoreChallengeTarget,
+    restoreChallengeTasks,
   };
 }
 
@@ -548,7 +908,7 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
     };
   }
 
-  const state = getUserState(userId);
+  const state = await getUserState(userId);
   const now = new Date();
   const today = toDateString(now);
   const prayerSchedule = await getPrayerScheduleForDate(now, prayerLocation);
@@ -572,53 +932,99 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
     };
   }
 
-  todayLogs[prayer] = now.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  state.logsByDate.set(today, todayLogs);
+  const beforeLevel = state.level;
+  const completedTodayBefore = Object.values(todayLogs).filter(Boolean).length;
+  const xpEarned =
+    XP_PER_PRAYER +
+    (completedTodayBefore + 1 === PRAYER_KEYS.length ? DAILY_BONUS_XP : 0);
+  const isOnTime = isPrayerOnTimeWithSchedule(prayer, prayerSchedule, now);
 
-  state.xp += XP_PER_PRAYER;
-
-  const completedToday = Object.values(todayLogs).filter(Boolean).length;
-  if (completedToday === PRAYER_KEYS.length && state.lastFullDayDate !== today) {
-    state.xp += DAILY_BONUS_XP;
-
-    const yesterday = prevDateString(today);
-    if (state.lastFullDayDate === yesterday) {
-      state.streak += 1;
-    } else {
-      state.streak = 1;
+  try {
+    await prisma.$transaction([
+      prisma.prayerLog.create({
+        data: {
+          userId: Number(userId),
+          prayerType: prayer,
+          date: dateKeyToDbDate(today),
+          status: true,
+          prayedAt: now,
+          isOnTime,
+          xpEarned,
+        },
+      }),
+      prisma.xPHistory.create({
+        data: {
+          userId: Number(userId),
+          pointChange: xpEarned,
+          reason:
+            xpEarned > XP_PER_PRAYER
+              ? `${PRAYER_LABELS[prayer]} selesai + bonus full day`
+              : `${PRAYER_LABELS[prayer]} selesai`,
+          relatedDate: dateKeyToDbDate(today),
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (error?.code === "P2002") {
+      return {
+        changed: false,
+        message: "Salat ini sudah dicatat hari ini.",
+        leveledUp: false,
+        latestAchievement: state.latestAchievement,
+      };
     }
 
-    state.lastFullDayDate = today;
-    state.longestStreak = Math.max(state.longestStreak, state.streak);
+    throw error;
   }
 
-  const afterLevel = computeLevel(state.xp);
-  const leveledUp = afterLevel > state.level;
-  state.level = afterLevel;
-
-  const unlocked = updateAchievements(state);
-  const latestAchievement = unlocked.at(-1) || state.latestAchievement;
-  state.latestAchievement = latestAchievement || null;
+  const updatedState = await tryCompleteRestoreChallengeToday(userId);
+  const leveledUp = updatedState.level > beforeLevel;
 
   return {
     changed: true,
     message: "Salat berhasil dicatat.",
     leveledUp,
-    latestAchievement,
+    latestAchievement: updatedState.latestAchievement,
+  };
+}
+
+async function markRestoreReflection(userId) {
+  const id = Number(userId);
+  const state = await getUserState(id);
+
+  if (!state.restoreChallengeActive) {
+    return {
+      changed: false,
+      message: "Restore challenge belum aktif.",
+    };
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: {
+      restoreReflectionDone: true,
+      restoreReflectionDate: dateKeyToDbDate(startOfTodayKey()),
+    },
+  });
+
+  const updatedState = await tryCompleteRestoreChallengeToday(id);
+
+  return {
+    changed: true,
+    message: updatedState.restoreChallengeActive
+      ? "Refleksi tercatat. Lengkapi salat 5/5 dan 3 salat tepat waktu untuk restore protection."
+      : "Restore challenge berhasil. Protection bertambah 1.",
   };
 }
 
 async function getStatsData(userId) {
-  const state = getUserState(userId);
+  const state = await getUserState(userId);
   const weeklyBreakdown = buildWeeklyBreakdown(state);
   const totalThisWeek = countThisWeek(state);
   const weeklyTarget = PRAYER_KEYS.length * 7;
   const monthlyTotal = countCurrentMonth(state);
   const now = new Date();
-  const daysInMonth = new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 0).getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const monthlyTarget = daysInMonth * PRAYER_KEYS.length;
   const monthlyPercent = Math.round((monthlyTotal / monthlyTarget) * 100);
   const dailyAverage = Number((totalThisWeek / 7).toFixed(1));
@@ -648,11 +1054,16 @@ async function getStatsData(userId) {
     dailyAverage,
     dailyAverageDelta: totalThisWeek > 0 ? 12 : 0,
     currentMonthLabel: now.toLocaleDateString("id-ID", { month: "long", year: "numeric" }),
+    streakProtection: state.streakProtection,
+    maxStreakProtection: MAX_STREAK_PROTECTION,
+    restoreChallengeActive: state.restoreChallengeActive,
+    restoreChallengeProgress: state.restoreChallengeProgress,
+    restoreChallengeTarget: state.restoreChallengeTarget,
   };
 }
 
 async function getAchievementsData(userId) {
-  const state = getUserState(userId);
+  const state = await getUserState(userId);
   updateAchievements(state);
 
   return achievementsSeed.map((item) => ({
@@ -662,13 +1073,18 @@ async function getAchievementsData(userId) {
 }
 
 async function getProfileData(userId) {
-  const state = getUserState(userId);
+  const state = await getUserState(userId);
 
   return {
     xp: state.xp,
     level: state.level,
     streak: state.streak,
     longestStreak: state.longestStreak,
+    streakProtection: state.streakProtection,
+    maxStreakProtection: MAX_STREAK_PROTECTION,
+    restoreChallengeActive: state.restoreChallengeActive,
+    restoreChallengeProgress: state.restoreChallengeProgress,
+    restoreChallengeTarget: state.restoreChallengeTarget,
   };
 }
 
@@ -678,4 +1094,5 @@ module.exports = {
   getAchievementsData,
   getStatsData,
   getProfileData,
+  markRestoreReflection,
 };

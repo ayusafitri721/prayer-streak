@@ -4,6 +4,7 @@ const {
   getAchievementsData,
   getStatsData,
   getProfileData,
+  markRestoreReflection,
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
 const { getHijriCalendarData, getHijriCalendarMonthData } = require("../services/hijriService");
@@ -60,6 +61,20 @@ async function renderDashboard(req, res) {
       prayerTimeWarning: "Jadwal salat dinamis belum berhasil dimuat. Aplikasi memakai jadwal cadangan.",
       prayerTimeSource: "Jadwal default aplikasi",
       prayerTimeSourceUrl: "https://equran.id/apidev/shalat",
+      streakProtection: 3,
+      maxStreakProtection: 3,
+      restoreChallengeActive: false,
+      restoreChallengeProgress: 0,
+      restoreChallengeTarget: 3,
+      restoreChallengeTasks: {
+        completedCount: 0,
+        onTimeCount: 0,
+        reflectionDone: false,
+        fullDayDone: false,
+        onTimeDone: false,
+        progress: 0,
+        target: 3,
+      },
       hijriData: {
         today: {
           weekdayLabel: "",
@@ -119,6 +134,14 @@ async function completePrayerAction(req, res) {
   return res.redirect("/dashboard");
 }
 
+async function markRestoreReflectionAction(req, res) {
+  const user = req.session.user;
+  const result = await markRestoreReflection(user.id);
+
+  req.flash(result.changed ? "message" : "error", result.message);
+  return res.redirect("/dashboard");
+}
+
 async function getHijriCalendarMonthAction(req, res) {
   const month = Number(req.query.month);
   const year = Number(req.query.year);
@@ -169,6 +192,7 @@ async function renderProfile(req, res) {
 module.exports = {
   renderDashboard,
   completePrayerAction,
+  markRestoreReflectionAction,
   getHijriCalendarMonthAction,
   renderStatistics,
   renderAchievements,

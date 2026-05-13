@@ -2339,8 +2339,8 @@ if (homeCarousel) {
     dots.forEach((dot, index) => {
       dot.classList.toggle("w-7", index === activeIndex);
       dot.classList.toggle("w-2", index !== activeIndex);
-      dot.classList.toggle("bg-[#D4A373]", index === activeIndex);
-      dot.classList.toggle("bg-white/45", index !== activeIndex);
+      dot.classList.toggle("bg-[#A3B18A]", index === activeIndex);
+      dot.classList.toggle("bg-[#DDE6D3]/75", index !== activeIndex);
     });
   };
 

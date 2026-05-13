@@ -230,9 +230,6 @@
         <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_18%,rgba(212,163,115,0.28),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.07),transparent_45%)]"></div>
         <div class="pointer-events-none absolute right-5 top-8 h-16 w-16 rounded-full bg-[#D4A373] shadow-[0_0_40px_rgba(212,163,115,0.38)]"></div>
         <div class="pointer-events-none absolute right-10 top-6 h-16 w-16 rounded-full bg-[#2F5946]"></div>
-        <div class="pointer-events-none absolute right-6 top-[16.2rem] z-[1] w-36 opacity-55 sm:right-8 sm:top-[15rem] sm:w-40">
-          <img src="/assets/mosque-landing.svg" alt="" class="relative w-full">
-        </div>
         <div class="relative z-10">
           <p class="text-sm font-bold text-[#C9D7B8]">Shalat Berikutnya</p>
           <h2 class="mt-3 text-4xl font-black" data-next-prayer-name><%= nextPrayer.name %></h2>
@@ -272,18 +269,90 @@
             <p class="mt-1 text-sm font-semibold text-white/72" data-countdown-label>Menuju adzan <%= nextPrayer.name %></p>
           <% } %>
 
-          <div class="mt-8 grid grid-cols-2 gap-3 sm:pr-28">
-            <div class="rounded-2xl bg-white/12 p-4 backdrop-blur">
+          <div class="relative z-10 mt-8 grid grid-cols-2 gap-3">
+            <div class="min-w-0 rounded-[1.35rem] border border-white/10 bg-white/12 px-4 py-3.5 backdrop-blur">
               <p class="text-xs font-bold text-white/62">Waktu</p>
-              <p class="mt-1 text-lg font-black" data-next-prayer-time><%= nextPrayer.time || "-" %></p>
+              <p class="mt-1 break-words text-xl font-black leading-tight" data-next-prayer-time><%= nextPrayer.time || "-" %></p>
             </div>
-            <div class="rounded-2xl bg-white/12 p-4 backdrop-blur">
+            <div class="min-w-0 rounded-[1.35rem] border border-white/10 bg-white/12 px-4 py-3.5 backdrop-blur">
               <p class="text-xs font-bold text-white/62">Status</p>
-              <p class="mt-1 text-lg font-black" data-next-prayer-status><%= nextPrayer.isTomorrow ? "Besok" : "Berjalan" %></p>
+              <p class="mt-1 break-words text-xl font-black leading-tight" data-next-prayer-status><%= nextPrayer.isTomorrow ? "Besok" : "Berjalan" %></p>
             </div>
           </div>
 
         </div>
+      </section>
+
+      <section class="dashboard-card-enter rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.22em] text-[#588157]">Streak Protection</p>
+            <h3 class="mt-2 text-xl font-black text-[#244338]">
+              <%= restoreChallengeActive ? "Restore Challenge Aktif" : "Nyawa Streak" %>
+            </h3>
+            <p class="mt-2 text-sm leading-6 text-[#244338]/64">
+              <% if (restoreChallengeActive) { %>
+                Selesaikan trial hari ini: 5/5 salat, minimal 3 tepat waktu, dan baca hadis penyemangat.
+              <% } else if (streakProtection > 0) { %>
+                Miss 1 salat masih bisa dilindungi. Protection dipakai otomatis saat hari berakhir 4/5.
+              <% } else { %>
+                Protection habis. Restore challenge akan aktif agar streak bisa diselamatkan lagi.
+              <% } %>
+            </p>
+          </div>
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#A3B18A]/20 text-[#2F654D]">
+            <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M8.5 12.2 11 14.7l4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+          <% for (let i = 1; i <= maxStreakProtection; i += 1) { %>
+            <div class="<%= i <= streakProtection ? 'border-[#A3B18A] bg-[#F2F7EC] text-[#2F654D]' : 'border-[#E2D8C8] bg-[#F6F1E9] text-[#244338]/32' %> flex items-center justify-center rounded-2xl border px-4 py-3">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          <% } %>
+        </div>
+
+        <% if (restoreChallengeActive) { %>
+          <div class="mt-5 rounded-2xl border border-[#A3B18A]/35 bg-[#F2F7EC] p-4">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm font-black text-[#244338]">Progress Trial</p>
+              <p class="text-sm font-black text-[#2F654D]"><%= restoreChallengeProgress %>/<%= restoreChallengeTarget %></p>
+            </div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
+              <div class="h-full rounded-full bg-[#588157]" style="width: <%= Math.min(Math.round((restoreChallengeProgress / restoreChallengeTarget) * 100), 100) %>%"></div>
+            </div>
+            <div class="mt-4 grid gap-2">
+              <div class="flex items-center justify-between rounded-2xl bg-white/70 px-4 py-3">
+                <span class="text-sm font-bold text-[#244338]">Salat hari ini 5/5</span>
+                <span class="<%= restoreChallengeTasks.fullDayDone ? 'bg-[#588157] text-white' : 'bg-[#E2D8C8] text-[#244338]/58' %> rounded-full px-3 py-1 text-xs font-black">
+                  <%= restoreChallengeTasks.completedCount %>/5
+                </span>
+              </div>
+              <div class="flex items-center justify-between rounded-2xl bg-white/70 px-4 py-3">
+                <span class="text-sm font-bold text-[#244338]">Minimal 3 tepat waktu</span>
+                <span class="<%= restoreChallengeTasks.onTimeDone ? 'bg-[#588157] text-white' : 'bg-[#E2D8C8] text-[#244338]/58' %> rounded-full px-3 py-1 text-xs font-black">
+                  <%= restoreChallengeTasks.onTimeCount %>/3
+                </span>
+              </div>
+              <form action="/dashboard/restore/reflection" method="POST" class="flex items-center justify-between gap-3 rounded-2xl bg-white/70 px-4 py-3">
+                <span class="text-sm font-bold text-[#244338]">Baca hadis penyemangat</span>
+                <% if (restoreChallengeTasks.reflectionDone) { %>
+                  <span class="rounded-full bg-[#588157] px-3 py-1 text-xs font-black text-white">Selesai</span>
+                <% } else { %>
+                  <button type="submit" class="rounded-full bg-[#588157] px-3 py-1 text-xs font-black text-white transition hover:bg-[#344E41]">
+                    Tandai
+                  </button>
+                <% } %>
+              </form>
+            </div>
+          </div>
+        <% } %>
       </section>
 
       <section class="dashboard-card-enter rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]" data-qibla-compass data-prayer-location-sync="<%= prayerLocationSourceType === 'browser' ? 'ready' : 'pending' %>">
