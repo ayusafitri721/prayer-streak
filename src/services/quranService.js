@@ -71,6 +71,7 @@ function unwrapResponse(payload) {
 }
 
 function normalizeSurah(item) {
+  const audioSource = pickFirstValue(item.audioFull, item.audio, null);
   return {
     number: Number(pickFirstValue(item.nomor, item.number, 0)),
     nameArabic: pickFirstValue(item.nama, item.namaArab, "-"),
@@ -79,7 +80,8 @@ function normalizeSurah(item) {
     revelation: pickFirstValue(item.tempatTurun, item.revelation, "-"),
     versesCount: Number(pickFirstValue(item.jumlahAyat, item.verses, 0)),
     description: sanitizeText(pickFirstValue(item.deskripsi, item.description, "")),
-    audioUrl: extractAudioUrl(pickFirstValue(item.audioFull, item.audio, null)),
+    audioUrl: extractAudioUrl(audioSource),
+    audioUrls: extractAllAudioUrls(audioSource),
   };
 }
 

@@ -6,6 +6,10 @@ function attachGlobals(req, res, next) {
   res.locals.flashMessage = message.length ? message[0] : null;
   res.locals.flashError = error.length ? error[0] : null;
   res.locals.pageTitle = req.path === "/" ? "Prayer Streak" : null;
+  res.locals.metaDescription = null;
+  res.locals.robots = null;
+  res.locals.canonicalUrl = null;
+  res.locals.openGraph = null;
   res.locals.hideTopbar = false;
   res.locals.currentPath = req.path;
   res.locals.prayerSessionLocation = req.session.prayerLocation || null;

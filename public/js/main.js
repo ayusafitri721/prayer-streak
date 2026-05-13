@@ -107,53 +107,36 @@ if (surahSearchInput) {
 const versePlayer = document.querySelector("[data-verse-player]");
 
 if (versePlayer) {
-  const audio = versePlayer.querySelector("[data-verse-audio]");
+  const audio = versePlayer.querySelector("[data-surah-audio]");
   const title = versePlayer.querySelector("[data-verse-player-title]");
   const status = versePlayer.querySelector("[data-verse-player-status]");
-  const autoPlayBtn = versePlayer.querySelector("[data-verse-autoplay]");
   const qoriSelect = versePlayer.querySelector("[data-qori-select]");
   const buttons = Array.from(document.querySelectorAll("[data-verse-play]"));
   const cards = Array.from(document.querySelectorAll("[data-verse-card]"));
+  const timingCache = new Map();
+  const surahNumber = Number(versePlayer.dataset.surahNumber || 0);
   let activeVerseNumber = null;
-  let autoPlay = true;
-  let selectedQori = qoriSelect ? qoriSelect.value : "02";
+  let selectedQori = qoriSelect?.value || "02";
 
-  if (autoPlayBtn) {
-    autoPlayBtn.addEventListener("click", () => {
-      autoPlay = !autoPlay;
-      autoPlayBtn.querySelector("[data-autoplay-label]").textContent = autoPlay ? "ON" : "OFF";
-      autoPlayBtn.classList.toggle("bg-[#588157]", autoPlay);
-      autoPlayBtn.classList.toggle("text-white", autoPlay);
-      autoPlayBtn.classList.toggle("bg-white/70", !autoPlay);
-      autoPlayBtn.classList.toggle("text-[#344E41]/80", !autoPlay);
-    });
-  }
-
-  const getAudioUrl = (button) => {
+  const parseAudioUrls = (value) => {
     try {
-      const urls = JSON.parse(button.dataset.verseAudioUrls || "{}");
-      return urls[selectedQori] || button.dataset.verseAudioUrl;
+      return JSON.parse(value || "{}");
     } catch {
-      return button.dataset.verseAudioUrl;
+      return {};
     }
   };
 
-  if (qoriSelect) {
-    qoriSelect.addEventListener("change", async () => {
-      selectedQori = qoriSelect.value;
-      if (activeVerseNumber && !audio.paused) {
-        const btn = buttons.find((b) => b.dataset.verseNumber === String(activeVerseNumber));
-        if (btn) {
-          const newUrl = getAudioUrl(btn);
-          const currentTime = audio.currentTime;
-          audio.src = newUrl;
-          audio.load();
-          audio.currentTime = currentTime;
-          try { await audio.play(); } catch {}
-        }
-      }
-    });
-  }
+  const getSurahAudioUrl = () => {
+    const urls = parseAudioUrls(versePlayer.dataset.surahAudioUrls);
+    return urls[selectedQori] || versePlayer.dataset.surahAudioUrl || "";
+  };
+
+  const getVerseAudioUrl = (button, qori = selectedQori) => {
+    const urls = parseAudioUrls(button.dataset.verseAudioUrls);
+    return urls[qori] || button.dataset.verseAudioUrl || "";
+  };
+
+  const hasImplicitOpening = () => surahNumber > 1 && surahNumber !== 9;
 
   const scrollToVerse = (verseNumber) => {
     const card = cards.find((item) => item.dataset.verseNumber === String(verseNumber));
@@ -172,45 +155,26 @@ if (versePlayer) {
     card.classList.toggle("bg-[#F6F1E9]/60", !isActive);
   };
 
-  const getNextButton = () => {
-    const currentIndex = buttons.findIndex((btn) => btn.dataset.verseNumber === String(activeVerseNumber));
-    if (currentIndex === -1 || currentIndex >= buttons.length - 1) return null;
-    return buttons[currentIndex + 1];
-  };
-
-  const playVerse = async (verseNumber, audioUrl) => {
-    activeVerseNumber = verseNumber;
-    audio.src = audioUrl;
-    audio.load();
-    scrollToVerse(verseNumber);
-    updatePlayerText();
-    syncButtons();
-    try {
-      await audio.play();
-    } catch (error) {
-      status.textContent = "Audio gagal diputar. Coba lagi beberapa saat.";
-    }
-  };
-
   const syncButtons = () => {
     buttons.forEach((button) => {
       const isCurrent = button.dataset.verseNumber === String(activeVerseNumber);
-      const isPlayingCurrent = isCurrent && !audio.paused && !audio.ended;
-      const isEndedCurrent = isCurrent && audio.ended;
-
       const label = button.querySelector("[data-verse-play-label]");
       const icon = button.querySelector("[data-verse-play-icon]");
-      const labelText = isPlayingCurrent
-        ? "Pause"
-        : isEndedCurrent
-          ? "Putar ulang"
+
+      if (label) {
+        label.textContent = isCurrent && !audio.paused && !audio.ended
+          ? "Sedang dibaca"
           : isCurrent
-            ? "Lanjutkan"
-            : "Putar ayat";
-      if (label) label.textContent = labelText;
-      if (icon) icon.innerHTML = isPlayingCurrent
-        ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>'
-        : '<path d="M8 5v14l11-7z"/>';
+            ? "Lanjutkan dari sini"
+            : "Lompat ke ayat";
+      }
+
+      if (icon) {
+        icon.innerHTML = isCurrent && !audio.paused && !audio.ended
+          ? '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>'
+          : '<path d="M8 5v14l11-7z"/>';
+      }
+
       button.classList.toggle("border-[#588157]/40", isCurrent);
       button.classList.toggle("bg-[#588157]/15", isCurrent);
       button.classList.toggle("text-[#588157]", isCurrent);
@@ -219,72 +183,415 @@ if (versePlayer) {
       button.classList.toggle("text-[#344E41]/80", !isCurrent);
     });
 
-    cards.forEach((card) => setCardState(card.dataset.verseNumber, card.dataset.verseNumber === String(activeVerseNumber)));
+    cards.forEach((card) => {
+      setCardState(card.dataset.verseNumber, card.dataset.verseNumber === String(activeVerseNumber));
+    });
   };
 
-  const updatePlayerText = () => {
-    if (!activeVerseNumber) {
-      title.textContent = "Pilih ayat untuk mulai mendengarkan";
-      status.textContent = "Audio ayat akan diputar langsung di halaman ini.";
+  const updatePlayerText = (message) => {
+    if (!title || !status) return;
+
+    if (message) {
+      status.textContent = message;
       return;
     }
 
-    title.textContent = `Ayat ${activeVerseNumber}`;
-    status.textContent = audio.paused ? "Audio dijeda. Tekan play untuk melanjutkan." : "Sedang memutar audio ayat...";
+    if (!getSurahAudioUrl()) {
+      title.textContent = "Audio surat tidak tersedia";
+      status.textContent = "Audio surat penuh belum tersedia untuk qori ini.";
+      return;
+    }
+
+    const currentTiming = timingCache.get(selectedQori);
+    if (!activeVerseNumber) {
+      if (currentTiming?.timings?.length && (audio.currentTime || 0) + 0.15 < currentTiming.timings[0].start) {
+        title.textContent = "Pembuka surat sedang diputar";
+        status.textContent = "Penanda ayat akan mulai saat ayat 1 masuk.";
+        return;
+      }
+
+      title.textContent = "Dengarkan surat tanpa jeda";
+      status.textContent = "Audio berjalan kontinu. Tombol ayat dipakai untuk lompat ke posisi ayat.";
+      return;
+    }
+
+    title.textContent = `Sekarang sekitar ayat ${activeVerseNumber}`;
+
+    if (currentTiming?.state === "loading") {
+      status.textContent = "Audio tetap kontinu. Penanda posisi ayat sedang disiapkan.";
+      return;
+    }
+
+    if (currentTiming?.timings?.length && (audio.currentTime || 0) + 0.15 < currentTiming.timings[0].start) {
+      status.textContent = "Pembuka surat sedang diputar. Penanda ayat akan mulai saat ayat 1 masuk.";
+      return;
+    }
+
+    if (audio.ended) {
+      status.textContent = `Audio surat selesai diputar di sekitar ayat ${activeVerseNumber}.`;
+      return;
+    }
+
+    status.textContent = audio.paused
+      ? `Audio dijeda di sekitar ayat ${activeVerseNumber}.`
+      : `Sedang memutar surat penuh, penanda aktif di sekitar ayat ${activeVerseNumber}.`;
+  };
+
+  const swapAudioSource = async (nextUrl, options = {}) => {
+    if (!audio || !nextUrl) return;
+
+    const { preserveCurrentTime = false, resumePlayback = false } = options;
+    const previousTime =
+      preserveCurrentTime && Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+
+    if (audio.dataset.activeSrc === nextUrl) {
+      if (resumePlayback) {
+        try {
+          await audio.play();
+        } catch {}
+      }
+      return;
+    }
+
+    await new Promise((resolve) => {
+      let settled = false;
+      const finalize = async () => {
+        if (settled) return;
+        settled = true;
+
+        if (preserveCurrentTime && previousTime > 0) {
+          try {
+            audio.currentTime = previousTime;
+          } catch {}
+        }
+
+        if (resumePlayback) {
+          try {
+            await audio.play();
+          } catch {}
+        }
+
+        resolve();
+      };
+
+      audio.dataset.activeSrc = nextUrl;
+      audio.src = nextUrl;
+      audio.load();
+      audio.addEventListener("loadedmetadata", finalize, { once: true });
+      window.setTimeout(finalize, 900);
+    });
+  };
+
+  const loadAudioDuration = (url) =>
+    new Promise((resolve) => {
+      if (!url) {
+        resolve(0);
+        return;
+      }
+
+      const probe = document.createElement("audio");
+      let settled = false;
+      const cleanup = () => {
+        probe.removeAttribute("src");
+        probe.load();
+      };
+      const finalize = (duration = 0) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(Number.isFinite(duration) ? duration : 0);
+      };
+
+      probe.preload = "metadata";
+      probe.addEventListener("loadedmetadata", () => finalize(probe.duration), { once: true });
+      probe.addEventListener("error", () => finalize(0), { once: true });
+      window.setTimeout(() => finalize(0), 8000);
+      probe.src = url;
+      probe.load();
+    });
+
+  const normalizeTimings = (entry) => {
+    if (!entry?.rawTimings?.length) return entry?.timings || [];
+
+    const totalRawDuration = entry.rawTimings.reduce((sum, item) => sum + item.duration, 0);
+    const fullDuration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    const extraDuration = fullDuration > totalRawDuration ? fullDuration - totalRawDuration : 0;
+    const firstDurations = entry.rawTimings
+      .slice(0, 3)
+      .map((item) => item.duration)
+      .filter((duration) => duration > 0);
+    const averageOpeningDuration = firstDurations.length
+      ? firstDurations.reduce((sum, duration) => sum + duration, 0) / firstDurations.length
+      : 0;
+    const leadInLimit = Math.min(12, Math.max(4, averageOpeningDuration * 1.35));
+    const leadInDuration =
+      hasImplicitOpening() && extraDuration > 0.35 ? Math.min(extraDuration, leadInLimit) : 0;
+    const playableDuration = fullDuration > leadInDuration ? fullDuration - leadInDuration : 0;
+    const scale = playableDuration > 0 && totalRawDuration > 0 ? playableDuration / totalRawDuration : 1;
+
+    entry.leadInDuration = leadInDuration;
+    entry.timings = entry.rawTimings.map((item) => ({
+      verseNumber: item.verseNumber,
+      start: leadInDuration + item.start * scale,
+      duration: item.duration * scale,
+    }));
+
+    return entry.timings;
+  };
+
+  const ensureVerseTimings = async (qori = selectedQori) => {
+    const existing = timingCache.get(qori);
+    if (existing?.state === "ready") return existing;
+    if (existing?.state === "loading") return existing.promise;
+
+    const entry = { state: "loading", rawTimings: [], timings: [] };
+    entry.promise = (async () => {
+      const durations = new Array(buttons.length).fill(0);
+      let cursor = 0;
+      let nextIndex = 0;
+      const workerCount = Math.min(4, Math.max(1, buttons.length));
+
+      updatePlayerText("Menyiapkan posisi lompat ayat untuk qori ini...");
+
+      const worker = async () => {
+        while (nextIndex < buttons.length) {
+          const currentIndex = nextIndex;
+          nextIndex += 1;
+          durations[currentIndex] = await loadAudioDuration(getVerseAudioUrl(buttons[currentIndex], qori));
+        }
+      };
+
+      await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+      entry.rawTimings = buttons.map((button, index) => {
+        const item = {
+          verseNumber: Number(button.dataset.verseNumber),
+          start: cursor,
+          duration: durations[index] || 0,
+        };
+        cursor += item.duration;
+        return item;
+      });
+
+      if (!entry.rawTimings.some((item) => item.duration > 0)) {
+        throw new Error("Verse timing unavailable");
+      }
+
+      entry.state = "ready";
+      normalizeTimings(entry);
+      updatePlayerText();
+      return entry;
+    })().catch((error) => {
+      timingCache.delete(qori);
+      updatePlayerText("Penanda ayat gagal disiapkan. Coba lagi beberapa saat.");
+      throw error;
+    });
+
+    timingCache.set(qori, entry);
+    return entry.promise;
+  };
+
+  const getCurrentTimingEntry = () => timingCache.get(selectedQori);
+
+  const getVerseActivationStart = (timing, index) => {
+    if (!timing) return 0;
+    if (index === 0) return timing.start;
+
+    const duration = Number.isFinite(timing.duration) && timing.duration > 0 ? timing.duration : 0;
+    const activationDelay = Math.min(0.75, Math.max(0.18, duration * 0.13));
+    return timing.start + activationDelay;
+  };
+
+  const getVerseForCurrentTime = () => {
+    const currentTiming = getCurrentTimingEntry();
+    const timings = currentTiming?.timings || [];
+    if (!timings.length) return null;
+
+    const currentTime = Math.max(0, audio.currentTime || 0);
+    if (currentTime < getVerseActivationStart(timings[0], 0)) {
+      return null;
+    }
+
+    for (let index = timings.length - 1; index >= 0; index -= 1) {
+      if (currentTime >= getVerseActivationStart(timings[index], index)) {
+        return timings[index];
+      }
+    }
+
+    return timings[0];
+  };
+
+  const setActiveVerse = (verseNumber, options = {}) => {
+    if (!verseNumber) return;
+    activeVerseNumber = verseNumber;
+    syncButtons();
+    updatePlayerText();
+    if (options.scroll) {
+      scrollToVerse(verseNumber);
+    }
+  };
+
+  const jumpToVerse = async (verseNumber, options = {}) => {
+    const shouldPlay = options.play !== false;
+    const surahAudioUrl = getSurahAudioUrl();
+    if (!surahAudioUrl) {
+      updatePlayerText("Audio surat penuh tidak tersedia untuk qori ini.");
+      return;
+    }
+
+    await swapAudioSource(surahAudioUrl, {
+      preserveCurrentTime: audio.currentTime > 0,
+      resumePlayback: false,
+    });
+
+    let timingEntry = getCurrentTimingEntry();
+    if (!timingEntry || timingEntry.state !== "ready") {
+      try {
+        timingEntry = await ensureVerseTimings(selectedQori);
+      } catch {
+        updatePlayerText("Penanda ayat gagal disiapkan. Coba lagi beberapa saat.");
+        return;
+      }
+    }
+
+    normalizeTimings(timingEntry);
+    const target = timingEntry.timings.find((item) => item.verseNumber === Number(verseNumber));
+    if (!target) {
+      updatePlayerText("Posisi ayat belum bisa dipetakan untuk audio ini.");
+      return;
+    }
+
+    setActiveVerse(Number(verseNumber), { scroll: true });
+
+    try {
+      audio.currentTime = Math.max(0, target.start);
+    } catch {}
+
+    if (shouldPlay) {
+      try {
+        await audio.play();
+      } catch {
+        updatePlayerText(`Posisi ayat ${verseNumber} sudah siap. Tekan play untuk lanjut.`);
+        return;
+      }
+    }
+
+    updatePlayerText();
   };
 
   buttons.forEach((button) => {
     button.addEventListener("click", async () => {
-      const verseNumber = button.dataset.verseNumber;
-      const audioUrl = getAudioUrl(button);
-      const isSameVerse = verseNumber === String(activeVerseNumber);
+      const verseNumber = Number(button.dataset.verseNumber);
 
-      if (!audioUrl) return;
-
-      try {
-        if (!isSameVerse) {
-          await playVerse(verseNumber, audioUrl);
+      if (verseNumber === activeVerseNumber) {
+        if (!audio.paused && !audio.ended) {
+          audio.pause();
           return;
         }
 
-        if (isSameVerse && !audio.paused) {
-          audio.pause();
-        } else {
-          await audio.play();
+        if (audio.ended) {
+          await jumpToVerse(verseNumber);
+          return;
         }
-      } catch (error) {
-        status.textContent = "Audio gagal diputar. Coba lagi beberapa saat.";
+
+        try {
+          await audio.play();
+          return;
+        } catch {
+          updatePlayerText(`Posisi ayat ${verseNumber} sudah siap. Tekan lagi untuk lanjut.`);
+          return;
+        }
       }
 
-      updatePlayerText();
-      syncButtons();
+      await jumpToVerse(verseNumber);
     });
   });
 
+  if (qoriSelect) {
+    qoriSelect.addEventListener("change", async (event) => {
+      selectedQori = event.currentTarget.value;
+      const nextSurahAudioUrl = getSurahAudioUrl();
+
+      if (!nextSurahAudioUrl) {
+        activeVerseNumber = null;
+        syncButtons();
+        updatePlayerText();
+        return;
+      }
+
+      await swapAudioSource(nextSurahAudioUrl, {
+        preserveCurrentTime: audio.currentTime > 0,
+        resumePlayback: !audio.paused && !audio.ended,
+      });
+
+      const currentTiming = timingCache.get(selectedQori);
+      if (currentTiming?.state === "ready") {
+        normalizeTimings(currentTiming);
+      } else {
+        ensureVerseTimings(selectedQori).catch(() => {});
+      }
+
+      const currentVerse = getVerseForCurrentTime();
+      if (currentVerse) {
+        setActiveVerse(currentVerse.verseNumber);
+      } else {
+        activeVerseNumber = null;
+        syncButtons();
+        updatePlayerText();
+      }
+    });
+  }
+
   audio.addEventListener("play", () => {
-    updatePlayerText();
+    if (!activeVerseNumber) {
+      const currentVerse = getVerseForCurrentTime();
+      if (currentVerse) {
+        activeVerseNumber = currentVerse.verseNumber;
+      }
+    }
     syncButtons();
+    updatePlayerText();
   });
 
   audio.addEventListener("pause", () => {
-    updatePlayerText();
     syncButtons();
+    updatePlayerText();
   });
 
-  audio.addEventListener("ended", async () => {
-    if (autoPlay) {
-      const nextBtn = getNextButton();
-      if (nextBtn && getAudioUrl(nextBtn)) {
-        status.textContent = `Melanjutkan ke ayat berikutnya...`;
-        await playVerse(nextBtn.dataset.verseNumber, getAudioUrl(nextBtn));
-        return;
-      }
-    }
-    status.textContent = autoPlay
-      ? `Semua ayat selesai diputar.`
-      : `Audio ayat ${activeVerseNumber} selesai.`;
+  audio.addEventListener("ended", () => {
     syncButtons();
+    updatePlayerText();
   });
+
+  audio.addEventListener("loadedmetadata", () => {
+    const currentTiming = getCurrentTimingEntry();
+    if (currentTiming?.state === "ready") {
+      normalizeTimings(currentTiming);
+    }
+  });
+
+  audio.addEventListener("timeupdate", () => {
+    const currentVerse = getVerseForCurrentTime();
+    if (!currentVerse) {
+      if (activeVerseNumber !== null) {
+        activeVerseNumber = null;
+        syncButtons();
+      }
+      updatePlayerText();
+      return;
+    }
+
+    if (currentVerse.verseNumber === activeVerseNumber) return;
+    setActiveVerse(currentVerse.verseNumber);
+  });
+
+  const initialSurahAudioUrl = getSurahAudioUrl();
+  if (initialSurahAudioUrl) {
+    swapAudioSource(initialSurahAudioUrl).catch(() => {});
+    ensureVerseTimings(selectedQori).catch(() => {});
+  } else {
+    updatePlayerText();
+  }
 
   syncButtons();
   updatePlayerText();

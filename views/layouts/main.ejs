@@ -4,6 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title || "Prayer Streak" %></title>
+    <% if (metaDescription) { %>
+      <meta name="description" content="<%= metaDescription %>" />
+    <% } %>
+    <% if (robots) { %>
+      <meta name="robots" content="<%= robots %>" />
+    <% } %>
+    <% if (canonicalUrl) { %>
+      <link rel="canonical" href="<%= canonicalUrl %>" />
+    <% } %>
+    <% if (openGraph) { %>
+      <meta property="og:title" content="<%= openGraph.title || title || 'Prayer Streak' %>" />
+      <% if (openGraph.description || metaDescription) { %>
+        <meta property="og:description" content="<%= openGraph.description || metaDescription %>" />
+        <meta name="twitter:description" content="<%= openGraph.description || metaDescription %>" />
+      <% } %>
+      <meta property="og:type" content="<%= openGraph.type || 'website' %>" />
+      <% if (openGraph.url || canonicalUrl) { %>
+        <meta property="og:url" content="<%= openGraph.url || canonicalUrl %>" />
+      <% } %>
+      <meta property="og:site_name" content="Prayer Streak" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="<%= openGraph.title || title || 'Prayer Streak' %>" />
+    <% } %>
     <link rel="icon" type="image/svg+xml" href="/assets/prayer-streak-logo.svg" />
     <link rel="shortcut icon" href="/assets/prayer-streak-logo.svg" />
     <link rel="stylesheet" href="/css/output.css" />
