@@ -4,6 +4,7 @@ async function showLogin(req, res) {
   res.render("pages/auth/login", {
     title: "Login - Prayer Streak",
     hideTopbar: true,
+    pageTransition: req.query.logout === "1" ? { type: "logout" } : res.locals.pageTransition,
   });
 }
 
@@ -52,6 +53,10 @@ async function doLogin(req, res) {
   }
 
   req.session.user = user;
+  req.session.pageTransition = {
+    type: "login",
+    name: user.name || "",
+  };
   req.flash("message", "Login berhasil.");
   return res.redirect("/dashboard");
 }
@@ -63,7 +68,7 @@ function logout(req, res) {
       return res.redirect("/dashboard");
     }
 
-    res.redirect("/login");
+    res.redirect("/login?logout=1");
   });
 }
 

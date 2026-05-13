@@ -1,4 +1,5 @@
 const splashScreen = document.querySelector("[data-splash-screen]");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const passwordToggleButtons = Array.from(document.querySelectorAll("[data-password-toggle]"));
 
@@ -39,7 +40,6 @@ if (passwordToggleButtons.length) {
 
 if (splashScreen) {
   const splashKey = "prayer-streak-splash-seen";
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasSeenSplash = window.sessionStorage.getItem(splashKey) === "true";
   let splashDone = false;
 
@@ -76,6 +76,121 @@ if (splashScreen) {
       window.setTimeout(completeSplash, minimumDuration + 600);
     }
   }
+}
+
+const authTransitionType = document.body?.dataset.pageTransitionType || "";
+const authTransitionName = document.body?.dataset.pageTransitionName || "";
+const authTransitionMessages = {
+  login: {
+    submitTitle: "Masuk ke Prayer Streak",
+    submitSubtitle: "Menyiapkan dashboard dan progres ibadahmu...",
+    arrivalTitle: authTransitionName ? `Assalamu'alaikum, ${authTransitionName}` : "Login berhasil",
+    arrivalSubtitle: "Semoga konsistensi ibadahmu dimudahkan hari ini.",
+  },
+  logout: {
+    submitTitle: "Keluar dari akun",
+    submitSubtitle: "Menyimpan sesi dan menutup akses akunmu...",
+    arrivalTitle: "Logout berhasil",
+    arrivalSubtitle: "Sampai jumpa lagi di Prayer Streak.",
+  },
+};
+
+const showAuthTransitionOverlay = (type, options = {}) => {
+  const message = authTransitionMessages[type];
+  if (!message) return null;
+
+  const overlay = document.createElement("div");
+  const card = document.createElement("div");
+  const glow = document.createElement("div");
+  const iconWrap = document.createElement("div");
+  const title = document.createElement("p");
+  const subtitle = document.createElement("p");
+
+  overlay.className = "fixed inset-0 z-[130] flex items-center justify-center bg-[#344E41]/40 px-5 backdrop-blur-sm";
+  Object.assign(overlay.style, {
+    opacity: "0",
+    transition: prefersReducedMotion ? "none" : "opacity 0.3s ease",
+  });
+
+  card.className = "relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/15 bg-[linear-gradient(160deg,rgba(36,67,56,0.97)_0%,rgba(88,129,87,0.96)_100%)] px-6 py-7 text-center text-white shadow-[0_24px_80px_rgba(17,24,39,0.26)]";
+  Object.assign(card.style, {
+    transform: prefersReducedMotion ? "none" : "translateY(18px) scale(0.96)",
+    opacity: "0",
+    transition: prefersReducedMotion ? "none" : "transform 0.34s ease, opacity 0.34s ease",
+  });
+
+  glow.className = "pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/10 blur-3xl";
+  iconWrap.className = "relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/10";
+  iconWrap.innerHTML =
+    type === "login"
+      ? '<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 17l5-5-5-5"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H3"/></svg>'
+      : '<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 7l5 5-5 5"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12H9"/></svg>';
+
+  title.className = "mt-5 text-2xl font-bold tracking-tight";
+  title.textContent = options.arrival ? message.arrivalTitle : message.submitTitle;
+  subtitle.className = "mt-2 text-sm leading-6 text-white/75";
+  subtitle.textContent = options.arrival ? message.arrivalSubtitle : message.submitSubtitle;
+
+  card.append(glow, iconWrap, title, subtitle);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => {
+    overlay.style.opacity = "1";
+    card.style.opacity = "1";
+    card.style.transform = "translateY(0) scale(1)";
+  });
+
+  const close = () => {
+    overlay.style.opacity = "0";
+    card.style.opacity = "0";
+    card.style.transform = prefersReducedMotion ? "none" : "translateY(10px) scale(0.98)";
+    window.setTimeout(() => overlay.remove(), prefersReducedMotion ? 0 : 260);
+  };
+
+  if (options.autoHide) {
+    window.setTimeout(close, prefersReducedMotion ? 0 : options.duration || 1100);
+  }
+
+  return { overlay, close };
+};
+
+const authSubmitForms = Array.from(document.querySelectorAll("form[data-auth-submit]"));
+
+if (authSubmitForms.length) {
+  authSubmitForms.forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      if (form.dataset.authSubmitting === "true") return;
+
+      event.preventDefault();
+      form.dataset.authSubmitting = "true";
+      form.setAttribute("aria-busy", "true");
+      form.querySelectorAll("button").forEach((element) => {
+        if (element.type === "hidden") return;
+        element.disabled = true;
+      });
+
+      showAuthTransitionOverlay(form.dataset.authSubmit, { autoHide: false });
+      window.setTimeout(() => {
+        form.submit();
+      }, prefersReducedMotion ? 0 : 260);
+    });
+  });
+}
+
+if (authTransitionType) {
+  const splashVisible =
+    splashScreen &&
+    splashScreen.style.display !== "none" &&
+    !splashScreen.classList.contains("splash-hide");
+
+  window.setTimeout(() => {
+    showAuthTransitionOverlay(authTransitionType, {
+      arrival: true,
+      autoHide: true,
+      duration: 1200,
+    });
+  }, splashVisible && !prefersReducedMotion ? 1550 : 120);
 }
 
 const surahSearchInput = document.querySelector("[data-surah-search]");
@@ -1492,7 +1607,115 @@ if (hijriCalendarModal) {
   const openButtons = Array.from(document.querySelectorAll("[data-open-hijri-calendar]"));
   const closeButtons = Array.from(hijriCalendarModal.querySelectorAll("[data-close-hijri-calendar]"));
   const overlay = hijriCalendarModal.querySelector("[data-hijri-calendar-overlay]");
+  const monthTitle = hijriCalendarModal.querySelector("[data-hijri-calendar-month]");
+  const todayLabel = hijriCalendarModal.querySelector("[data-hijri-calendar-today]");
+  const grid = hijriCalendarModal.querySelector("[data-hijri-calendar-grid]");
+  const prevButton = hijriCalendarModal.querySelector("[data-hijri-calendar-prev]");
+  const nextButton = hijriCalendarModal.querySelector("[data-hijri-calendar-next]");
+  const endpoint = hijriCalendarModal.dataset.hijriCalendarEndpoint || "";
   const body = document.body;
+  let activeMonth = Number(hijriCalendarModal.dataset.hijriCalendarMonth || 0);
+  let activeYear = Number(hijriCalendarModal.dataset.hijriCalendarYear || 0);
+  let isLoading = false;
+
+  const escapeHtml = (value) =>
+    String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+
+  const renderCalendarEntries = (entries = []) => {
+    if (!grid) return;
+
+    if (!entries.length) {
+      grid.innerHTML = `
+        <div class="col-span-7 rounded-[1.25rem] border border-dashed border-[#D8CDBB] bg-[#F8F3EB] px-4 py-8 text-center text-sm text-[#244338]/58">
+          Kalender Hijriyah belum tersedia untuk ditampilkan.
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = entries
+      .map((entry) => {
+        const baseClasses = entry.isCurrentMonth
+          ? "border-[#D8CDBB] bg-white"
+          : "border-[#E7DED1] bg-[#F8F3EB]";
+        const highlightClasses = entry.isToday ? "border-[#4F7F53] bg-[#EEF6EA] shadow-sm" : "";
+        const dayClasses = entry.isToday
+          ? "text-[#4F7F53]"
+          : entry.isCurrentMonth
+            ? "text-[#244338]"
+            : "text-[#244338]/35";
+        const gregorianClasses = entry.isToday
+          ? "text-[#588157]"
+          : entry.isCurrentMonth
+            ? "text-[#B7792D]"
+            : "text-[#B7792D]/45";
+
+        return `
+          <div class="${baseClasses} ${highlightClasses} min-h-[60px] rounded-[0.95rem] border p-2 transition sm:min-h-[64px]">
+            <div class="flex items-start justify-between gap-2">
+              <span class="${dayClasses} text-sm font-black sm:text-base">${escapeHtml(entry.day)}</span>
+              ${entry.isToday ? '<span class="rounded-full bg-[#4F7F53] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-white">Hari ini</span>' : ""}
+            </div>
+            <p class="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] sm:text-[10px] ${gregorianClasses}">${escapeHtml(entry.gregorianLabel)}</p>
+            ${entry.holidays?.length ? `<p class="mt-0.5 line-clamp-1 text-[9px] leading-3 text-[#244338]/48 sm:text-[10px]">${escapeHtml(entry.holidays[0])}</p>` : ""}
+          </div>
+        `;
+      })
+      .join("");
+  };
+
+  const syncCalendarState = (payload) => {
+    if (!payload?.calendar) return;
+
+    activeMonth = Number(payload.calendar.monthNumber || activeMonth || 0);
+    activeYear = Number(payload.calendar.year || activeYear || 0);
+    hijriCalendarModal.dataset.hijriCalendarMonth = activeMonth ? String(activeMonth) : "";
+    hijriCalendarModal.dataset.hijriCalendarYear = activeYear ? String(activeYear) : "";
+
+    if (monthTitle) monthTitle.textContent = payload.calendar.monthLabel || "Kalender Hijriyah";
+    if (todayLabel) todayLabel.textContent = payload.today?.fullLabel || "";
+
+    renderCalendarEntries(payload.calendar.entries || []);
+  };
+
+  const setLoadingState = (value) => {
+    isLoading = value;
+    if (prevButton) prevButton.disabled = value;
+    if (nextButton) nextButton.disabled = value;
+  };
+
+  const loadHijriMonth = async (month, year) => {
+    if (!endpoint || !month || !year || isLoading) return;
+
+    setLoadingState(true);
+
+    try {
+      const response = await fetch(`${endpoint}?month=${month}&year=${year}`, {
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.message || "Kalender Hijriyah belum bisa dimuat.");
+      }
+
+      syncCalendarState(payload);
+    } catch (error) {
+      if (monthTitle) {
+        monthTitle.textContent = error.message || "Kalender Hijriyah belum bisa dimuat.";
+      }
+    } finally {
+      setLoadingState(false);
+    }
+  };
 
   const openModal = () => {
     hijriCalendarModal.classList.remove("hidden");
@@ -1508,6 +1731,22 @@ if (hijriCalendarModal) {
 
   openButtons.forEach((button) => button.addEventListener("click", openModal));
   closeButtons.forEach((button) => button.addEventListener("click", closeModal));
+  if (prevButton) {
+    prevButton.addEventListener("click", () => {
+      if (!activeMonth || !activeYear) return;
+      const nextMonth = activeMonth === 1 ? 12 : activeMonth - 1;
+      const nextYear = activeMonth === 1 ? activeYear - 1 : activeYear;
+      loadHijriMonth(nextMonth, nextYear).catch(() => {});
+    });
+  }
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      if (!activeMonth || !activeYear) return;
+      const nextMonth = activeMonth === 12 ? 1 : activeMonth + 1;
+      const nextYear = activeMonth === 12 ? activeYear + 1 : activeYear;
+      loadHijriMonth(nextMonth, nextYear).catch(() => {});
+    });
+  }
   if (overlay) overlay.addEventListener("click", closeModal);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !hijriCalendarModal.classList.contains("hidden")) {

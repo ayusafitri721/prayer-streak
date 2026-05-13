@@ -6,7 +6,7 @@ const {
   getProfileData,
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
-const { getHijriCalendarData } = require("../services/hijriService");
+const { getHijriCalendarData, getHijriCalendarMonthData } = require("../services/hijriService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
@@ -118,6 +118,24 @@ async function completePrayerAction(req, res) {
   return res.redirect("/dashboard");
 }
 
+async function getHijriCalendarMonthAction(req, res) {
+  const month = Number(req.query.month);
+  const year = Number(req.query.year);
+
+  if (!Number.isInteger(month) || month < 1 || month > 12 || !Number.isInteger(year) || year < 1) {
+    return res.status(400).json({
+      ok: false,
+      message: "Parameter bulan atau tahun Hijriyah tidak valid.",
+    });
+  }
+
+  const payload = await getHijriCalendarMonthData({ month, year, date: new Date() });
+  return res.json({
+    ok: true,
+    ...payload,
+  });
+}
+
 async function renderStatistics(req, res) {
   const user = req.session.user;
   const stats = await getStatsData(user.id);
@@ -150,6 +168,7 @@ async function renderProfile(req, res) {
 module.exports = {
   renderDashboard,
   completePrayerAction,
+  getHijriCalendarMonthAction,
   renderStatistics,
   renderAchievements,
   renderProfile,

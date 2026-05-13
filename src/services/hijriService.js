@@ -67,6 +67,10 @@ function parseGregorianDate(value) {
   return new Date(year, (month || 1) - 1, day || 1);
 }
 
+function getWeekdayColumn(date) {
+  return (date.getDay() + 6) % 7;
+}
+
 function formatApiDateToIso(value) {
   const [day, month, year] = String(value || "").split("-");
   return `${year}-${month}-${day}`;
@@ -158,6 +162,92 @@ async function getAdjustedTodayEntry(date = new Date()) {
   );
 }
 
+async function buildHijriCalendarMonth({
+  hijriMonthNumber,
+  hijriYear,
+  todayReference = null,
+  warning = "Tanggal Hijriyah disesuaikan -1 hari sesuai preferensi aplikasi.",
+  sourceName = "Aladhan Hijri Calendar API (offset -1 hari)",
+  sourceUrl = ALADHAN_DOCS_URL,
+}) {
+  const currentMonthEntries = await getHijriToGregorianMonth(hijriMonthNumber, hijriYear);
+  const previousHijriMonthNumber = hijriMonthNumber === 1 ? 12 : hijriMonthNumber - 1;
+  const previousHijriYear = hijriMonthNumber === 1 ? hijriYear - 1 : hijriYear;
+  const nextHijriMonthNumber = hijriMonthNumber === 12 ? 1 : hijriMonthNumber + 1;
+  const nextHijriYear = hijriMonthNumber === 12 ? hijriYear + 1 : hijriYear;
+  const previousMonthEntries = await getHijriToGregorianMonth(previousHijriMonthNumber, previousHijriYear);
+  const nextMonthEntries = await getHijriToGregorianMonth(nextHijriMonthNumber, nextHijriYear);
+
+  const firstGregorianDate = parseGregorianDate(currentMonthEntries[0]?.gregorian?.date);
+  const leadingCount = getWeekdayColumn(firstGregorianDate);
+  const totalCurrentEntries = currentMonthEntries.length;
+  const trailingCount = (7 - ((leadingCount + totalCurrentEntries) % 7)) % 7;
+  const currentMonthLabel = getHijriMonthLabel(currentMonthEntries[0]?.hijri?.month?.en || "");
+  const isCurrentViewedMonth =
+    todayReference &&
+    Number(todayReference.hijri?.month?.number) === hijriMonthNumber &&
+    Number(todayReference.hijri?.year) === hijriYear;
+  const todayDayNumber = isCurrentViewedMonth ? Number(todayReference.hijri?.day) : null;
+
+  const leadingEntries = previousMonthEntries
+    .slice(Math.max(previousMonthEntries.length - leadingCount, 0))
+    .map((entry) => ({
+      day: Number(entry.hijri?.day),
+      gregorianLabel: parseGregorianDate(entry.gregorian?.date).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+      }),
+      isToday: false,
+      isCurrentMonth: false,
+      holidays: Array.isArray(entry.hijri?.holidays) ? entry.hijri.holidays : [],
+    }));
+
+  const currentEntries = currentMonthEntries.map((entry) => {
+    const gregorianDate = parseGregorianDate(entry.gregorian?.date);
+    const day = Number(entry.hijri?.day);
+
+    return {
+      day,
+      gregorianLabel: gregorianDate.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+      }),
+      isToday: todayDayNumber === day,
+      isCurrentMonth: true,
+      holidays: Array.isArray(entry.hijri?.holidays) ? entry.hijri.holidays : [],
+    };
+  });
+
+  const trailingEntries = nextMonthEntries.slice(0, trailingCount).map((entry) => ({
+    day: Number(entry.hijri?.day),
+    gregorianLabel: parseGregorianDate(entry.gregorian?.date).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+    }),
+    isToday: false,
+    isCurrentMonth: false,
+    holidays: Array.isArray(entry.hijri?.holidays) ? entry.hijri.holidays : [],
+  }));
+
+  return {
+    monthLabel: `${currentMonthLabel} ${hijriYear} H`.trim(),
+    monthNumber: hijriMonthNumber,
+    year: hijriYear,
+    prev: {
+      monthNumber: previousHijriMonthNumber,
+      year: previousHijriYear,
+    },
+    next: {
+      monthNumber: nextHijriMonthNumber,
+      year: nextHijriYear,
+    },
+    entries: [...leadingEntries, ...currentEntries, ...trailingEntries],
+    warning,
+    sourceName,
+    sourceUrl,
+  };
+}
+
 async function getHijriCalendarData(date = new Date()) {
   try {
     const todayEntry = await getAdjustedTodayEntry(date);
@@ -169,11 +259,9 @@ async function getHijriCalendarData(date = new Date()) {
     const hijriMonthNumber = Number(todayEntry.hijri.month.number);
     const hijriYear = Number(todayEntry.hijri.year);
     const hijriMonthLabel = getHijriMonthLabel(todayEntry.hijri.month.en);
-    const currentMonthEntries = await getHijriToGregorianMonth(hijriMonthNumber, hijriYear);
-    const nextHijriMonthNumber = hijriMonthNumber === 12 ? 1 : hijriMonthNumber + 1;
-    const nextHijriYear = hijriMonthNumber === 12 ? hijriYear + 1 : hijriYear;
-    const nextMonthEntries = await getHijriToGregorianMonth(nextHijriMonthNumber, nextHijriYear);
-    const monthLength = currentMonthEntries.length;
+    const warning = "Tanggal Hijriyah disesuaikan -1 hari sesuai preferensi aplikasi.";
+    const sourceName = "Aladhan Hijri Calendar API (offset -1 hari)";
+    const sourceUrl = ALADHAN_DOCS_URL;
 
     return {
       today: {
@@ -183,31 +271,57 @@ async function getHijriCalendarData(date = new Date()) {
         year: todayEntry.hijri.year,
         fullLabel: `${date.toLocaleDateString("id-ID", { weekday: "long" })}, ${todayEntry.hijri.day} ${hijriMonthLabel} ${todayEntry.hijri.year} H`,
       },
-      calendar: {
-        monthLabel: `${hijriMonthLabel} ${todayEntry.hijri.year} H`,
-        entries: Array.from({ length: monthLength }, (_, index) => {
-          const displayDay = index + 1;
-          const sourceEntry =
-            currentMonthEntries[displayDay] ||
-            nextMonthEntries[displayDay - currentMonthEntries.length] ||
-            currentMonthEntries[currentMonthEntries.length - 1];
-          const gregorianDate = parseGregorianDate(sourceEntry.gregorian.date);
+      calendar: await buildHijriCalendarMonth({
+        hijriMonthNumber,
+        hijriYear,
+        todayReference: todayEntry,
+        warning,
+        sourceName,
+        sourceUrl,
+      }),
+      warning,
+      sourceName,
+      sourceUrl,
+    };
+  } catch (error) {
+    return buildFallbackHijriData(date);
+  }
+}
 
-          return {
-            day: displayDay,
-            weekdayLabel: gregorianDate.toLocaleDateString("id-ID", { weekday: "short" }),
-            gregorianLabel: gregorianDate.toLocaleDateString("id-ID", {
-              day: "2-digit",
-              month: "short",
-            }),
-            isToday: displayDay === Number(todayEntry.hijri.day),
-            holidays: Array.isArray(sourceEntry.hijri.holidays) ? sourceEntry.hijri.holidays : [],
-          };
-        }),
+async function getHijriCalendarMonthData({ month, year, date = new Date() } = {}) {
+  try {
+    const todayEntry = await getAdjustedTodayEntry(date);
+
+    if (!todayEntry?.hijri) {
+      throw new Error("Tanggal Hijriyah hari ini tidak ditemukan.");
+    }
+
+    const hijriMonthNumber = Number(month || todayEntry.hijri.month.number);
+    const hijriYear = Number(year || todayEntry.hijri.year);
+    const warning = "Tanggal Hijriyah disesuaikan -1 hari sesuai preferensi aplikasi.";
+    const sourceName = "Aladhan Hijri Calendar API (offset -1 hari)";
+    const sourceUrl = ALADHAN_DOCS_URL;
+    const todayMonthLabel = getHijriMonthLabel(todayEntry.hijri.month.en);
+
+    return {
+      today: {
+        weekdayLabel: date.toLocaleDateString("id-ID", { weekday: "long" }),
+        day: Number(todayEntry.hijri.day),
+        monthLabel: todayMonthLabel,
+        year: todayEntry.hijri.year,
+        fullLabel: `${date.toLocaleDateString("id-ID", { weekday: "long" })}, ${todayEntry.hijri.day} ${todayMonthLabel} ${todayEntry.hijri.year} H`,
       },
-      warning: "Tanggal Hijriyah disesuaikan -1 hari sesuai preferensi aplikasi.",
-      sourceName: "Aladhan Hijri Calendar API (offset -1 hari)",
-      sourceUrl: ALADHAN_DOCS_URL,
+      calendar: await buildHijriCalendarMonth({
+        hijriMonthNumber,
+        hijriYear,
+        todayReference: todayEntry,
+        warning,
+        sourceName,
+        sourceUrl,
+      }),
+      warning,
+      sourceName,
+      sourceUrl,
     };
   } catch (error) {
     return buildFallbackHijriData(date);
@@ -216,4 +330,5 @@ async function getHijriCalendarData(date = new Date()) {
 
 module.exports = {
   getHijriCalendarData,
+  getHijriCalendarMonthData,
 };

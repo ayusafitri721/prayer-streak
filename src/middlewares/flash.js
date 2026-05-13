@@ -10,9 +10,14 @@ function attachGlobals(req, res, next) {
   res.locals.robots = null;
   res.locals.canonicalUrl = null;
   res.locals.openGraph = null;
+  res.locals.pageTransition = req.session.pageTransition || null;
   res.locals.hideTopbar = false;
   res.locals.currentPath = req.path;
   res.locals.prayerSessionLocation = req.session.prayerLocation || null;
+
+  if (req.session.pageTransition) {
+    delete req.session.pageTransition;
+  }
 
   next();
 }
