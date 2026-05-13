@@ -2354,3 +2354,296 @@ if (homeCarousel) {
   }
 }
 
+const pushSettings = document.querySelector("[data-push-settings]");
+
+if (pushSettings) {
+  const statusEl = pushSettings.querySelector("[data-push-status]");
+  const enableBtn = pushSettings.querySelector("[data-push-enable]");
+  const disableBtn = pushSettings.querySelector("[data-push-disable]");
+  const testBtn = pushSettings.querySelector("[data-push-test]");
+  const prayerEnabledSelect = pushSettings.querySelector("[data-push-prayer-enabled]");
+  const motivationEnabledSelect = pushSettings.querySelector("[data-push-motivation-enabled]");
+  const motivationTimeInput = pushSettings.querySelector("[data-push-motivation-time]");
+  const reminderMinuteSelect = pushSettings.querySelector("[data-push-reminder-minute]");
+
+  const setPushStatus = (text, isError = false) => {
+    if (!statusEl) return;
+    statusEl.textContent = text;
+    statusEl.classList.toggle("text-red-700", isError);
+  };
+
+  const parseJsonResponse = async (response) => {
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload?.message || "Request gagal.");
+    }
+    return payload;
+  };
+
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let index = 0; index < rawData.length; index += 1) {
+      outputArray[index] = rawData.charCodeAt(index);
+    }
+    return outputArray;
+  };
+
+  const uint8ArrayToBase64Url = (bytes) => {
+    let binary = "";
+    bytes.forEach((value) => {
+      binary += String.fromCharCode(value);
+    });
+    return window
+      .btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+  };
+
+  const readPreferenceForm = () => {
+    const timeValue = motivationTimeInput?.value || "07:00";
+    const [hourRaw, minuteRaw] = timeValue.split(":");
+    return {
+      prayerEnabled: String(prayerEnabledSelect?.value || "true") === "true",
+      motivationEnabled: String(motivationEnabledSelect?.value || "true") === "true",
+      motivationHour: Number(hourRaw),
+      motivationMinute: Number(minuteRaw),
+      prayerReminderMinutes: Number(reminderMinuteSelect?.value || 10),
+      timezoneOffsetMinutes: new Date().getTimezoneOffset(),
+    };
+  };
+
+  const savePreferences = async () => {
+    const preferences = readPreferenceForm();
+    await fetch("/notifications/preferences", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(preferences),
+    }).then(parseJsonResponse);
+  };
+
+  const ensurePushSubscription = async () => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      throw new Error("Browser ini belum mendukung Push Notification.");
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      throw new Error("Izin notifikasi ditolak.");
+    }
+
+    const keyPayload = await fetch("/notifications/public-key").then(parseJsonResponse);
+    await navigator.serviceWorker.register("/sw.js");
+    const worker = await navigator.serviceWorker.ready;
+    let subscription = await worker.pushManager.getSubscription();
+    const targetPublicKey = String(keyPayload.publicKey || "");
+
+    if (subscription && targetPublicKey) {
+      const currentServerKey = subscription.options?.applicationServerKey;
+      if (currentServerKey) {
+        const currentKey = uint8ArrayToBase64Url(new Uint8Array(currentServerKey));
+        if (currentKey !== targetPublicKey) {
+          await subscription.unsubscribe().catch(() => null);
+          subscription = null;
+        }
+      }
+    }
+
+    if (!subscription) {
+      subscription = await worker.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(targetPublicKey),
+      });
+    }
+
+    const preferences = readPreferenceForm();
+    await fetch("/notifications/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        metadata: {
+          timezoneOffsetMinutes: preferences.timezoneOffsetMinutes,
+          locale: navigator.language || "id-ID",
+        },
+        preferences,
+      }),
+    }).then(parseJsonResponse);
+  };
+
+  const showLocalNotificationProbe = async () => {
+    if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+      throw new Error("Browser tidak mendukung service worker / notification.");
+    }
+
+    const worker = await navigator.serviceWorker.ready;
+    await worker.showNotification("Probe Notifikasi Lokal", {
+      body: "Jika ini muncul, izin notif browser dan OS sudah benar.",
+      icon: "/assets/prayer-streak-logo.svg",
+      badge: "/assets/prayer-streak-logo.svg",
+      tag: "probe-local-notification",
+      renotify: true,
+      data: { url: "/profile" },
+    });
+  };
+
+  const showPageNotificationFallback = () => {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    try {
+      const note = new Notification("Fallback Notifikasi Browser", {
+        body: "Jika ini muncul tapi push test tidak, berarti masalah ada di service worker push event.",
+        icon: "/assets/prayer-streak-logo.svg",
+        tag: `fallback-${Date.now()}`,
+      });
+      window.setTimeout(() => note.close(), 7000);
+    } catch {}
+  };
+
+  const disablePushSubscription = async () => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      const worker = await navigator.serviceWorker.ready.catch(() => null);
+      const subscription = await worker?.pushManager?.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe().catch(() => null);
+        await fetch("/notifications/unsubscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        }).then(parseJsonResponse);
+      } else {
+        await fetch("/notifications/unsubscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then(parseJsonResponse);
+      }
+    }
+  };
+
+  const refreshPushState = async () => {
+    try {
+      const state = await fetch("/notifications/state").then(parseJsonResponse);
+      if (!state.enabled) {
+        setPushStatus(state.reason || "Push notification belum aktif di server.", true);
+        return;
+      }
+
+      const timeValue = `${String(state.preferences.motivationHour).padStart(2, "0")}:${String(
+        state.preferences.motivationMinute
+      ).padStart(2, "0")}`;
+      if (prayerEnabledSelect) prayerEnabledSelect.value = String(Boolean(state.preferences.prayerEnabled));
+      if (motivationEnabledSelect) motivationEnabledSelect.value = String(Boolean(state.preferences.motivationEnabled));
+      if (motivationTimeInput) motivationTimeInput.value = timeValue;
+      if (reminderMinuteSelect) reminderMinuteSelect.value = String(state.preferences.prayerReminderMinutes);
+
+      if (state.subscribed) {
+        setPushStatus(`Aktif di ${state.subscriptionCount} perangkat.`);
+      } else {
+        if (
+          Notification.permission === "granted" &&
+          "serviceWorker" in navigator &&
+          "PushManager" in window
+        ) {
+          const worker = await navigator.serviceWorker.ready.catch(() => null);
+          const existingSubscription = await worker?.pushManager?.getSubscription?.();
+          if (existingSubscription) {
+            await ensurePushSubscription();
+            setPushStatus("Subscription tersinkron ulang. Notifikasi siap.");
+            return;
+          }
+        }
+
+        setPushStatus("Belum ada perangkat terdaftar.");
+      }
+    } catch (error) {
+      setPushStatus(error.message || "Gagal memuat status push.", true);
+    }
+  };
+
+  if (!("Notification" in window)) {
+    setPushStatus("Browser tidak mendukung Notification API.", true);
+  } else {
+    refreshPushState();
+  }
+
+  enableBtn?.addEventListener("click", async () => {
+    try {
+      setPushStatus("Mengaktifkan notifikasi perangkat...");
+      await ensurePushSubscription();
+      setPushStatus("Notifikasi perangkat berhasil diaktifkan.");
+      await refreshPushState();
+    } catch (error) {
+      setPushStatus(error.message || "Gagal mengaktifkan notifikasi.", true);
+    }
+  });
+
+  disableBtn?.addEventListener("click", async () => {
+    try {
+      await disablePushSubscription();
+      setPushStatus("Notifikasi perangkat dimatikan.");
+      await refreshPushState();
+    } catch (error) {
+      setPushStatus(error.message || "Gagal mematikan notifikasi.", true);
+    }
+  });
+
+  testBtn?.addEventListener("click", async () => {
+    try {
+      setPushStatus("Menjalankan probe notifikasi lokal...");
+      await showLocalNotificationProbe();
+
+      setPushStatus("Probe lokal sukses. Mengirim push test dari server...");
+      await ensurePushSubscription();
+      await savePreferences();
+      const payload = await fetch("/notifications/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ type: "motivation" }),
+      }).then(parseJsonResponse);
+
+      if (payload.sent > 0) {
+        showPageNotificationFallback();
+        setPushStatus(
+          `Notifikasi test terkirim. attempted=${payload.attempted || 0}, sent=${payload.sent}, failed=${payload.failed || 0}`
+        );
+      } else {
+        setPushStatus(
+          `Push test tidak terkirim. attempted=${payload.attempted || 0}, sent=${payload.sent || 0}, failed=${payload.failed || 0}`,
+          true
+        );
+      }
+    } catch (error) {
+      setPushStatus(error.message || "Gagal kirim notifikasi test.", true);
+    }
+  });
+
+  motivationTimeInput?.addEventListener("change", () => {
+    savePreferences().catch(() => null);
+  });
+
+  reminderMinuteSelect?.addEventListener("change", () => {
+    savePreferences().catch(() => null);
+  });
+
+  prayerEnabledSelect?.addEventListener("change", () => {
+    savePreferences().catch(() => null);
+  });
+
+  motivationEnabledSelect?.addEventListener("change", () => {
+    savePreferences().catch(() => null);
+  });
+}
+

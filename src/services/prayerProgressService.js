@@ -1095,4 +1095,5 @@ module.exports = {
   getStatsData,
   getProfileData,
   markRestoreReflection,
+  getPrayerScheduleForDate,
 };

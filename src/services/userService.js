@@ -189,10 +189,25 @@ async function seedAdmin() {
   console.log(`Admin account created: ${ADMIN_EMAIL}`);
 }
 
+async function listUserIds() {
+  const db = getPrisma();
+
+  if (!db?.user) {
+    return memoryUsers.map((item) => item.id);
+  }
+
+  const users = await db.user.findMany({
+    select: { id: true },
+  });
+
+  return users.map((item) => item.id);
+}
+
 module.exports = {
   findById,
   findByEmail,
   createUser,
   validateUser,
   seedAdmin,
+  listUserIds,
 };

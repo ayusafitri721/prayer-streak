@@ -16,6 +16,7 @@ const profileRoutes = require("./routes/profile");
 const quranRoutes = require("./routes/quran");
 const hadisRoutes = require("./routes/hadis");
 const doaRoutes = require("./routes/doa");
+const notificationRoutes = require("./routes/notifications");
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use("/profile", profileRoutes);
 app.use("/quran", quranRoutes);
 app.use("/hadis", hadisRoutes);
 app.use("/doa", doaRoutes);
+app.use("/notifications", notificationRoutes);
 
 app.use(renderNotFound);
 app.use(renderServerError);
