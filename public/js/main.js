@@ -1,5 +1,42 @@
 const splashScreen = document.querySelector("[data-splash-screen]");
 
+const passwordToggleButtons = Array.from(document.querySelectorAll("[data-password-toggle]"));
+
+if (passwordToggleButtons.length) {
+  passwordToggleButtons.forEach((button) => {
+    const targetKey = button.dataset.passwordToggle;
+    const input = document.querySelector(`[data-password-input="${targetKey}"]`);
+    const showIcon = button.querySelector('[data-password-icon="show"]');
+    const hideIcon = button.querySelector('[data-password-icon="hide"]');
+
+    if (!input) return;
+
+    const syncPasswordState = () => {
+      const isVisible = input.type === "text";
+      if (showIcon) showIcon.classList.toggle("hidden", isVisible);
+      if (hideIcon) hideIcon.classList.toggle("hidden", !isVisible);
+      button.setAttribute(
+        "aria-label",
+        isVisible ? "Sembunyikan password" : "Tampilkan password"
+      );
+      button.setAttribute("aria-pressed", isVisible ? "true" : "false");
+    };
+
+    button.addEventListener("click", () => {
+      const cursorStart = input.selectionStart;
+      const cursorEnd = input.selectionEnd;
+      input.type = input.type === "password" ? "text" : "password";
+      input.focus({ preventScroll: true });
+      if (cursorStart !== null && cursorEnd !== null) {
+        input.setSelectionRange(cursorStart, cursorEnd);
+      }
+      syncPasswordState();
+    });
+
+    syncPasswordState();
+  });
+}
+
 if (splashScreen) {
   const splashKey = "prayer-streak-splash-seen";
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

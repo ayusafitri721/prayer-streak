@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Prayer Streak logo">
+  <defs>
+    <linearGradient id="logoBg" x1="10" y1="8" x2="88" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6F946A"/>
+      <stop offset="1" stop-color="#344E41"/>
+    </linearGradient>
+    <linearGradient id="logoMark" x1="28" y1="24" x2="69" y2="77" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C9D7B8"/>
+      <stop offset="1" stop-color="#D4A373"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="80" height="80" rx="20" fill="url(#logoBg)"/>
+  <rect x="11" y="11" width="74" height="74" rx="18" fill="none" stroke="#F6F1E9" stroke-opacity=".22" stroke-width="2"/>
+  <path d="M26 74V53c0-6 3.3-11.5 8.6-14.4L48 31l13.4 7.6C66.7 41.5 70 47 70 53v21H58V55c0-5.5-4.5-10-10-10S38 49.5 38 55v19H26Z" fill="url(#logoMark)"/>
+  <path d="M48 25c-7.2 6.2-7 16.4.8 21.9-10-1.1-16.2-9.8-13.4-18.6 1.6-5 5.9-8.7 12.6-10.9-1 2.5-1 5 .0 7.6Z" fill="#C9D7B8"/>
+  <path d="m62 23 2.3 5.2 5.3 2.3-5.3 2.3L62 38l-2.3-5.2-5.3-2.3 5.3-2.3L62 23Z" fill="#D4A373"/>
+</svg>
