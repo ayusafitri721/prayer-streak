@@ -59,36 +59,6 @@
       </form>
     </div>
 
-    <section class="mx-auto mt-5 w-full max-w-2xl rounded-2xl border border-[#A3B18A]/35 bg-[#F6F1E9]/80 p-4 sm:p-5">
-      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[#588157]">Akses Cepat</p>
-      <h2 class="mt-2 text-lg font-bold text-[#344E41]">Buka Doa Langsung</h2>
-      <p class="mt-1 text-sm text-[#344E41]/65">Pilih kategori dan masukkan ID doa untuk langsung ke detail.</p>
-      <form class="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px_auto]" data-doa-quick-open>
-        <select
-          class="rounded-xl border border-[#A3B18A]/40 bg-white px-3 py-2.5 text-sm text-[#344E41] outline-none transition focus:border-[#588157] focus:ring-2 focus:ring-[#588157]/15"
-          data-doa-quick-slug
-        >
-          <% categories.forEach((category) => { %>
-            <option value="<%= category.slug %>"><%= category.title %></option>
-          <% }) %>
-        </select>
-        <input
-          type="number"
-          min="1"
-          inputmode="numeric"
-          placeholder="ID doa"
-          class="rounded-xl border border-[#A3B18A]/40 bg-white px-3 py-2.5 text-sm text-[#344E41] outline-none transition placeholder:text-[#344E41]/40 focus:border-[#588157] focus:ring-2 focus:ring-[#588157]/15"
-          data-doa-quick-id
-        />
-        <button
-          type="submit"
-          class="inline-flex items-center justify-center rounded-xl bg-[#588157] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4B6F4E]"
-        >
-          Buka
-        </button>
-      </form>
-    </section>
-
     <% if (pageError) { %>
       <div class="mt-6 rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm text-red-700">
         <%= pageError %>

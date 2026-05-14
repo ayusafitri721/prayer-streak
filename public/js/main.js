@@ -1635,6 +1635,7 @@ if (countdownEl) {
   const prayerTime = countdownEl.dataset.prayerTime;
   const prayerName = countdownEl.dataset.prayerName || "Salat";
   const rawPrayerTimeline = countdownEl.dataset.prayerTimeline || "[]";
+  const rawImsakTimeline = countdownEl.dataset.imsakTimeline || "[]";
   const nextPrayerNameEl = countdownEl.querySelector("[data-next-prayer-name]");
   const nextPrayerTimeEl = countdownEl.querySelector("[data-next-prayer-time]");
   const nextPrayerStatusEl = countdownEl.querySelector("[data-next-prayer-status]");
@@ -1651,6 +1652,7 @@ if (countdownEl) {
   const alertTitle = document.querySelector("[data-prayer-alert-title]");
   const body = document.body;
   let currentEntryKey = prayerTime ? `${prayerName}:${prayerTime}` : "";
+  let imsakReminderEnabled = false;
 
   const getLocalDateKey = (date) => {
     const year = date.getFullYear();
@@ -1683,7 +1685,34 @@ if (countdownEl) {
     }
   };
 
+  const parseImsakReminderTimeline = () => {
+    try {
+      const parsed = JSON.parse(rawImsakTimeline);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed
+        .filter((entry) => entry && entry.dateKey && entry.time)
+        .map((entry) => {
+          const [year, month, day] = String(entry.dateKey).split("-").map(Number);
+          const [hours, minutes] = String(entry.time).split(":").map(Number);
+          const minutesBefore = Number(entry.minutesBefore || 0);
+          return {
+            ...entry,
+            minutesBefore,
+            target: new Date(year, month - 1, day, hours, minutes, 0, 0),
+            alertKey: `imsak-alert:${entry.dateKey}:${minutesBefore}`,
+          };
+        })
+        .sort((a, b) => a.target.getTime() - b.target.getTime());
+    } catch (error) {
+      return [];
+    }
+  };
+
   let prayerTimeline = parsePrayerTimeline();
+  let imsakReminderTimeline = parseImsakReminderTimeline();
   let previousNow = new Date();
   const dashboardProgressPercentEl = dashboardRoot?.querySelector("[data-dashboard-progress-percent]");
   const dashboardProgressLabelEl = dashboardRoot?.querySelector("[data-dashboard-progress-label]");
@@ -1736,6 +1765,42 @@ if (countdownEl) {
     alertModal.classList.remove("hidden");
     alertModal.classList.add("flex");
     body.classList.add("overflow-hidden");
+  };
+
+  const openImsakReminderAlert = async (entry) => {
+    if (!alertModal || !entry) return;
+    const activeAlertKey = entry.alertKey;
+    if (window.sessionStorage.getItem(activeAlertKey) === "shown") {
+      return;
+    }
+    window.sessionStorage.setItem(activeAlertKey, "shown");
+
+    const minuteLabel = entry.minutesBefore === 5 ? "5 menit" : "10 menit";
+    const titleText = `Imsak ${minuteLabel} lagi`;
+    if (alertName) alertName.textContent = "Imsak";
+    if (alertTime) alertTime.textContent = entry.time || "--:--";
+    if (alertTitle) alertTitle.textContent = titleText;
+    currentEntryKey = `Imsak:${entry.time}`;
+    if (alertStatus) {
+      alertStatus.textContent = `Menuju imsak ${minuteLabel}. Segera tuntaskan sahur.`;
+    }
+
+    alertModal.classList.remove("hidden");
+    alertModal.classList.add("flex");
+    body.classList.add("overflow-hidden");
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        const worker = await ensureAppServiceWorker();
+        await worker?.showNotification?.(titleText, {
+          body: `Waktu imsak akan tiba dalam ${minuteLabel}.`,
+          icon: "/assets/prayer-streak-logo.svg",
+          badge: "/assets/prayer-streak-logo.svg",
+          tag: `imsak-local-${entry.dateKey}-${entry.minutesBefore}`,
+          data: { url: "/dashboard" },
+        });
+      } catch {}
+    }
   };
 
   const closePrayerAlert = () => {
@@ -1923,6 +1988,22 @@ if (countdownEl) {
         .sort((a, b) => a.target.getTime() - b.target.getTime());
       countdownEl.dataset.prayerTimeline = JSON.stringify(dashboard.prayerTimeline);
     }
+    if (Array.isArray(dashboard.imsakReminderTimeline) && dashboard.imsakReminderTimeline.length) {
+      imsakReminderTimeline = dashboard.imsakReminderTimeline
+        .map((entry) => {
+          const [year, month, day] = String(entry.dateKey).split("-").map(Number);
+          const [hours, minutes] = String(entry.time).split(":").map(Number);
+          const minutesBefore = Number(entry.minutesBefore || 0);
+          return {
+            ...entry,
+            minutesBefore,
+            target: new Date(year, month - 1, day, hours, minutes, 0, 0),
+            alertKey: `imsak-alert:${entry.dateKey}:${minutesBefore}`,
+          };
+        })
+        .sort((a, b) => a.target.getTime() - b.target.getTime());
+      countdownEl.dataset.imsakTimeline = JSON.stringify(dashboard.imsakReminderTimeline);
+    }
 
     const progressPercent = computeProgressPercent(dashboard.todayCompleted, dashboard.totalToday);
     const progressLabel = computeProgressLabel(dashboard.todayCompleted, dashboard.totalToday);
@@ -2056,6 +2137,16 @@ if (countdownEl) {
       if (crossedEntry) {
         await openPrayerAlert(crossedEntry);
       }
+      if (imsakReminderEnabled && imsakReminderTimeline.length) {
+        const crossedImsakReminder = imsakReminderTimeline.find(
+          (entry) =>
+            previousNow.getTime() < entry.target.getTime() &&
+            now.getTime() >= entry.target.getTime()
+        );
+        if (crossedImsakReminder) {
+          await openImsakReminderAlert(crossedImsakReminder);
+        }
+      }
 
       const nextEntry = findNextEntry(now);
       updateNextPrayerCard(nextEntry, now);
@@ -2093,6 +2184,15 @@ if (countdownEl) {
     display.textContent = "--:--:--";
     label.textContent = `Menuju adzan ${prayerName}`;
   }
+
+  fetch("/notifications/state")
+    .then((response) => response.json().catch(() => ({})))
+    .then((state) => {
+      imsakReminderEnabled = Boolean(state?.preferences?.imsakEnabled);
+    })
+    .catch(() => {
+      imsakReminderEnabled = false;
+    });
 }
 
 const hijriCalendarModal = document.querySelector("[data-hijri-calendar-modal]");
@@ -2459,6 +2559,7 @@ if (pushSettings) {
   const disableBtn = pushSettings.querySelector("[data-push-disable]");
   const testBtn = pushSettings.querySelector("[data-push-test]");
   const prayerEnabledSelect = pushSettings.querySelector("[data-push-prayer-enabled]");
+  const imsakEnabledSelect = pushSettings.querySelector("[data-push-imsak-enabled]");
   const motivationEnabledSelect = pushSettings.querySelector("[data-push-motivation-enabled]");
   const motivationTimeInput = pushSettings.querySelector("[data-push-motivation-time]");
   const reminderMinuteSelect = pushSettings.querySelector("[data-push-reminder-minute]");
@@ -2505,6 +2606,7 @@ if (pushSettings) {
     const [hourRaw, minuteRaw] = timeValue.split(":");
     return {
       prayerEnabled: String(prayerEnabledSelect?.value || "true") === "true",
+      imsakEnabled: String(imsakEnabledSelect?.value || "false") === "true",
       motivationEnabled: String(motivationEnabledSelect?.value || "true") === "true",
       motivationHour: Number(hourRaw),
       motivationMinute: Number(minuteRaw),
@@ -2662,6 +2764,7 @@ if (pushSettings) {
         state.preferences.motivationMinute
       ).padStart(2, "0")}`;
       if (prayerEnabledSelect) prayerEnabledSelect.value = String(Boolean(state.preferences.prayerEnabled));
+      if (imsakEnabledSelect) imsakEnabledSelect.value = String(Boolean(state.preferences.imsakEnabled));
       if (motivationEnabledSelect) motivationEnabledSelect.value = String(Boolean(state.preferences.motivationEnabled));
       if (motivationTimeInput) motivationTimeInput.value = timeValue;
       if (reminderMinuteSelect) reminderMinuteSelect.value = String(state.preferences.prayerReminderMinutes);
@@ -2763,7 +2866,54 @@ if (pushSettings) {
     savePreferences().catch(() => null);
   });
 
+  imsakEnabledSelect?.addEventListener("change", () => {
+    savePreferences().catch(() => null);
+  });
+
   motivationEnabledSelect?.addEventListener("change", () => {
     savePreferences().catch(() => null);
+  });
+}
+
+const notificationPanel = document.querySelector("[data-notification-panel]");
+const notificationPanelToggles = Array.from(
+  document.querySelectorAll("[data-notification-panel-toggle]")
+);
+const notificationPanelCloseBtn = document.querySelector("[data-notification-panel-close]");
+const notificationBadges = Array.from(document.querySelectorAll("[data-notification-badge]"));
+
+if (notificationPanel && notificationPanelToggles.length) {
+  const openPanel = () => {
+    notificationPanel.classList.remove("pointer-events-none", "opacity-0");
+    notificationBadges.forEach((badge) => badge.classList.add("hidden"));
+  };
+
+  const closePanel = () => {
+    notificationPanel.classList.add("pointer-events-none", "opacity-0");
+  };
+
+  notificationPanelToggles.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (notificationPanel.classList.contains("opacity-0")) {
+        openPanel();
+      } else {
+        closePanel();
+      }
+    });
+  });
+
+  notificationPanelCloseBtn?.addEventListener("click", closePanel);
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (notificationPanel.contains(target)) return;
+    if (notificationPanelToggles.some((button) => button.contains(target))) return;
+    closePanel();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePanel();
   });
 }

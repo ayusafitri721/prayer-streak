@@ -23,7 +23,28 @@
     </div>
 
     <% if (surah.description) { %>
-      <p class="mt-5 text-center text-sm leading-7 text-[#344E41]/70"><%= surah.description %></p>
+      <% const descriptionText = String(surah.description || "").trim(); %>
+      <% const shouldCollapseDescription = descriptionText.length > 360; %>
+      <% const descriptionPreview = shouldCollapseDescription ? `${descriptionText.slice(0, 360).trim()}...` : descriptionText; %>
+      <div class="mt-5 text-center">
+        <p
+          class="text-sm leading-7 text-[#344E41]/70"
+          data-surah-description-preview
+        >
+          <%= descriptionPreview %><% if (shouldCollapseDescription) { %>
+            <button
+              type="button"
+              class="ml-1 inline font-semibold text-[#588157] underline decoration-[#588157]/40 underline-offset-2 transition hover:text-[#344E41]"
+              data-surah-description-toggle
+            >
+              Lihat selengkapnya
+            </button>
+          <% } %>
+        </p>
+        <% if (shouldCollapseDescription) { %>
+          <p class="hidden text-sm leading-7 text-[#344E41]/75" data-surah-description-full><%= descriptionText %></p>
+        <% } %>
+      </div>
     <% } %>
 
     <div class="mt-6 flex flex-wrap justify-center gap-2">
@@ -247,4 +268,17 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    (() => {
+      const previewEl = document.querySelector("[data-surah-description-preview]");
+      const fullEl = document.querySelector("[data-surah-description-full]");
+      const toggleEl = document.querySelector("[data-surah-description-toggle]");
+      if (!previewEl || !fullEl || !toggleEl) return;
+
+      toggleEl.addEventListener("click", () => {
+        previewEl.classList.add("hidden");
+        fullEl.classList.remove("hidden");
+      });
+    })();
+  </script>
 </main>

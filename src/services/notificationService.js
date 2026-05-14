@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const PRAYER_LABELS = {
+  imsak: "Imsak",
   shubuh: "Shubuh",
   dzuhur: "Dzuhur",
   ashar: "Ashar",
@@ -11,6 +12,7 @@ const PRAYER_LABELS = {
 
 const DEFAULT_PREFERENCES = {
   prayerEnabled: true,
+  imsakEnabled: false,
   motivationEnabled: true,
   motivationHour: 7,
   motivationMinute: 0,
@@ -19,6 +21,7 @@ const DEFAULT_PREFERENCES = {
 };
 
 const FALLBACK_PRAYER_TIMES = {
+  imsak: "04:35",
   shubuh: "04:45",
   dzuhur: "11:55",
   ashar: "15:20",
@@ -150,6 +153,10 @@ function sanitizePreferences(input = {}) {
       typeof input.prayerEnabled === "boolean"
         ? input.prayerEnabled
         : DEFAULT_PREFERENCES.prayerEnabled,
+    imsakEnabled:
+      typeof input.imsakEnabled === "boolean"
+        ? input.imsakEnabled
+        : DEFAULT_PREFERENCES.imsakEnabled,
     motivationEnabled:
       typeof input.motivationEnabled === "boolean"
         ? input.motivationEnabled
@@ -435,9 +442,42 @@ async function runSchedulerTick({
       }
     }
 
-    if (!prefs.prayerEnabled) continue;
+    if (!prefs.prayerEnabled && !prefs.imsakEnabled) continue;
 
     for (const [key, time] of Object.entries(prayerTimes)) {
+      if (key === "imsak") {
+        if (!prefs.imsakEnabled) {
+          continue;
+        }
+        const imsakMinute = parseClockToMinutes(time);
+        if (imsakMinute == null) continue;
+
+        const tenMinuteKey = `imsak-reminder-10:${userId}:${dateKey}`;
+        const fiveMinuteKey = `imsak-reminder-5:${userId}:${dateKey}`;
+
+        if (minuteOfDay === imsakMinute - 10 && shouldSendKey(tenMinuteKey)) {
+          await sendNotificationToUser(userId, {
+            title: "Imsak 10 Menit Lagi",
+            body: "Waktu imsak tinggal 10 menit. Siapkan diri untuk menahan makan dan minum.",
+            url: "/dashboard",
+            tag: "imsak-reminder-10",
+          });
+        }
+
+        if (minuteOfDay === imsakMinute - 5 && shouldSendKey(fiveMinuteKey)) {
+          await sendNotificationToUser(userId, {
+            title: "Imsak 5 Menit Lagi",
+            body: "Tinggal 5 menit menuju imsak. Segera tuntaskan sahur.",
+            url: "/dashboard",
+            tag: "imsak-reminder-5",
+          });
+        }
+
+        continue;
+      }
+      if (!prefs.prayerEnabled) {
+        continue;
+      }
       const prayerMinute = parseClockToMinutes(time);
       if (prayerMinute == null) continue;
 

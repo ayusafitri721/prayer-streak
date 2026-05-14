@@ -39,6 +39,7 @@ const SUNNAH_PRAYER_META = {
   },
 };
 const DEFAULT_PRAYER_TIMES = {
+  imsak: "04:35",
   shubuh: "04:45",
   dzuhur: "11:55",
   ashar: "15:20",
@@ -461,6 +462,25 @@ function getFallbackPrayerSchedule(date = new Date(), reason = null, locationOve
   };
 }
 
+function resolveImsakTime(entry = {}) {
+  const imsak = String(entry.imsak || "").trim();
+  if (/^\d{1,2}:\d{2}$/.test(imsak)) {
+    return imsak;
+  }
+
+  const subuh = String(entry.subuh || "").trim();
+  if (!/^\d{1,2}:\d{2}$/.test(subuh)) {
+    return DEFAULT_PRAYER_TIMES.imsak;
+  }
+
+  const [hoursRaw, minutesRaw] = subuh.split(":").map(Number);
+  const totalSubuhMinutes = hoursRaw * 60 + minutesRaw;
+  const totalImsakMinutes = Math.max(totalSubuhMinutes - 10, 0);
+  const imsakHours = String(Math.floor(totalImsakMinutes / 60)).padStart(2, "0");
+  const imsakMinutes = String(totalImsakMinutes % 60).padStart(2, "0");
+  return `${imsakHours}:${imsakMinutes}`;
+}
+
 function normalizePrayerScheduleEntry(entry, date = new Date(), metadata = {}) {
   return {
     dateKey: entry.tanggal_lengkap || formatLocalDateKey(date),
@@ -469,6 +489,7 @@ function normalizePrayerScheduleEntry(entry, date = new Date(), metadata = {}) {
     sourceUrl: PRAYER_API_DOCS_URL,
     warning: null,
     times: {
+      imsak: resolveImsakTime(entry),
       shubuh: entry.subuh || DEFAULT_PRAYER_TIMES.shubuh,
       dzuhur: entry.dzuhur || DEFAULT_PRAYER_TIMES.dzuhur,
       ashar: entry.ashar || DEFAULT_PRAYER_TIMES.ashar,
@@ -644,6 +665,33 @@ function buildPrayerTimelineEntries(schedule, isTomorrow = false) {
     dateKey: schedule.dateKey,
     isTomorrow,
   }));
+}
+
+function buildImsakReminderEntries(schedule) {
+  if (!schedule?.dateKey || !schedule?.times?.imsak) {
+    return [];
+  }
+
+  const [imsakHour, imsakMinute] = String(schedule.times.imsak).split(":").map(Number);
+  if (!Number.isInteger(imsakHour) || !Number.isInteger(imsakMinute)) {
+    return [];
+  }
+
+  return [10, 5]
+    .map((minutesBefore) => {
+      const totalMinutes = imsakHour * 60 + imsakMinute - minutesBefore;
+      if (totalMinutes < 0) return null;
+      const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+      const minutes = String(totalMinutes % 60).padStart(2, "0");
+      return {
+        key: `imsak-minus-${minutesBefore}`,
+        label: "Imsak",
+        time: `${hours}:${minutes}`,
+        dateKey: schedule.dateKey,
+        minutesBefore,
+      };
+    })
+    .filter(Boolean);
 }
 
 function computeLevel(xp) {
@@ -907,6 +955,10 @@ async function getDashboardData(userId, prayerLocation = null) {
     ...buildPrayerTimelineEntries(prayerSchedule, false),
     ...buildPrayerTimelineEntries(tomorrowPrayerSchedule, true),
   ];
+  const imsakReminderTimeline = [
+    ...buildImsakReminderEntries(prayerSchedule),
+    ...buildImsakReminderEntries(tomorrowPrayerSchedule),
+  ];
 
   updateAchievements(state);
 
@@ -919,6 +971,7 @@ async function getDashboardData(userId, prayerLocation = null) {
     totalToday,
     nextPrayer: await getNextPrayer(now, prayerSchedule, prayerLocation),
     prayerTimeline,
+    imsakReminderTimeline,
     checklist,
     sunnahChecklist,
     todaySunnahCompleted,

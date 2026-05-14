@@ -37,6 +37,7 @@ async function renderDashboard(req, res) {
       totalToday: 5,
       nextPrayer: { name: "Shubuh", time: "04:45" },
       prayerTimeline: [],
+      imsakReminderTimeline: [],
       checklist: [
         { key: "shubuh", label: "Shubuh" },
         { key: "dzuhur", label: "Dzuhur" },
