@@ -1,19 +1,224 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <h1 class="text-3xl font-bold text-[#344E41]">Achievements</h1>
-    <p class="mt-2 text-[#344E41]/75">Progress badge dan milestone yang kamu capai.</p>
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <% achievements.forEach((item) => { %>
-        <article class="<%= item.unlocked ? 'border-[#D4A373]/60 bg-[#D4A373]/15' : 'border-[#A3B18A]/40 bg-[#F6F1E9]' %> rounded-2xl border p-4">
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-lg font-semibold text-[#344E41]"><%= item.name %></p>
-            <span class="rounded-full border border-current px-2 py-1 text-xs text-[#588157]">
-              <%= item.unlocked ? "Unlocked" : "Locked" %>
-            </span>
+<%
+  const colorMap = {
+    green: {
+      card: "border-[#C9D7B8] bg-[#F8FBF3]",
+      badge: "from-[#3F7A4A] to-[#A3B18A]",
+      ring: "border-[#A3B18A]",
+      bar: "bg-[#4F9B57]",
+      text: "text-[#2F654D]",
+    },
+    gold: {
+      card: "border-[#F0D7B7] bg-[#FFF8ED]",
+      badge: "from-[#D9932F] to-[#F3C878]",
+      ring: "border-[#F3C878]",
+      bar: "bg-[#E6A646]",
+      text: "text-[#B7792D]",
+    },
+    blue: {
+      card: "border-[#C8D8F4] bg-[#F4F8FF]",
+      badge: "from-[#3B68B8] to-[#83A9F0]",
+      ring: "border-[#83A9F0]",
+      bar: "bg-[#4C78D2]",
+      text: "text-[#3B68B8]",
+    },
+    purple: {
+      card: "border-[#D8C8EE] bg-[#FAF6FF]",
+      badge: "from-[#7653B9] to-[#B99BEA]",
+      ring: "border-[#B99BEA]",
+      bar: "bg-[#7B58C5]",
+      text: "text-[#7653B9]",
+    },
+    red: {
+      card: "border-[#F2C9C9] bg-[#FFF6F6]",
+      badge: "from-[#C84D4D] to-[#F19A9A]",
+      ring: "border-[#F19A9A]",
+      bar: "bg-[#E46D6D]",
+      text: "text-[#C84D4D]",
+    },
+    teal: {
+      card: "border-[#BFE2DE] bg-[#F2FCFA]",
+      badge: "from-[#288A86] to-[#77C9C4]",
+      ring: "border-[#77C9C4]",
+      bar: "bg-[#36AAA4]",
+      text: "text-[#288A86]",
+    },
+  };
+
+  const filters = [
+    { key: "all", label: "Semua" },
+    { key: "streak", label: "Streak" },
+    { key: "shalat", label: "Shalat" },
+    { key: "level", label: "Level" },
+    { key: "konsistensi", label: "Konsistensi" },
+  ];
+%>
+
+<main class="mx-auto w-full max-w-[92rem] px-4 pb-12 pt-8 text-[#344E41] sm:px-6">
+  <section class="overflow-hidden rounded-[2rem] bg-[#2F654D] p-6 text-white shadow-[0_24px_70px_rgba(52,78,65,0.18)] sm:p-8">
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+      <div class="flex items-center gap-6">
+        <div class="relative grid h-32 w-32 shrink-0 place-items-center rounded-full border-[7px] border-white/50 bg-white/10 shadow-[inset_0_0_35px_rgba(255,255,255,0.08)]">
+          <div class="absolute inset-3 rounded-full bg-[#588157]/45 blur-sm"></div>
+          <svg class="relative h-16 w-16 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-[#C9D7B8]">Pencapaianmu</p>
+          <h1 class="mt-2 max-w-xl text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl">
+            Terus melangkah dalam kebaikan.
+          </h1>
+          <p class="mt-4 max-w-xl text-base font-medium leading-7 text-white/72">
+            Setiap salat yang kamu jaga, mendekatkanmu pada versi terbaik dirimu.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
+        <article class="rounded-3xl border border-white/12 bg-white/10 p-5 backdrop-blur">
+          <p class="text-sm font-semibold text-white/72">Streak Aktif</p>
+          <div class="mt-2 flex items-end gap-2">
+            <p class="text-5xl font-black"><%= achievementSummary.streak %></p>
+            <p class="pb-2 text-sm font-bold text-white/70">hari</p>
           </div>
-          <p class="mt-2 text-sm text-[#344E41]/70"><%= item.description %></p>
+          <p class="mt-5 text-sm font-semibold text-[#F4D68C]">Rekor terbaik: <%= achievementSummary.longestStreak %> hari</p>
+        </article>
+
+        <article class="rounded-3xl border border-white/12 bg-white/10 p-5 backdrop-blur">
+          <div class="grid grid-cols-7 gap-2">
+            <% weeklyTracker.forEach((day) => { %>
+              <div class="text-center">
+                <p class="text-xs font-bold text-white/62"><%= day.shortLabel %></p>
+                <div class="<%= day.isFull ? 'bg-[#91D498] text-white shadow-[0_0_18px_rgba(145,212,152,0.35)]' : day.completed > 0 ? 'bg-[#F4D68C] text-[#244338]' : 'border border-white/25 bg-transparent text-white/35' %> mx-auto mt-3 grid h-9 w-9 place-items-center rounded-full text-xs font-black">
+                  <% if (day.isFull) { %>
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <% } else if (day.completed > 0) { %>
+                    <%= day.completed %>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <p class="mt-5 text-sm font-semibold text-white/72">Jaga streak-mu hari ini.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-[2rem] border border-[#E2D8C8] bg-white/92 p-5 shadow-[0_18px_55px_rgba(52,78,65,0.08)] sm:p-7">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <h2 class="text-2xl font-black text-[#244338]">Semua Achievement</h2>
+          <span class="rounded-full bg-[#A3B18A]/18 px-3 py-1 text-xs font-black text-[#2F654D]">
+            <%= achievementSummary.unlockedCount %> / <%= achievementSummary.totalCount %>
+          </span>
+        </div>
+        <p class="mt-2 text-sm font-medium text-[#344E41]/62">Lihat badge yang sudah terbuka dan progress yang sedang kamu kejar.</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2" data-achievement-filters>
+        <% filters.forEach((filter) => { %>
+          <button type="button" data-achievement-filter="<%= filter.key %>" class="<%= filter.key === 'all' ? 'border-[#A3B18A] bg-[#F2F7EC] text-[#244338]' : 'border-[#E2D8C8] bg-white text-[#344E41]/65' %> rounded-full border px-5 py-2.5 text-sm font-bold transition hover:border-[#A3B18A] hover:text-[#244338]">
+            <%= filter.label %>
+          </button>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="mt-7 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3" data-achievement-grid>
+      <% achievements.forEach((item) => { %>
+        <% const theme = colorMap[item.color] || colorMap.green; %>
+        <article data-achievement-card data-category="<%= item.category %>" class="<%= theme.card %> rounded-[1.5rem] border p-5 transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(52,78,65,0.12)]">
+          <div class="flex items-center gap-5">
+            <div class="<%= theme.ring %> grid h-24 w-24 shrink-0 place-items-center rounded-full border-4 bg-white shadow-lg">
+              <div class="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br <%= theme.badge %> text-white shadow-inner">
+                <% if (item.icon === "flame") { %>
+                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <% } else if (item.icon === "calendar") { %>
+                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <% } else if (item.icon === "level") { %>
+                  <span class="text-3xl font-black">5</span>
+                <% } else if (item.icon === "bar") { %>
+                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 20V9M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3 20h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                <% } else if (item.icon === "medal") { %>
+                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" stroke="currentColor" stroke-width="1.8"/><path d="m9 14-2 7 5-3 5 3-2-7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m12 6 1.1 2.2 2.4.3-1.7 1.7.4 2.4-2.2-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3L12 6Z" fill="currentColor"/></svg>
+                <% } else { %>
+                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-black uppercase tracking-[0.16em] <%= theme.text %>"><%= item.type %></p>
+                  <h3 class="mt-1 text-xl font-black text-[#244338]"><%= item.name %></h3>
+                </div>
+                <span class="<%= item.unlocked ? 'bg-[#E8F4E6] text-[#2F654D]' : 'bg-[#E9E4DB] text-[#244338]/58' %> shrink-0 rounded-full px-3 py-1 text-xs font-black">
+                  <%= item.unlocked ? "Unlocked" : "Locked" %>
+                </span>
+              </div>
+              <p class="mt-2 text-sm font-medium leading-6 text-[#344E41]/66"><%= item.description %></p>
+              <div class="mt-5 h-2 overflow-hidden rounded-full bg-[#E9E4DB]">
+                <div class="<%= theme.bar %> h-full rounded-full" style="width: <%= item.percent %>%"></div>
+              </div>
+              <div class="mt-3 flex items-center justify-between text-xs font-bold text-[#344E41]/58">
+                <span><%= item.progressLabel %></span>
+                <span><%= item.percent %>%</span>
+              </div>
+            </div>
+          </div>
         </article>
       <% }) %>
     </div>
+
+    <section class="mt-7 rounded-[1.5rem] border border-[#E6D6C1] bg-[#FFF8ED] p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
+      <div class="flex items-center gap-4">
+        <span class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#A3B18A]/18 text-[#2F654D]">
+          <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <div>
+          <h3 class="text-xl font-black text-[#244338]">Terus jaga konsistensi.</h3>
+          <p class="mt-1 text-sm font-medium text-[#344E41]/66">Allah mencintai hamba-Nya yang istiqomah dalam kebaikan.</p>
+        </div>
+      </div>
+      <a href="/statistics" class="mt-5 inline-flex rounded-full bg-[#588157] px-6 py-3 text-sm font-black text-white transition hover:bg-[#344E41] sm:mt-0">
+        Lihat Progress Level ->
+      </a>
+    </section>
   </section>
 </main>
+
+<script>
+(function () {
+  var filterWrap = document.querySelector("[data-achievement-filters]");
+  var cards = Array.from(document.querySelectorAll("[data-achievement-card]"));
+  if (!filterWrap || !cards.length) return;
+
+  filterWrap.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-achievement-filter]");
+    if (!button) return;
+
+    var filter = button.getAttribute("data-achievement-filter");
+    Array.from(filterWrap.querySelectorAll("[data-achievement-filter]")).forEach(function (item) {
+      var active = item === button;
+      item.classList.toggle("border-[#A3B18A]", active);
+      item.classList.toggle("bg-[#F2F7EC]", active);
+      item.classList.toggle("text-[#244338]", active);
+      item.classList.toggle("border-[#E2D8C8]", !active);
+      item.classList.toggle("bg-white", !active);
+      item.classList.toggle("text-[#344E41]/65", !active);
+    });
+
+    cards.forEach(function (card) {
+      var visible = filter === "all" || card.getAttribute("data-category") === filter;
+      card.classList.toggle("hidden", !visible);
+    });
+  });
+})();
+</script>

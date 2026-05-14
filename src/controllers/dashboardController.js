@@ -171,11 +171,11 @@ async function renderStatistics(req, res) {
 
 async function renderAchievements(req, res) {
   const user = req.session.user;
-  const achievements = await getAchievementsData(user.id);
+  const achievementsData = await getAchievementsData(user.id);
 
   res.render("pages/achievements", {
     title: "Achievements - Prayer Streak",
-    achievements,
+    ...achievementsData,
   });
 }
 

@@ -1066,10 +1066,137 @@ async function getAchievementsData(userId) {
   const state = await getUserState(userId);
   updateAchievements(state);
 
-  return achievementsSeed.map((item) => ({
+  const totalCompleted = totalCompletedSalatInState(state);
+  const fullDays = fullCompletedDays(state);
+  const weeklyBreakdown = buildWeeklyBreakdown(state);
+  const weekCompleted = countThisWeek(state);
+  const achievementItems = [
+    {
+      slug: "first-step",
+      name: "First Step",
+      description: "Checklist salat pertama",
+      category: "shalat",
+      type: "Basic",
+      color: "green",
+      icon: "check",
+      current: Math.min(totalCompleted, 1),
+      target: 1,
+      progressLabel: `${Math.min(totalCompleted, 1)} / 1 salat`,
+      unlocked: totalCompleted >= 1,
+    },
+    {
+      slug: "full-day",
+      name: "Full Day",
+      description: "Menyelesaikan 5 salat dalam sehari",
+      category: "shalat",
+      type: "Shalat",
+      color: "teal",
+      icon: "bar",
+      current: Math.min(fullDays, 1),
+      target: 1,
+      progressLabel: `${Math.min(fullDays, 1)} / 1 hari`,
+      unlocked: fullDays >= 1,
+    },
+    {
+      slug: "streak-3",
+      name: "3 Days Streak",
+      description: "Mendapat streak selama 3 hari",
+      category: "streak",
+      type: "Streak",
+      color: "gold",
+      icon: "flame",
+      current: Math.min(state.streak, 3),
+      target: 3,
+      progressLabel: `${Math.min(state.streak, 3)} / 3 hari`,
+      unlocked: state.streak >= 3,
+    },
+    {
+      slug: "streak-7",
+      name: "7 Days Consistent",
+      description: "Mendapat streak selama 7 hari",
+      category: "konsistensi",
+      type: "Konsistensi",
+      color: "blue",
+      icon: "medal",
+      current: Math.min(state.streak, 7),
+      target: 7,
+      progressLabel: `${Math.min(state.streak, 7)} / 7 hari`,
+      unlocked: state.streak >= 7,
+    },
+    {
+      slug: "streak-30",
+      name: "30 Days Journey",
+      description: "Mendapat streak selama 30 hari",
+      category: "streak",
+      type: "Long Term",
+      color: "purple",
+      icon: "calendar",
+      current: Math.min(state.streak, 30),
+      target: 30,
+      progressLabel: `${Math.min(state.streak, 30)} / 30 hari`,
+      unlocked: state.streak >= 30,
+    },
+    {
+      slug: "level-5",
+      name: "Level 5 Reached",
+      description: "Mencapai level 5",
+      category: "level",
+      type: "Level",
+      color: "red",
+      icon: "level",
+      current: Math.min(state.level, 5),
+      target: 5,
+      progressLabel: `Level ${Math.min(state.level, 5)} / 5`,
+      unlocked: state.level >= 5,
+    },
+    {
+      slug: "weekly-target",
+      name: "Weekly Focus",
+      description: "Mencapai 25 salat dalam satu minggu",
+      category: "konsistensi",
+      type: "Mingguan",
+      color: "green",
+      icon: "spark",
+      current: Math.min(weekCompleted, 25),
+      target: 25,
+      progressLabel: `${Math.min(weekCompleted, 25)} / 25 salat`,
+      unlocked: weekCompleted >= 25,
+    },
+    {
+      slug: "level-10",
+      name: "Level 10 Journey",
+      description: "Mencapai level 10",
+      category: "level",
+      type: "Level",
+      color: "purple",
+      icon: "star",
+      current: Math.min(state.level, 10),
+      target: 10,
+      progressLabel: `Level ${Math.min(state.level, 10)} / 10`,
+      unlocked: state.level >= 10,
+    },
+  ].map((item) => ({
     ...item,
-    unlocked: state.achievements.has(item.slug),
+    percent: Math.min(Math.round((item.current / item.target) * 100), 100),
   }));
+
+  const unlockedCount = achievementItems.filter((item) => item.unlocked).length;
+
+  return {
+    achievements: achievementItems,
+    achievementSummary: {
+      unlockedCount,
+      totalCount: achievementItems.length,
+      streak: state.streak,
+      longestStreak: state.longestStreak,
+      weekCompleted,
+      level: state.level,
+    },
+    weeklyTracker: weeklyBreakdown.map((day) => ({
+      ...day,
+      shortLabel: day.label.charAt(0).toUpperCase(),
+    })),
+  };
 }
 
 async function getProfileData(userId) {
