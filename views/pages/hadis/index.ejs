@@ -1,15 +1,31 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
+<%
+  const totalHadisCount = perawiList.reduce((sum, perawi) => sum + Number(perawi.total || 0), 0);
+%>
+
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-12 sm:px-6">
+  <section class="relative overflow-hidden rounded-[2rem] border border-[#A3B18A]/35 bg-[linear-gradient(158deg,#fffdfa_0%,#f7f1e8_46%,#eef4ec_100%)] p-6 shadow-2xl shadow-[#344E41]/12">
+    <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#588157]/12 blur-3xl"></div>
+    <div class="pointer-events-none absolute -left-24 bottom-0 h-56 w-56 rounded-full bg-[#D4A373]/16 blur-3xl"></div>
+
     <div class="text-center">
-      <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#588157]/10">
+      <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.25rem] border border-[#588157]/20 bg-white/80 shadow-[0_8px_22px_rgba(52,78,65,0.12)]">
         <svg class="h-7 w-7 text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
         </svg>
       </div>
-      <h1 class="mt-4 text-3xl font-bold text-[#344E41]">Koleksi Hadis</h1>
-      <p class="mt-2 text-[#344E41]/70">
+      <p class="mt-4 text-[11px] font-semibold uppercase tracking-[0.26em] text-[#588157]">Hadis Explorer</p>
+      <h1 class="mt-2 text-3xl font-black text-[#2D453A] sm:text-4xl">Koleksi Hadis</h1>
+      <p class="mx-auto mt-2 max-w-2xl text-[#344E41]/72">
         Jelajahi koleksi hadis dari 9 perawi terpercaya. Pilih perawi untuk membaca hadis lengkap dengan teks Arab dan terjemahan.
       </p>
+      <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs">
+        <span class="rounded-full border border-[#588157]/25 bg-white/85 px-3 py-1 font-semibold text-[#588157]">
+          <%= perawiList.length %> perawi
+        </span>
+        <span class="rounded-full border border-[#A3B18A]/35 bg-white/85 px-3 py-1 font-semibold text-[#344E41]/80">
+          <%= totalHadisCount.toLocaleString("id-ID") %> hadis
+        </span>
+      </div>
     </div>
 
     <div class="mt-6 flex justify-center">
@@ -28,32 +44,68 @@
       </label>
     </div>
 
+    <section class="mx-auto mt-5 w-full max-w-2xl rounded-2xl border border-[#A3B18A]/35 bg-[#F6F1E9]/80 p-4 sm:p-5">
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[#588157]">Akses Cepat</p>
+      <h2 class="mt-2 text-lg font-bold text-[#344E41]">Buka Hadis Langsung</h2>
+      <p class="mt-1 text-sm text-[#344E41]/65">Pilih perawi lalu masukkan nomor hadis untuk langsung ke detail.</p>
+      <form class="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_140px_auto]" data-hadis-quick-open>
+        <select
+          class="rounded-xl border border-[#A3B18A]/40 bg-white px-3 py-2.5 text-sm text-[#344E41] outline-none transition focus:border-[#588157] focus:ring-2 focus:ring-[#588157]/15"
+          data-hadis-quick-slug
+        >
+          <% perawiList.forEach((perawi) => { %>
+            <option value="<%= perawi.slug %>"><%= perawi.name %></option>
+          <% }) %>
+        </select>
+        <input
+          type="number"
+          min="1"
+          inputmode="numeric"
+          placeholder="Nomor"
+          class="rounded-xl border border-[#A3B18A]/40 bg-white px-3 py-2.5 text-sm text-[#344E41] outline-none transition placeholder:text-[#344E41]/40 focus:border-[#588157] focus:ring-2 focus:ring-[#588157]/15"
+          data-hadis-quick-number
+        />
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-xl bg-[#588157] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4B6F4E]"
+        >
+          Buka
+        </button>
+      </form>
+    </section>
+
     <% if (pageError) { %>
       <div class="mt-6 rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm text-red-700">
         <%= pageError %>
       </div>
     <% } %>
 
-    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-perawi-grid>
+    <div class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" data-perawi-grid>
       <% perawiList.forEach((perawi) => { %>
         <a
           href="/hadis/<%= perawi.slug %>"
-          class="group flex items-center gap-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-4 transition hover:border-[#588157]/50 hover:bg-[#A3B18A]/15 hover:shadow-md"
+          class="group relative overflow-hidden rounded-[1.35rem] border border-[#A3B18A]/32 bg-white/90 p-4 transition hover:-translate-y-0.5 hover:border-[#588157]/55 hover:shadow-[0_16px_30px_rgba(52,78,65,0.14)]"
           data-perawi-card
           data-perawi-search-value="<%= perawi.name.toLowerCase() %>"
         >
-          <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[#588157]/25 bg-[#588157]/10 transition group-hover:bg-[#588157] group-hover:text-white">
-            <svg class="h-5 w-5 text-[#588157] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#588157] via-[#A3B18A] to-[#D4A373] opacity-80"></div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[#588157]/28 bg-[#588157]/10 transition group-hover:bg-[#588157] group-hover:text-white">
+              <svg class="h-5 w-5 text-[#588157] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="truncate text-base font-black text-[#2E443A]"><%= perawi.name %></h2>
+              <p class="mt-1 text-xs text-[#344E41]/62"><%= perawi.total.toLocaleString("id-ID") %> hadis</p>
+            </div>
+            <svg class="h-4 w-4 flex-shrink-0 text-[#A3B18A] transition group-hover:text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="truncate font-bold text-[#344E41]"><%= perawi.name %></h2>
-            <p class="mt-1 text-xs text-[#344E41]/60"><%= perawi.total.toLocaleString("id-ID") %> hadis</p>
+          <div class="mt-3 rounded-xl border border-[#A3B18A]/28 bg-[#F6F1E9]/72 px-3 py-2">
+            <p class="text-xs leading-6 text-[#344E41]/75">Telusuri hadis per nomor, baca versi Arab, dan salin terjemahan dengan cepat.</p>
           </div>
-          <svg class="h-4 w-4 flex-shrink-0 text-[#A3B18A] transition group-hover:text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
         </a>
       <% }) %>
     </div>
@@ -86,5 +138,22 @@
       empty.classList.toggle("hidden", visible > 0);
     }
   });
+
+  var quickForm = document.querySelector("[data-hadis-quick-open]");
+  var quickSlug = document.querySelector("[data-hadis-quick-slug]");
+  var quickNumber = document.querySelector("[data-hadis-quick-number]");
+
+  if (quickForm && quickSlug && quickNumber) {
+    quickForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var slug = (quickSlug.value || "").trim();
+      var number = parseInt((quickNumber.value || "").trim(), 10);
+      if (!slug || !number || number < 1) {
+        quickNumber.focus();
+        return;
+      }
+      window.location.href = "/hadis/" + slug + "/" + number;
+    });
+  }
 })();
 </script>

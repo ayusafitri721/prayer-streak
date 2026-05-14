@@ -1,13 +1,42 @@
 const axios = require("axios");
 const prisma = require("../utils/prisma");
 
-const PRAYER_KEYS = ["shubuh", "dzuhur", "ashar", "maghrib", "isya"];
+const FARDHU_PRAYER_KEYS = ["shubuh", "dzuhur", "ashar", "maghrib", "isya"];
+const SUNNAH_PRAYER_KEYS = ["qabliyah_subuh", "dhuha", "ba_diyah_dzuhur", "witir", "tahajud"];
+const ALL_PRAYER_KEYS = [...FARDHU_PRAYER_KEYS, ...SUNNAH_PRAYER_KEYS];
 const PRAYER_LABELS = {
   shubuh: "Shubuh",
   dzuhur: "Dzuhur",
   ashar: "Ashar",
   maghrib: "Maghrib",
   isya: "Isya",
+  qabliyah_subuh: "Qabliyah Subuh",
+  dhuha: "Dhuha",
+  ba_diyah_dzuhur: "Ba'diyah Dzuhur",
+  witir: "Witir",
+  tahajud: "Tahajud",
+};
+const SUNNAH_PRAYER_META = {
+  qabliyah_subuh: {
+    time: "04:20",
+    note: "Sebelum Subuh",
+  },
+  dhuha: {
+    time: "08:00",
+    note: "Setelah matahari naik",
+  },
+  ba_diyah_dzuhur: {
+    time: "12:20",
+    note: "Setelah Dzuhur",
+  },
+  witir: {
+    time: "20:15",
+    note: "Setelah Isya",
+  },
+  tahajud: {
+    time: "03:30",
+    note: "Sepertiga malam terakhir",
+  },
 };
 const DEFAULT_PRAYER_TIMES = {
   shubuh: "04:45",
@@ -92,6 +121,17 @@ function formatPrayerLogTime(date) {
   });
 }
 
+function countCompletedByKeys(dayLogs = {}, keys = FARDHU_PRAYER_KEYS) {
+  return keys.reduce((total, key) => total + (dayLogs?.[key] ? 1 : 0), 0);
+}
+
+function pickPrayerState(dayLogs = {}, keys = FARDHU_PRAYER_KEYS) {
+  return keys.reduce((result, key) => {
+    result[key] = dayLogs?.[key] || null;
+    return result;
+  }, {});
+}
+
 function getInitialState() {
   return {
     xp: 0,
@@ -151,7 +191,7 @@ function buildStateFromLogs(logs, streakDays = [], user = null) {
   });
 
   const fullDates = Array.from(state.logsByDate.entries())
-    .filter(([, dayLogs]) => Object.values(dayLogs).filter(Boolean).length >= PRAYER_KEYS.length)
+    .filter(([, dayLogs]) => countCompletedByKeys(dayLogs, FARDHU_PRAYER_KEYS) >= FARDHU_PRAYER_KEYS.length)
     .map(([dateKey]) => dateKey)
     .sort();
   const protectedDates = streakDays
@@ -282,6 +322,9 @@ async function evaluateStreakDays(userId) {
         userId: id,
         status: true,
         date: dateKeyToDbDate(dateKey),
+        prayerType: {
+          in: FARDHU_PRAYER_KEYS,
+        },
       },
     });
     const onTimeCount = await prisma.prayerLog.count({
@@ -290,6 +333,9 @@ async function evaluateStreakDays(userId) {
         status: true,
         isOnTime: true,
         date: dateKeyToDbDate(dateKey),
+        prayerType: {
+          in: FARDHU_PRAYER_KEYS,
+        },
       },
     });
     const reflectionDoneForDay = restoreReflectionDone && restoreReflectionDate === dateKey;
@@ -299,7 +345,7 @@ async function evaluateStreakDays(userId) {
 
     if (
       restoreActive &&
-      completedCount >= PRAYER_KEYS.length &&
+      completedCount >= FARDHU_PRAYER_KEYS.length &&
       onTimeCount >= 3 &&
       reflectionDoneForDay
     ) {
@@ -315,9 +361,9 @@ async function evaluateStreakDays(userId) {
       restoreProgress = 0;
       restoreReflectionDone = false;
       restoreReflectionDate = null;
-    } else if (completedCount >= PRAYER_KEYS.length) {
+    } else if (completedCount >= FARDHU_PRAYER_KEYS.length) {
       status = "FULL";
-    } else if (completedCount === PRAYER_KEYS.length - 1 && protection > 0 && !restoreActive) {
+    } else if (completedCount === FARDHU_PRAYER_KEYS.length - 1 && protection > 0 && !restoreActive) {
       status = "PROTECTED";
       protection -= 1;
       protectionUsed = true;
@@ -506,17 +552,17 @@ function isPrayerOnTimeWithSchedule(prayer, schedule, date = new Date()) {
 function buildRestoreChallengeTasks(state, today) {
   const todayLogs = state.logsByDate.get(today) || {};
   const onTimeLogs = state.onTimeByDate.get(today) || {};
-  const completedCount = Object.values(todayLogs).filter(Boolean).length;
-  const onTimeCount = Object.values(onTimeLogs).filter(Boolean).length;
+  const completedCount = countCompletedByKeys(todayLogs, FARDHU_PRAYER_KEYS);
+  const onTimeCount = countCompletedByKeys(onTimeLogs, FARDHU_PRAYER_KEYS);
   const reflectionDone = state.restoreReflectionDone;
 
   return {
     completedCount,
     onTimeCount,
     reflectionDone,
-    fullDayDone: completedCount >= PRAYER_KEYS.length,
+    fullDayDone: completedCount >= FARDHU_PRAYER_KEYS.length,
     onTimeDone: onTimeCount >= 3,
-    progress: [completedCount >= PRAYER_KEYS.length, onTimeCount >= 3, reflectionDone].filter(Boolean).length,
+    progress: [completedCount >= FARDHU_PRAYER_KEYS.length, onTimeCount >= 3, reflectionDone].filter(Boolean).length,
     target: RESTORE_CHALLENGE_TARGET,
   };
 }
@@ -559,7 +605,7 @@ async function tryCompleteRestoreChallengeToday(userId) {
 async function getNextPrayer(date = new Date(), todaySchedule = null, locationOverride = null) {
   const activeSchedule = todaySchedule || (await getPrayerScheduleForDate(date, locationOverride));
   const totalMinutes = getCurrentMinutes(date);
-  const nextPrayerKey = PRAYER_KEYS.find(
+  const nextPrayerKey = FARDHU_PRAYER_KEYS.find(
     (key) => totalMinutes < timeToMinutes(activeSchedule.times[key])
   );
 
@@ -591,7 +637,7 @@ async function getNextPrayer(date = new Date(), todaySchedule = null, locationOv
 }
 
 function buildPrayerTimelineEntries(schedule, isTomorrow = false) {
-  return PRAYER_KEYS.map((key) => ({
+  return FARDHU_PRAYER_KEYS.map((key) => ({
     key,
     label: PRAYER_LABELS[key],
     time: schedule.times[key],
@@ -604,10 +650,10 @@ function computeLevel(xp) {
   return Math.max(1, Math.floor(xp / 100) + 1);
 }
 
-function totalCompletedSalatInState(state) {
+function totalCompletedSalatInState(state, keys = FARDHU_PRAYER_KEYS) {
   let total = 0;
   for (const dayLogs of state.logsByDate.values()) {
-    total += Object.values(dayLogs).filter(Boolean).length;
+    total += countCompletedByKeys(dayLogs, keys);
   }
   return total;
 }
@@ -615,7 +661,7 @@ function totalCompletedSalatInState(state) {
 function fullCompletedDays(state) {
   let count = 0;
   for (const dayLogs of state.logsByDate.values()) {
-    if (Object.values(dayLogs).filter(Boolean).length >= PRAYER_KEYS.length) count += 1;
+    if (countCompletedByKeys(dayLogs, FARDHU_PRAYER_KEYS) >= FARDHU_PRAYER_KEYS.length) count += 1;
   }
   return count;
 }
@@ -629,7 +675,7 @@ function countThisWeek(state) {
     day.setDate(now.getDate() - i);
     const dayKey = toDateString(day);
     const logs = state.logsByDate.get(dayKey) || {};
-    total += Object.values(logs).filter(Boolean).length;
+    total += countCompletedByKeys(logs, FARDHU_PRAYER_KEYS);
   }
 
   return total;
@@ -645,15 +691,15 @@ function buildWeeklyBreakdown(state) {
 
     const dayKey = toDateString(day);
     const logs = state.logsByDate.get(dayKey) || {};
-    const completed = Object.values(logs).filter(Boolean).length;
+    const completed = countCompletedByKeys(logs, FARDHU_PRAYER_KEYS);
 
     days.push({
       date: day.toISOString(),
       label: day.toLocaleDateString("id-ID", { weekday: "short" }),
       completed,
-      total: PRAYER_KEYS.length,
-      percent: Math.round((completed / PRAYER_KEYS.length) * 100),
-      isFull: completed >= PRAYER_KEYS.length,
+      total: FARDHU_PRAYER_KEYS.length,
+      percent: Math.round((completed / FARDHU_PRAYER_KEYS.length) * 100),
+      isFull: completed >= FARDHU_PRAYER_KEYS.length,
     });
   }
 
@@ -670,13 +716,13 @@ function buildThirtyDayHeatmap(state) {
 
     const dayKey = toDateString(day);
     const logs = state.logsByDate.get(dayKey) || {};
-    const completed = Object.values(logs).filter(Boolean).length;
+    const completed = countCompletedByKeys(logs, FARDHU_PRAYER_KEYS);
 
     days.push({
       date: day.toISOString(),
       label: day.toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
       completed,
-      total: PRAYER_KEYS.length,
+      total: FARDHU_PRAYER_KEYS.length,
       level: completed >= 5 ? "great" : completed >= 3 ? "good" : completed >= 1 ? "low" : "empty",
     });
   }
@@ -687,7 +733,7 @@ function buildThirtyDayHeatmap(state) {
 function buildPrayerPerformance(state) {
   const today = new Date();
 
-  return PRAYER_KEYS.map((key) => {
+  return FARDHU_PRAYER_KEYS.map((key) => {
     let completed = 0;
 
     for (let offset = 6; offset >= 0; offset -= 1) {
@@ -716,7 +762,7 @@ function countCurrentMonth(state) {
 
   state.logsByDate.forEach((logs, dateKey) => {
     if (dateKey.startsWith(monthPrefix)) {
-      total += Object.values(logs).filter(Boolean).length;
+      total += countCompletedByKeys(logs, FARDHU_PRAYER_KEYS);
     }
   });
 
@@ -768,7 +814,7 @@ function buildWeeklyInsights(state, weeklyBreakdown, prayerPerformance) {
   );
   const bestDay = weeklyBreakdown.reduce(
     (best, day) => (day.completed > best.completed ? day : best),
-    { label: "Belum ada", completed: 0, total: PRAYER_KEYS.length }
+    { label: "Belum ada", completed: 0, total: FARDHU_PRAYER_KEYS.length }
   );
   const remainingToRecord = Math.max(state.longestStreak + 1 - state.streak, 1);
 
@@ -802,10 +848,10 @@ function updateAchievements(state) {
   const today = toDateString(new Date());
   const todayLogs = state.logsByDate.get(today) || {};
   const fullDayReached = Array.from(state.logsByDate.values()).some(
-    (dayLog) => Object.values(dayLog).filter(Boolean).length >= PRAYER_KEYS.length
+    (dayLog) => countCompletedByKeys(dayLog, FARDHU_PRAYER_KEYS) >= FARDHU_PRAYER_KEYS.length
   );
 
-  const totalCompleted = totalCompletedSalatInState(state);
+  const totalCompleted = totalCompletedSalatInState(state, ALL_PRAYER_KEYS);
   const unlockedNow = [];
 
   const checkAchievement = (slug, condition, name) => {
@@ -837,22 +883,25 @@ async function getDashboardData(userId, prayerLocation = null) {
   tomorrowDate.setDate(now.getDate() + 1);
   const tomorrowPrayerSchedule = await getPrayerScheduleForDate(tomorrowDate, prayerLocation);
 
-  const todayState = {
-    shubuh: todayLogs.shubuh || null,
-    dzuhur: todayLogs.dzuhur || null,
-    ashar: todayLogs.ashar || null,
-    maghrib: todayLogs.maghrib || null,
-    isya: todayLogs.isya || null,
-  };
+  const todayState = pickPrayerState(todayLogs, ALL_PRAYER_KEYS);
   const restoreChallengeTasks = buildRestoreChallengeTasks(state, today);
 
-  const todayCompleted = Object.values(todayState).filter(Boolean).length;
-  const totalToday = PRAYER_KEYS.length;
-  const checklist = PRAYER_KEYS.map((key) => ({
+  const todayCompleted = countCompletedByKeys(todayState, FARDHU_PRAYER_KEYS);
+  const todaySunnahCompleted = countCompletedByKeys(todayState, SUNNAH_PRAYER_KEYS);
+  const totalToday = FARDHU_PRAYER_KEYS.length;
+  const checklist = FARDHU_PRAYER_KEYS.map((key) => ({
     key,
     label: PRAYER_LABELS[key],
     time: prayerSchedule.times[key],
     isAvailable: canCompletePrayerWithSchedule(key, prayerSchedule, now),
+  }));
+  const sunnahChecklist = SUNNAH_PRAYER_KEYS.map((key) => ({
+    key,
+    label: PRAYER_LABELS[key],
+    time: SUNNAH_PRAYER_META[key]?.time || "--:--",
+    note: SUNNAH_PRAYER_META[key]?.note || "Opsional",
+    isAvailable: true,
+    isSunnah: true,
   }));
   const prayerTimeline = [
     ...buildPrayerTimelineEntries(prayerSchedule, false),
@@ -871,8 +920,11 @@ async function getDashboardData(userId, prayerLocation = null) {
     nextPrayer: await getNextPrayer(now, prayerSchedule, prayerLocation),
     prayerTimeline,
     checklist,
+    sunnahChecklist,
+    todaySunnahCompleted,
+    totalSunnahToday: SUNNAH_PRAYER_KEYS.length,
     todayState,
-    consistencyPercent: Math.round((countThisWeek(state) / (PRAYER_KEYS.length * 7)) * 100),
+    consistencyPercent: Math.round((countThisWeek(state) / (FARDHU_PRAYER_KEYS.length * 7)) * 100),
     weekCompleted: countThisWeek(state),
     fullDays: fullCompletedDays(state),
     streakActive: state.streak > 0,
@@ -885,7 +937,7 @@ async function getDashboardData(userId, prayerLocation = null) {
     dailyBonusXp: DAILY_BONUS_XP,
     currentLevelBase: (state.level - 1) * 100,
     nextLevelTarget: state.level * 100,
-    totalCompletedSalat: totalCompletedSalatInState(state),
+    totalCompletedSalat: totalCompletedSalatInState(state, ALL_PRAYER_KEYS),
     weeklyBreakdown: buildWeeklyBreakdown(state),
     streakProtection: state.streakProtection,
     maxStreakProtection: MAX_STREAK_PROTECTION,
@@ -899,7 +951,7 @@ async function getDashboardData(userId, prayerLocation = null) {
 }
 
 async function completePrayer(userId, prayer, prayerLocation = null) {
-  if (!PRAYER_KEYS.includes(prayer)) {
+  if (!ALL_PRAYER_KEYS.includes(prayer)) {
     return {
       changed: false,
       message: "Jenis salat tidak valid.",
@@ -909,9 +961,12 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
   }
 
   const state = await getUserState(userId);
+  const isFardhuPrayer = FARDHU_PRAYER_KEYS.includes(prayer);
   const now = new Date();
   const today = toDateString(now);
-  const prayerSchedule = await getPrayerScheduleForDate(now, prayerLocation);
+  const prayerSchedule = isFardhuPrayer
+    ? await getPrayerScheduleForDate(now, prayerLocation)
+    : null;
   const todayLogs = state.logsByDate.get(today) || {};
 
   if (todayLogs[prayer]) {
@@ -923,7 +978,7 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
     };
   }
 
-  if (!canCompletePrayerWithSchedule(prayer, prayerSchedule, now)) {
+  if (isFardhuPrayer && !canCompletePrayerWithSchedule(prayer, prayerSchedule, now)) {
     return {
       changed: false,
       message: `${PRAYER_LABELS[prayer]} belum bisa dicatat sebelum jam ${prayerSchedule.times[prayer]}.`,
@@ -933,11 +988,13 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
   }
 
   const beforeLevel = state.level;
-  const completedTodayBefore = Object.values(todayLogs).filter(Boolean).length;
+  const completedTodayBefore = countCompletedByKeys(todayLogs, FARDHU_PRAYER_KEYS);
   const xpEarned =
     XP_PER_PRAYER +
-    (completedTodayBefore + 1 === PRAYER_KEYS.length ? DAILY_BONUS_XP : 0);
-  const isOnTime = isPrayerOnTimeWithSchedule(prayer, prayerSchedule, now);
+    (isFardhuPrayer && completedTodayBefore + 1 === FARDHU_PRAYER_KEYS.length ? DAILY_BONUS_XP : 0);
+  const isOnTime = isFardhuPrayer
+    ? isPrayerOnTimeWithSchedule(prayer, prayerSchedule, now)
+    : false;
 
   try {
     await prisma.$transaction([
@@ -959,7 +1016,7 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
           reason:
             xpEarned > XP_PER_PRAYER
               ? `${PRAYER_LABELS[prayer]} selesai + bonus full day`
-              : `${PRAYER_LABELS[prayer]} selesai`,
+              : `${PRAYER_LABELS[prayer]} selesai${isFardhuPrayer ? "" : " (Sunnah)"}`,
           relatedDate: dateKeyToDbDate(today),
         },
       }),
@@ -982,7 +1039,7 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
 
   return {
     changed: true,
-    message: "Salat berhasil dicatat.",
+    message: isFardhuPrayer ? "Salat berhasil dicatat." : "Salat sunnah berhasil dicatat.",
     leveledUp,
     latestAchievement: updatedState.latestAchievement,
   };
@@ -1021,17 +1078,17 @@ async function getStatsData(userId) {
   const state = await getUserState(userId);
   const weeklyBreakdown = buildWeeklyBreakdown(state);
   const totalThisWeek = countThisWeek(state);
-  const weeklyTarget = PRAYER_KEYS.length * 7;
+  const weeklyTarget = FARDHU_PRAYER_KEYS.length * 7;
   const monthlyTotal = countCurrentMonth(state);
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const monthlyTarget = daysInMonth * PRAYER_KEYS.length;
+  const monthlyTarget = daysInMonth * FARDHU_PRAYER_KEYS.length;
   const monthlyPercent = Math.round((monthlyTotal / monthlyTarget) * 100);
   const dailyAverage = Number((totalThisWeek / 7).toFixed(1));
   const prayerPerformance = buildPrayerPerformance(state);
   const bestDay = weeklyBreakdown.reduce(
     (best, day) => (day.completed > best.completed ? day : best),
-    { label: "", completed: 0, total: PRAYER_KEYS.length }
+    { label: "", completed: 0, total: FARDHU_PRAYER_KEYS.length }
   );
 
   return {
@@ -1066,7 +1123,7 @@ async function getAchievementsData(userId) {
   const state = await getUserState(userId);
   updateAchievements(state);
 
-  const totalCompleted = totalCompletedSalatInState(state);
+  const totalCompleted = totalCompletedSalatInState(state, ALL_PRAYER_KEYS);
   const fullDays = fullCompletedDays(state);
   const weeklyBreakdown = buildWeeklyBreakdown(state);
   const weekCompleted = countThisWeek(state);

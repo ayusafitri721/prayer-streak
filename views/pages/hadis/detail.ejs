@@ -1,6 +1,13 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
+<style>
+  .hadis-reader-focus [data-hadis-meta],
+  .hadis-reader-focus [data-hadis-aux] {
+    display: none !important;
+  }
+</style>
+
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-28 sm:px-6 md:pb-14">
   <section
-    class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10"
+    class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10"
     data-hadis-detail
     data-hadis-name="<%= hadis.name %>"
     data-hadis-slug="<%= hadis.slug %>"
@@ -9,7 +16,7 @@
     data-hadis-translation="<%= hadis.id %>"
   >
     <!-- Breadcrumb -->
-    <nav class="flex flex-wrap items-center gap-1.5 text-sm text-[#344E41]/60">
+    <nav class="flex flex-wrap items-center gap-1.5 text-sm text-[#344E41]/60" data-hadis-meta>
       <a href="/hadis" class="transition hover:text-[#588157]">Hadis</a>
       <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -21,7 +28,7 @@
       <span class="font-medium text-[#344E41]">Hadis No. <%= hadis.number %></span>
     </nav>
 
-    <div class="mt-6 text-center">
+    <div class="mt-6 text-center" data-hadis-meta>
       <span class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#588157]/25 bg-[#588157]/10 text-sm font-bold text-[#588157]">
         <%= hadis.number %>
       </span>
@@ -30,19 +37,50 @@
       <div class="mx-auto mt-5 h-px w-32 bg-gradient-to-r from-transparent via-[#A3B18A] to-transparent"></div>
     </div>
 
-    <!-- Arabic text -->
-    <div class="mt-8 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
-      <p class="text-right font-[Amiri,serif] text-2xl leading-[2.5] text-[#344E41] sm:text-3xl" dir="rtl"><%= hadis.arab %></p>
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2" data-hadis-aux>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/40 bg-white px-3.5 py-2 text-xs font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-hadis-reader-focus
+      >
+        Mode Fokus
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/35 bg-white text-lg font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-hadis-font-dec
+        aria-label="Perkecil teks"
+      >
+        A-
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/35 bg-white text-lg font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-hadis-font-inc
+        aria-label="Perbesar teks"
+      >
+        A+
+      </button>
     </div>
 
-    <!-- Translation -->
-    <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
-      <p class="text-xs font-semibold uppercase tracking-wider text-[#588157]">Terjemahan</p>
-      <p class="mt-3 text-sm leading-7 text-[#344E41]/80"><%= hadis.id %></p>
+    <div class="mt-6 space-y-4" data-hadis-reader-content>
+      <div class="rounded-3xl border border-[#A3B18A]/30 bg-gradient-to-b from-[#FDFBF8] to-[#F6F1E9]/90 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+        <p class="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#588157]">Teks Arab</p>
+        <p
+          class="text-right font-[Amiri,serif] text-[clamp(1.8rem,5vw,2.4rem)] leading-[2.35] text-[#2E3E36]"
+          dir="rtl"
+          data-hadis-arabic-text
+        ><%= hadis.arab %></p>
+      </div>
+
+      <div class="rounded-3xl border border-[#A3B18A]/30 bg-white/90 p-6">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#588157]">Terjemahan</p>
+        <p class="mt-3 text-[1.02rem] leading-8 text-[#2E3E36]/88" data-hadis-translation-text><%= hadis.id %></p>
+      </div>
     </div>
 
     <!-- Info + 3-dot menu -->
-    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs" data-hadis-aux>
       <span class="rounded-full border border-[#588157]/25 bg-[#588157]/10 px-3 py-1 font-medium text-[#588157]">HR. <%= hadis.name %></span>
       <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-[#344E41]/70">No. <%= hadis.number %></span>
       <button
@@ -59,9 +97,9 @@
     </div>
 
     <!-- Navigation prev/next -->
-    <div class="mt-6 flex flex-wrap justify-center gap-2">
+    <div class="mt-6 flex flex-wrap justify-center gap-2" data-hadis-aux>
       <% if (hadis.number > 1) { %>
-        <a href="/hadis/<%= hadis.slug %>/<%= hadis.number - 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+        <a href="/hadis/<%= hadis.slug %>/<%= hadis.number - 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20" data-hadis-prev>
           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
@@ -74,14 +112,66 @@
         </svg>
         Daftar Hadis
       </a>
-      <a href="/hadis/<%= hadis.slug %>/<%= hadis.number + 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+      <a href="/hadis/<%= hadis.slug %>/<%= hadis.number + 1 %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20" data-hadis-next>
         Hadis <%= hadis.number + 1 %>
         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </a>
     </div>
+    <p class="mt-3 text-center text-xs text-[#344E41]/55" data-hadis-aux>
+      Shortcut: tekan <kbd class="rounded border border-[#A3B18A]/40 bg-white px-1.5 py-0.5">Left</kbd> untuk sebelumnya dan <kbd class="rounded border border-[#A3B18A]/40 bg-white px-1.5 py-0.5">Right</kbd> untuk selanjutnya.
+    </p>
   </section>
+
+  <div class="fixed inset-x-0 bottom-0 z-50 border-t border-[#A3B18A]/35 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:hidden">
+    <div class="mx-auto flex w-full max-w-5xl items-center gap-2">
+      <% if (hadis.number > 1) { %>
+        <a
+          href="/hadis/<%= hadis.slug %>/<%= hadis.number - 1 %>"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+          aria-label="Hadis sebelumnya"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+      <% } %>
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+        data-hadis-sticky-copy
+        aria-label="Salin hadis"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+        data-hadis-sticky-focus
+        aria-label="Mode fokus"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4"/>
+        </svg>
+      </button>
+      <a href="/hadis/<%= hadis.slug %>" class="inline-flex flex-1 items-center justify-center rounded-xl bg-[#588157] px-3 py-2.5 text-sm font-semibold text-white">
+        Daftar Hadis
+      </a>
+      <a
+        href="/hadis/<%= hadis.slug %>/<%= hadis.number + 1 %>"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+        aria-label="Hadis selanjutnya"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
 
   <!-- Hidden share image template 540x960 → scale 2x = 1080x1920 (9:16 story) -->
   <div id="hadis-share-image-card" style="position:fixed;left:-9999px;top:0;width:540px;height:960px;font-family:sans-serif;overflow:hidden;">
@@ -134,4 +224,94 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    (() => {
+      const page = document.querySelector("[data-hadis-detail]");
+      const prevLink = document.querySelector("[data-hadis-prev]");
+      const nextLink = document.querySelector("[data-hadis-next]");
+      const focusBtn = document.querySelector("[data-hadis-reader-focus]");
+      const stickyFocusBtn = document.querySelector("[data-hadis-sticky-focus]");
+      const arabicText = document.querySelector("[data-hadis-arabic-text]");
+      const translationText = document.querySelector("[data-hadis-translation-text]");
+      const fontDecBtn = document.querySelector("[data-hadis-font-dec]");
+      const fontIncBtn = document.querySelector("[data-hadis-font-inc]");
+      const stickyCopyBtn = document.querySelector("[data-hadis-sticky-copy]");
+      const body = document.body;
+
+      const state = {
+        arabicScale: 1,
+        translationScale: 1,
+        focus: false,
+      };
+
+      const applyScale = () => {
+        if (arabicText) {
+          arabicText.style.fontSize = `${2.25 * state.arabicScale}rem`;
+          arabicText.style.lineHeight = `${2.3 + (state.arabicScale - 1) * 0.2}`;
+        }
+        if (translationText) {
+          translationText.style.fontSize = `${1.02 * state.translationScale}rem`;
+          translationText.style.lineHeight = `${2 + (state.translationScale - 1) * 0.4}`;
+        }
+      };
+
+      const toggleFocus = () => {
+        state.focus = !state.focus;
+        body.classList.toggle("hadis-reader-focus", state.focus);
+        const label = state.focus ? "Keluar Fokus" : "Mode Fokus";
+        if (focusBtn) focusBtn.textContent = label;
+      };
+
+      focusBtn?.addEventListener("click", toggleFocus);
+      stickyFocusBtn?.addEventListener("click", toggleFocus);
+      fontIncBtn?.addEventListener("click", () => {
+        state.arabicScale = Math.min(1.35, state.arabicScale + 0.05);
+        state.translationScale = Math.min(1.35, state.translationScale + 0.05);
+        applyScale();
+      });
+      fontDecBtn?.addEventListener("click", () => {
+        state.arabicScale = Math.max(0.85, state.arabicScale - 0.05);
+        state.translationScale = Math.max(0.85, state.translationScale - 0.05);
+        applyScale();
+      });
+
+      const showToast = (message) => {
+        const old = document.getElementById("hadis-reader-toast");
+        if (old) old.remove();
+        const toast = document.createElement("div");
+        toast.id = "hadis-reader-toast";
+        toast.className = "fixed bottom-20 left-1/2 z-[120] -translate-x-1/2 rounded-full bg-[#244338] px-4 py-2 text-xs font-semibold text-white shadow-xl md:bottom-6";
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        window.setTimeout(() => toast.remove(), 1800);
+      };
+
+      stickyCopyBtn?.addEventListener("click", async () => {
+        if (!page) return;
+        const text = `${page.dataset.hadisName} No. ${page.dataset.hadisNumber}\n\n${page.dataset.hadisArab}\n\n${page.dataset.hadisTranslation}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Hadis berhasil disalin.");
+        } catch {
+          showToast("Gagal menyalin hadis.");
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.defaultPrevented) return;
+        const target = event.target;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+
+        if (event.key === "ArrowLeft" && prevLink) {
+          window.location.href = prevLink.href;
+        }
+        if (event.key === "ArrowRight" && nextLink) {
+          window.location.href = nextLink.href;
+        }
+      });
+
+      applyScale();
+    })();
+  </script>
 </main>
+

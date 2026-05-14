@@ -14,6 +14,16 @@ function toDateOnlyKey(value) {
   return date.toISOString().slice(0, 10);
 }
 
+function matchesPrayerTypeFilter(prayerType, filter) {
+  if (filter == null) return true;
+  if (typeof filter === "string") return prayerType === filter;
+  if (Array.isArray(filter)) return filter.includes(prayerType);
+  if (typeof filter === "object" && Array.isArray(filter.in)) {
+    return filter.in.includes(prayerType);
+  }
+  return true;
+}
+
 function createMemoryPrismaClient() {
   const store = {
     users: [],
@@ -88,6 +98,7 @@ function createMemoryPrismaClient() {
         let rows = store.prayerLogs.filter((item) => {
           if (where.userId != null && item.userId !== Number(where.userId)) return false;
           if (where.status != null && item.status !== Boolean(where.status)) return false;
+          if (!matchesPrayerTypeFilter(item.prayerType, where.prayerType)) return false;
           return true;
         });
 
@@ -105,6 +116,7 @@ function createMemoryPrismaClient() {
         let rows = store.prayerLogs.filter((item) => {
           if (where.userId != null && item.userId !== Number(where.userId)) return false;
           if (where.status != null && item.status !== Boolean(where.status)) return false;
+          if (!matchesPrayerTypeFilter(item.prayerType, where.prayerType)) return false;
           return true;
         });
 
@@ -135,6 +147,7 @@ function createMemoryPrismaClient() {
           if (where.status != null && item.status !== Boolean(where.status)) return false;
           if (where.isOnTime != null && item.isOnTime !== Boolean(where.isOnTime)) return false;
           if (where.date != null && toDateOnlyKey(item.date) !== toDateOnlyKey(where.date)) return false;
+          if (!matchesPrayerTypeFilter(item.prayerType, where.prayerType)) return false;
           return true;
         }).length;
       },

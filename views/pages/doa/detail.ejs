@@ -1,6 +1,20 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <nav class="flex flex-wrap items-center gap-1.5 text-sm text-[#344E41]/60">
+<style>
+  .doa-reader-focus [data-doa-meta],
+  .doa-reader-focus [data-doa-aux] {
+    display: none !important;
+  }
+</style>
+
+<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-28 sm:px-6 md:pb-14">
+  <section
+    class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/85 p-6 shadow-2xl shadow-[#344E41]/10"
+    data-doa-detail
+    data-doa-title="<%= doa.title %>"
+    data-doa-arabic="<%= doa.arabic %>"
+    data-doa-translation="<%= doa.translation %>"
+    data-doa-category="<%= doa.categoryTitle %>"
+  >
+    <nav class="flex flex-wrap items-center gap-1.5 text-sm text-[#344E41]/60" data-doa-meta>
       <a href="/doa" class="transition hover:text-[#588157]">Doa</a>
       <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -12,7 +26,7 @@
       <span class="font-medium text-[#344E41]"><%= doa.title %></span>
     </nav>
 
-    <div class="mt-6 text-center">
+    <div class="mt-6 text-center" data-doa-meta>
       <span class="inline-flex h-12 min-w-12 items-center justify-center rounded-full border border-[#588157]/25 bg-[#588157]/10 px-4 text-sm font-bold text-[#588157]">
         <%= doa.id %>
       </span>
@@ -21,42 +35,99 @@
       <div class="mx-auto mt-5 h-px w-32 bg-gradient-to-r from-transparent via-[#A3B18A] to-transparent"></div>
     </div>
 
-    <div class="mt-8 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
-      <p class="text-right font-[Amiri,serif] text-2xl leading-[2.5] text-[#344E41] sm:text-3xl" dir="rtl"><%= doa.arabic %></p>
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2" data-doa-aux>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/40 bg-white px-3.5 py-2 text-xs font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-doa-reader-focus
+      >
+        Mode Fokus
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/35 bg-white text-lg font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-doa-font-dec
+        aria-label="Perkecil teks"
+      >
+        A-
+      </button>
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/35 bg-white text-lg font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-doa-font-inc
+        aria-label="Perbesar teks"
+      >
+        A+
+      </button>
     </div>
 
-    <% if (doa.latin) { %>
-      <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
-        <p class="text-xs font-semibold uppercase tracking-wider text-[#588157]">Transliterasi</p>
-        <p class="mt-3 text-sm italic leading-7 text-[#344E41]/80"><%= doa.latin %></p>
+    <div class="mt-6 space-y-4" data-doa-reader-content>
+      <div class="rounded-3xl border border-[#A3B18A]/30 bg-gradient-to-b from-[#FDFBF8] to-[#F6F1E9]/90 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+        <p class="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-[#588157]">Teks Arab</p>
+        <p
+          class="text-right font-[Amiri,serif] text-[clamp(1.8rem,5vw,2.4rem)] leading-[2.35] text-[#2E3E36]"
+          dir="rtl"
+          data-doa-arabic-text
+        ><%= doa.arabic %></p>
       </div>
-    <% } %>
 
-    <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
-      <p class="text-xs font-semibold uppercase tracking-wider text-[#588157]"><%= doa.translationLabel || 'Terjemahan' %></p>
-      <p class="mt-3 text-sm leading-7 text-[#344E41]/80"><%= doa.translation %></p>
+      <% if (doa.latin) { %>
+        <div class="rounded-3xl border border-[#A3B18A]/30 bg-white/90 p-6">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#588157]">Transliterasi</p>
+          <p class="mt-3 text-[1.02rem] italic leading-8 text-[#2E3E36]/82" data-doa-latin-text><%= doa.latin %></p>
+        </div>
+      <% } %>
+
+      <div class="rounded-3xl border border-[#A3B18A]/30 bg-white/90 p-6">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#588157]"><%= doa.translationLabel || 'Terjemahan' %></p>
+        <p class="mt-3 text-[1.02rem] leading-8 text-[#2E3E36]/88" data-doa-translation-text><%= doa.translation %></p>
+      </div>
     </div>
 
     <% if (doa.notes) { %>
-      <div class="mt-4 rounded-2xl border border-[#D4A373]/30 bg-[#FFF9F1] p-6">
+      <div class="mt-4 rounded-2xl border border-[#D4A373]/30 bg-[#FFF9F1] p-6" data-doa-aux>
         <p class="text-xs font-semibold uppercase tracking-wider text-[#B07A32]">Catatan</p>
         <p class="mt-3 text-sm leading-7 text-[#344E41]/80"><%= doa.notes %></p>
       </div>
     <% } %>
 
-    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs" data-doa-aux>
       <span class="rounded-full border border-[#588157]/25 bg-[#588157]/10 px-3 py-1 font-medium text-[#588157]"><%= doa.categoryTitle %></span>
       <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-[#344E41]/70">ID <%= doa.id %></span>
     </div>
 
-    <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6">
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2" data-doa-actions data-doa-aux>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/35 bg-white px-4 py-2 text-sm font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-doa-copy-arabic
+      >
+        Salin Arab
+      </button>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/35 bg-white px-4 py-2 text-sm font-semibold text-[#344E41] transition hover:border-[#588157]/45 hover:text-[#588157]"
+        data-doa-copy-translation
+      >
+        Salin Terjemahan
+      </button>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-full bg-[#588157] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4B6F4E]"
+        data-doa-share
+      >
+        Bagikan
+      </button>
+    </div>
+
+    <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-6" data-doa-aux>
       <p class="text-xs font-semibold uppercase tracking-wider text-[#588157]">Sumber</p>
       <p class="mt-3 text-sm leading-7 text-[#344E41]/80"><%= doa.source %></p>
     </div>
 
-    <div class="mt-6 flex flex-wrap justify-center gap-2">
+    <div class="mt-6 flex flex-wrap justify-center gap-2" data-doa-aux>
       <% if (previous) { %>
-        <a href="/doa/<%= doa.slug %>/<%= previous.id %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+        <a href="/doa/<%= doa.slug %>/<%= previous.id %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20" data-doa-prev>
           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
@@ -70,7 +141,7 @@
         Daftar Doa
       </a>
       <% if (next) { %>
-        <a href="/doa/<%= doa.slug %>/<%= next.id %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
+        <a href="/doa/<%= doa.slug %>/<%= next.id %>" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20" data-doa-next>
           Doa Selanjutnya
           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -78,5 +149,199 @@
         </a>
       <% } %>
     </div>
+    <p class="mt-3 text-center text-xs text-[#344E41]/55" data-doa-aux>
+      Shortcut: tekan <kbd class="rounded border border-[#A3B18A]/40 bg-white px-1.5 py-0.5">Left</kbd> untuk sebelumnya dan <kbd class="rounded border border-[#A3B18A]/40 bg-white px-1.5 py-0.5">Right</kbd> untuk selanjutnya.
+    </p>
   </section>
 </main>
+
+<div class="fixed inset-x-0 bottom-0 z-50 border-t border-[#A3B18A]/35 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 md:hidden">
+  <div class="mx-auto flex w-full max-w-5xl items-center gap-2">
+    <% if (previous) { %>
+      <a
+        href="/doa/<%= doa.slug %>/<%= previous.id %>"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+        aria-label="Doa sebelumnya"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </a>
+    <% } %>
+    <button
+      type="button"
+      class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+      data-doa-sticky-copy
+      aria-label="Salin doa"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <rect x="9" y="9" width="13" height="13" rx="2"/>
+        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+      data-doa-sticky-focus
+      aria-label="Mode fokus"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path d="M4 9V5a1 1 0 011-1h4M20 9V5a1 1 0 00-1-1h-4M4 15v4a1 1 0 001 1h4M20 15v4a1 1 0 01-1 1h-4"/>
+      </svg>
+    </button>
+    <a href="/doa/<%= doa.slug %>" class="inline-flex flex-1 items-center justify-center rounded-xl bg-[#588157] px-3 py-2.5 text-sm font-semibold text-white">
+      Daftar Doa
+    </a>
+    <% if (next) { %>
+      <a
+        href="/doa/<%= doa.slug %>/<%= next.id %>"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#344E41]"
+        aria-label="Doa selanjutnya"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    <% } %>
+  </div>
+</div>
+
+<script>
+(() => {
+  const detail = document.querySelector("[data-doa-detail]");
+  if (!detail) return;
+
+  const payload = {
+    title: detail.dataset.doaTitle || "",
+    arabic: detail.dataset.doaArabic || "",
+    translation: detail.dataset.doaTranslation || "",
+    category: detail.dataset.doaCategory || "",
+  };
+
+  const copyArabicBtn = document.querySelector("[data-doa-copy-arabic]");
+  const copyTranslationBtn = document.querySelector("[data-doa-copy-translation]");
+  const shareBtn = document.querySelector("[data-doa-share]");
+  const prevLink = document.querySelector("[data-doa-prev]");
+  const nextLink = document.querySelector("[data-doa-next]");
+  const focusBtn = document.querySelector("[data-doa-reader-focus]");
+  const stickyFocusBtn = document.querySelector("[data-doa-sticky-focus]");
+  const stickyCopyBtn = document.querySelector("[data-doa-sticky-copy]");
+  const fontIncBtn = document.querySelector("[data-doa-font-inc]");
+  const fontDecBtn = document.querySelector("[data-doa-font-dec]");
+  const arabicText = document.querySelector("[data-doa-arabic-text]");
+  const translationText = document.querySelector("[data-doa-translation-text]");
+  const latinText = document.querySelector("[data-doa-latin-text]");
+  const body = document.body;
+
+  const state = {
+    arabicScale: 1,
+    translationScale: 1,
+    focus: false,
+  };
+
+  const applyScale = () => {
+    if (arabicText) {
+      arabicText.style.fontSize = `${2.25 * state.arabicScale}rem`;
+      arabicText.style.lineHeight = `${2.3 + (state.arabicScale - 1) * 0.2}`;
+    }
+    if (translationText) {
+      translationText.style.fontSize = `${1.02 * state.translationScale}rem`;
+      translationText.style.lineHeight = `${2 + (state.translationScale - 1) * 0.4}`;
+    }
+    if (latinText) {
+      latinText.style.fontSize = `${1.02 * state.translationScale}rem`;
+      latinText.style.lineHeight = `${2 + (state.translationScale - 1) * 0.35}`;
+    }
+  };
+
+  const toggleFocus = () => {
+    state.focus = !state.focus;
+    body.classList.toggle("doa-reader-focus", state.focus);
+    const label = state.focus ? "Keluar Fokus" : "Mode Fokus";
+    if (focusBtn) focusBtn.textContent = label;
+  };
+
+  const showToast = (message) => {
+    const existing = document.getElementById("doa-action-toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "doa-action-toast";
+    toast.className = "fixed bottom-5 left-1/2 z-[120] -translate-x-1/2 rounded-full bg-[#244338] px-4 py-2 text-xs font-semibold text-white shadow-xl";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    window.setTimeout(() => {
+      toast.remove();
+    }, 1800);
+  };
+
+  const copyText = async (text, successMessage) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(successMessage);
+    } catch {
+      showToast("Gagal menyalin teks.");
+    }
+  };
+
+  copyArabicBtn?.addEventListener("click", () => {
+    copyText(payload.arabic, "Teks Arab berhasil disalin.");
+  });
+
+  copyTranslationBtn?.addEventListener("click", () => {
+    copyText(payload.translation, "Terjemahan berhasil disalin.");
+  });
+
+  stickyCopyBtn?.addEventListener("click", () => {
+    copyText(`${payload.title}\n(${payload.category})\n\n${payload.arabic}\n\n${payload.translation}`, "Doa berhasil disalin.");
+  });
+
+  shareBtn?.addEventListener("click", async () => {
+    const text = `${payload.title}\n(${payload.category})\n\n${payload.arabic}\n\n${payload.translation}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: payload.title,
+          text,
+          url: window.location.href,
+        });
+        return;
+      } catch {}
+    }
+    await copyText(text, "Teks doa disalin. Tinggal paste untuk dibagikan.");
+  });
+
+  focusBtn?.addEventListener("click", toggleFocus);
+  stickyFocusBtn?.addEventListener("click", toggleFocus);
+
+  fontIncBtn?.addEventListener("click", () => {
+    state.arabicScale = Math.min(1.35, state.arabicScale + 0.05);
+    state.translationScale = Math.min(1.35, state.translationScale + 0.05);
+    applyScale();
+  });
+  fontDecBtn?.addEventListener("click", () => {
+    state.arabicScale = Math.max(0.85, state.arabicScale - 0.05);
+    state.translationScale = Math.max(0.85, state.translationScale - 0.05);
+    applyScale();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) return;
+    const target = event.target;
+    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+
+    if (event.key === "ArrowLeft" && prevLink) {
+      window.location.href = prevLink.href;
+    }
+    if (event.key === "ArrowRight" && nextLink) {
+      window.location.href = nextLink.href;
+    }
+  });
+
+  applyScale();
+})();
+</script>
+
+
+

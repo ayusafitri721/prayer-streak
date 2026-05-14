@@ -1,5 +1,33 @@
 const splashScreen = document.querySelector("[data-splash-screen]");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let appServiceWorkerReadyPromise = null;
+
+const ensureAppServiceWorker = async () => {
+  if (!("serviceWorker" in navigator) || !window.isSecureContext) return null;
+  if (appServiceWorkerReadyPromise) return appServiceWorkerReadyPromise;
+
+  appServiceWorkerReadyPromise = (async () => {
+    try {
+      await navigator.serviceWorker.register("/sw.js");
+      return await navigator.serviceWorker.ready;
+    } catch (error) {
+      console.warn("Service worker registration failed:", error);
+      return null;
+    }
+  })();
+
+  return appServiceWorkerReadyPromise;
+};
+
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  window.addEventListener(
+    "load",
+    () => {
+      ensureAppServiceWorker().catch(() => null);
+    },
+    { once: true }
+  );
+}
 
 const passwordToggleButtons = Array.from(document.querySelectorAll("[data-password-toggle]"));
 
@@ -1669,6 +1697,8 @@ if (countdownEl) {
   const dashboardLongestStreakEl = dashboardRoot?.querySelector("[data-dashboard-longest-streak]");
   const dashboardLevelProgressLabelEl = dashboardRoot?.querySelector("[data-dashboard-level-progress-label]");
   const dashboardLevelProgressBarEl = dashboardRoot?.querySelector("[data-dashboard-level-progress-bar]");
+  const dashboardSunnahDoneEl = dashboardRoot?.querySelector("[data-dashboard-sunnah-done]");
+  const dashboardSunnahTotalEl = dashboardRoot?.querySelector("[data-dashboard-sunnah-total]");
 
   const showDashboardToast = (message, tone = "success") => {
     const existing = document.getElementById("dashboard-toast");
@@ -1829,11 +1859,12 @@ if (countdownEl) {
     }
 
     if (note) {
+      const readyNote = form.dataset.prayerReadyNote || "Sudah masuk waktu, catat setelah selesai salat.";
       note.textContent = isDone
         ? `Dicatat jam ${state.completedAt}`
         : isLocked
           ? `Tombol aktif setelah jam ${state.time}.`
-          : "Sudah masuk waktu, catat setelah selesai salat.";
+          : readyNote;
     }
 
     if (submitButton) {
@@ -1924,12 +1955,22 @@ if (countdownEl) {
         `${levelProgressData.levelProgress}%`
       );
     }
+    if (dashboardSunnahDoneEl) {
+      dashboardSunnahDoneEl.textContent = String(dashboard.todaySunnahCompleted ?? 0);
+    }
+    if (dashboardSunnahTotalEl) {
+      dashboardSunnahTotalEl.textContent = String(dashboard.totalSunnahToday ?? 0);
+    }
 
     checklistForms.forEach((form) => {
       const prayerKey = form.dataset.prayerKey;
-      const checklistItem = Array.isArray(dashboard.checklist)
-        ? dashboard.checklist.find((item) => item.key === prayerKey)
-        : null;
+      const checklistItem =
+        (Array.isArray(dashboard.checklist)
+          ? dashboard.checklist.find((item) => item.key === prayerKey)
+          : null) ||
+        (Array.isArray(dashboard.sunnahChecklist)
+          ? dashboard.sunnahChecklist.find((item) => item.key === prayerKey)
+          : null);
 
       applyChecklistRowState(form, {
         time:
@@ -2216,10 +2257,15 @@ if (qiblaCompass) {
   const KAABA_LNG = 39.8262;
   const prayerLocationNeedsSync = qiblaCompass.dataset.prayerLocationSync !== "ready";
   let locationSyncInFlight = false;
+  let permissionBtnHandler = null;
+  let orientationSubscribed = false;
+  let orientationReadingCount = 0;
 
   const needle = qiblaCompass.querySelector("[data-qibla-needle]");
   const bearingText = qiblaCompass.querySelector("[data-qibla-bearing]");
   const permissionBtn = qiblaCompass.querySelector("[data-qibla-permission-btn]");
+  const isSecureOrigin = Boolean(window.isSecureContext);
+  const activeOrigin = `${window.location.protocol}//${window.location.host}`;
 
   const toRad = (deg) => (deg * Math.PI) / 180;
   const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -2240,6 +2286,26 @@ if (qiblaCompass) {
 
   const rotateNeedle = (deg) => {
     needle.setAttribute("style", `transform-origin:100px 100px;transform:rotate(${deg}deg);transition:transform 0.3s ease-out`);
+  };
+
+  const showPermissionButton = (label, onClick) => {
+    if (!permissionBtn) return;
+    permissionBtn.textContent = label;
+    permissionBtn.classList.remove("hidden");
+    if (permissionBtnHandler) {
+      permissionBtn.removeEventListener("click", permissionBtnHandler);
+    }
+    permissionBtnHandler = onClick;
+    permissionBtn.addEventListener("click", permissionBtnHandler);
+  };
+
+  const hidePermissionButton = () => {
+    if (!permissionBtn) return;
+    if (permissionBtnHandler) {
+      permissionBtn.removeEventListener("click", permissionBtnHandler);
+      permissionBtnHandler = null;
+    }
+    permissionBtn.classList.add("hidden");
   };
 
   const syncPrayerLocation = async (latitude, longitude) => {
@@ -2267,29 +2333,31 @@ if (qiblaCompass) {
   };
 
   const startOrientation = (qiblaBearing) => {
+    if (orientationSubscribed) return;
+    orientationSubscribed = true;
+
     const handleOrientation = (e) => {
       if (e.alpha == null) return;
+      orientationReadingCount += 1;
       rotateNeedle(qiblaBearing - e.alpha);
     };
 
     if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-      // iOS 13+ — perlu permission request via user gesture
-      permissionBtn.classList.remove("hidden");
-      permissionBtn.addEventListener("click", () => {
-        DeviceOrientationEvent.requestPermission().then((state) => {
-          if (state === "granted") {
-            permissionBtn.classList.add("hidden");
-            window.addEventListener("deviceorientation", handleOrientation);
-          } else {
-            bearingText.textContent = "Izin kompas ditolak";
-          }
-        }).catch(() => {
-          bearingText.textContent = "Izin kompas gagal";
-        });
+      showPermissionButton("Aktifkan Kompas", () => {
+        DeviceOrientationEvent.requestPermission()
+          .then((state) => {
+            if (state === "granted") {
+              hidePermissionButton();
+              window.addEventListener("deviceorientation", handleOrientation);
+            } else {
+              bearingText.textContent = "Izin kompas ditolak";
+            }
+          })
+          .catch(() => {
+            bearingText.textContent = "Izin kompas gagal";
+          });
       });
     } else {
-      // Android / desktop — langsung pasang listener
-      // Prefer deviceorientationabsolute, fallback ke deviceorientation
       let useAbsolute = false;
 
       window.addEventListener("deviceorientationabsolute", (e) => {
@@ -2300,30 +2368,59 @@ if (qiblaCompass) {
       window.addEventListener("deviceorientation", (e) => {
         if (!useAbsolute) handleOrientation(e);
       });
+
+      window.setTimeout(() => {
+        if (orientationReadingCount === 0) {
+          bearingText.textContent = "Sensor kompas belum terbaca. Aktifkan izin Motion Sensors di browser.";
+        }
+      }, 5000);
     }
   };
 
-  if (navigator.geolocation) {
+  const requestLocation = () => {
+    if (!isSecureOrigin) {
+      bearingText.textContent = `Lokasi/kompas butuh HTTPS di HP. Origin sekarang: ${activeOrigin}`;
+      hidePermissionButton();
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      bearingText.textContent = "Geolocation tidak tersedia";
+      hidePermissionButton();
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         const bearing = calcQiblaBearing(latitude, longitude);
         const rounded = Math.round(bearing);
-        bearingText.textContent = `${rounded}° ${bearingToLabel(bearing)}`;
+        bearingText.textContent = `${rounded} derajat ${bearingToLabel(bearing)}`;
         rotateNeedle(bearing);
         startOrientation(bearing);
         syncPrayerLocation(latitude, longitude);
       },
-      () => {
-        bearingText.textContent = "Izinkan akses lokasi untuk melihat arah kiblat";
+      (error) => {
+        if (error?.code === 1) {
+          bearingText.textContent = "Izin lokasi ditolak. Izinkan lokasi lalu coba lagi.";
+        } else if (error?.code === 2) {
+          bearingText.textContent = "Lokasi tidak tersedia. Coba pindah sinyal/GPS lebih baik.";
+        } else if (error?.code === 3) {
+          bearingText.textContent = "Timeout saat ambil lokasi. Coba lagi.";
+        } else {
+          bearingText.textContent = "Gagal mengambil lokasi.";
+        }
+
+        showPermissionButton("Coba Lagi Lokasi", () => {
+          requestLocation();
+        });
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  } else {
-    bearingText.textContent = "Geolocation tidak tersedia";
-  }
-}
+  };
 
+  requestLocation();
+}
 // Home hero carousel
 const homeCarousel = document.querySelector("[data-home-carousel]");
 if (homeCarousel) {
@@ -2428,18 +2525,37 @@ if (pushSettings) {
   };
 
   const ensurePushSubscription = async () => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      throw new Error("Browser ini belum mendukung Push Notification.");
+    if (!window.isSecureContext) {
+      throw new Error(`Push butuh HTTPS/localhost. Origin sekarang: ${window.location.origin}`);
+    }
+    if (!("Notification" in window)) {
+      throw new Error("Browser tidak mendukung Notification API.");
+    }
+    if (!("serviceWorker" in navigator)) {
+      throw new Error("Service Worker tidak tersedia di browser ini.");
+    }
+    if (!("PushManager" in window)) {
+      throw new Error("Push API tidak tersedia di browser ini.");
     }
 
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      throw new Error("Izin notifikasi ditolak.");
+    if (Notification.permission === "denied") {
+      throw new Error("Izin notifikasi diblokir. Ubah di Site Settings browser.");
+    }
+
+    if (Notification.permission === "default") {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        throw new Error("Izin notifikasi ditolak.");
+      }
+    } else if (Notification.permission !== "granted") {
+      throw new Error("Izin notifikasi belum diberikan.");
     }
 
     const keyPayload = await fetch("/notifications/public-key").then(parseJsonResponse);
-    await navigator.serviceWorker.register("/sw.js");
-    const worker = await navigator.serviceWorker.ready;
+    const worker = await ensureAppServiceWorker();
+    if (!worker) {
+      throw new Error("Service Worker gagal diinisialisasi.");
+    }
     let subscription = await worker.pushManager.getSubscription();
     const targetPublicKey = String(keyPayload.publicKey || "");
 
@@ -2483,7 +2599,10 @@ if (pushSettings) {
       throw new Error("Browser tidak mendukung service worker / notification.");
     }
 
-    const worker = await navigator.serviceWorker.ready;
+    const worker = await ensureAppServiceWorker();
+    if (!worker) {
+      throw new Error("Service Worker belum siap.");
+    }
     await worker.showNotification("Probe Notifikasi Lokal", {
       body: "Jika ini muncul, izin notif browser dan OS sudah benar.",
       icon: "/assets/prayer-streak-logo.svg",
@@ -2508,7 +2627,7 @@ if (pushSettings) {
 
   const disablePushSubscription = async () => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
-      const worker = await navigator.serviceWorker.ready.catch(() => null);
+      const worker = await ensureAppServiceWorker();
       const subscription = await worker?.pushManager?.getSubscription();
       if (subscription) {
         await subscription.unsubscribe().catch(() => null);
@@ -2555,7 +2674,7 @@ if (pushSettings) {
           "serviceWorker" in navigator &&
           "PushManager" in window
         ) {
-          const worker = await navigator.serviceWorker.ready.catch(() => null);
+          const worker = await ensureAppServiceWorker();
           const existingSubscription = await worker?.pushManager?.getSubscription?.();
           if (existingSubscription) {
             await ensurePushSubscription();
@@ -2571,7 +2690,9 @@ if (pushSettings) {
     }
   };
 
-  if (!("Notification" in window)) {
+  if (!window.isSecureContext) {
+    setPushStatus(`Push membutuhkan HTTPS/localhost. Origin sekarang: ${window.location.origin}`, true);
+  } else if (!("Notification" in window)) {
     setPushStatus("Browser tidak mendukung Notification API.", true);
   } else {
     refreshPushState();
@@ -2646,4 +2767,3 @@ if (pushSettings) {
     savePreferences().catch(() => null);
   });
 }
-
