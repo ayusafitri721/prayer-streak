@@ -1,3 +1,7 @@
+<%
+  const savedFavoriteSet = new Set(savedFavoriteReferences || []);
+%>
+
 <main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
   <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
     <a href="/quran" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-4 py-2 text-sm text-[#344E41]/80 transition hover:bg-[#A3B18A]/20">
@@ -139,6 +143,7 @@
       data-surah-number="<%= surah.number %>"
     >
       <% verses.forEach((verse) => { %>
+        <% const isVerseFavorite = savedFavoriteSet.has(`quran:${surah.number}:${verse.number}`); %>
         <article
           id="verse-<%= verse.number %>"
           class="rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-5 transition"
@@ -181,6 +186,27 @@
                     <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Zm2.75-1.25c-.69 0-1.25.56-1.25 1.25v14.52l3.5-2.24 3.5 2.24V4.75c0-.69-.56-1.25-1.25-1.25h-4.5Z"/>
                   </svg>
                 </button>
+                <form action="/favorites" method="POST" class="inline-flex">
+                  <input type="hidden" name="type" value="quran">
+                  <input type="hidden" name="title" value="QS. <%= surah.nameLatin %> ayat <%= verse.number %>">
+                  <input type="hidden" name="reference" value="quran:<%= surah.number %>:<%= verse.number %>">
+                  <input type="hidden" name="content" value="<%= verse.arabic %> - <%= verse.translation %>">
+                  <input type="hidden" name="sourceUrl" value="/quran/<%= surah.number %>#verse-<%= verse.number %>">
+                  <button
+                    type="submit"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full border transition <%= isVerseFavorite ? 'border-[#588157] bg-[#588157] text-white shadow-sm shadow-[#588157]/25' : 'border-[#A3B18A]/30 bg-white/70 text-[#344E41]/55 hover:bg-[#588157]/10 hover:text-[#588157]' %>"
+                    aria-label="<%= isVerseFavorite ? 'Ayat sudah tersimpan di favorit' : 'Simpan ayat ' + verse.number + ' ke favorit' %>"
+                    title="<%= isVerseFavorite ? 'Sudah tersimpan di favorit' : 'Simpan ke favorit' %>"
+                  >
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <% if (isVerseFavorite) { %>
+                        <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      <% } else { %>
+                        <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      <% } %>
+                    </svg>
+                  </button>
+                </form>
               <% } %>
               <button
                 type="button"

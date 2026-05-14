@@ -1,4 +1,5 @@
 const { getSurahList, getSurahDetail } = require("../services/quranService");
+const { listFavoriteReferences, listFavorites } = require("../services/favoriteService");
 
 function getBaseUrl(req) {
   return process.env.SITE_URL || `${req.protocol}://${req.get("host")}`;
@@ -15,7 +16,11 @@ async function renderQuranIndex(req, res) {
     "Baca Al-Qur'an online lengkap 114 surat dengan teks Arab, transliterasi, terjemahan bahasa Indonesia, dan audio murottal.";
 
   try {
-    const surahs = await getSurahList();
+    const [surahs, savedFavoriteReferences, quranFavorites] = await Promise.all([
+      getSurahList(),
+      req.session.user ? listFavoriteReferences(req.session.user.id, "quran") : Promise.resolve([]),
+      req.session.user ? listFavorites(req.session.user.id, 6, "quran") : Promise.resolve([]),
+    ]);
 
     return res.render("pages/quran/index", {
       title: seoTitle,
@@ -29,6 +34,8 @@ async function renderQuranIndex(req, res) {
         url: canonicalUrl,
       },
       surahs,
+      savedFavoriteReferences,
+      quranFavorites,
       pageError: null,
     });
   } catch (error) {
@@ -44,6 +51,8 @@ async function renderQuranIndex(req, res) {
         url: canonicalUrl,
       },
       surahs: [],
+      savedFavoriteReferences: [],
+      quranFavorites: [],
       pageError: error.message || "Gagal memuat daftar surat.",
     });
   }
@@ -51,7 +60,10 @@ async function renderQuranIndex(req, res) {
 
 async function renderQuranDetail(req, res) {
   try {
-    const detail = await getSurahDetail(req.params.nomor);
+    const [detail, savedFavoriteReferences] = await Promise.all([
+      getSurahDetail(req.params.nomor),
+      req.session.user ? listFavoriteReferences(req.session.user.id, "quran") : Promise.resolve([]),
+    ]);
     const canonicalUrl = buildAbsoluteUrl(req, `/quran/${detail.surah.number}`);
     const seoTitle = `Surat ${detail.surah.nameLatin} - Baca Al-Qur'an Online`;
     const seoDescription = `Baca Surat ${detail.surah.nameLatin} (${detail.surah.nameArabic}) lengkap dengan ${detail.surah.versesCount} ayat, transliterasi, terjemahan Indonesia, dan audio murottal.`;
@@ -67,6 +79,7 @@ async function renderQuranDetail(req, res) {
         type: "article",
         url: canonicalUrl,
       },
+      savedFavoriteReferences,
       ...detail,
     });
   } catch (error) {

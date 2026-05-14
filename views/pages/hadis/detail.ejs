@@ -1,3 +1,7 @@
+<%
+  const hadisIsFavorite = typeof isFavorite !== "undefined" ? isFavorite : false;
+%>
+
 <style>
   .hadis-reader-focus [data-hadis-meta],
   .hadis-reader-focus [data-hadis-aux] {
@@ -83,6 +87,27 @@
     <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs" data-hadis-aux>
       <span class="rounded-full border border-[#588157]/25 bg-[#588157]/10 px-3 py-1 font-medium text-[#588157]">HR. <%= hadis.name %></span>
       <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-[#344E41]/70">No. <%= hadis.number %></span>
+      <form action="/favorites" method="POST" class="inline-flex">
+        <input type="hidden" name="type" value="hadis">
+        <input type="hidden" name="title" value="HR. <%= hadis.name %> No. <%= hadis.number %>">
+        <input type="hidden" name="reference" value="hadis:<%= hadis.slug %>:<%= hadis.number %>">
+        <input type="hidden" name="content" value="<%= hadis.id %>">
+        <input type="hidden" name="sourceUrl" value="/hadis/<%= hadis.slug %>/<%= hadis.number %>">
+        <button
+          type="submit"
+          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-semibold transition <%= hadisIsFavorite ? 'border-[#588157] bg-[#588157] text-white shadow-sm shadow-[#588157]/25' : 'border-[#588157]/25 bg-[#588157]/10 text-[#588157] hover:bg-[#588157] hover:text-white' %>"
+          title="<%= hadisIsFavorite ? 'Sudah tersimpan di favorit' : 'Simpan hadis ke favorit' %>"
+        >
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <% if (hadisIsFavorite) { %>
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <% } else { %>
+              <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <% } %>
+          </svg>
+          <%= hadisIsFavorite ? 'Tersimpan' : 'Simpan Favorit' %>
+        </button>
+      </form>
       <button
         type="button"
         class="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#344E41]/50 transition hover:bg-[#588157]/10 hover:text-[#588157]"

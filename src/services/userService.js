@@ -31,12 +31,12 @@ async function findByEmail(email) {
     const user = memoryUsers.find((item) => item.email === normalizedEmail);
     if (!user) return null;
 
-    return { id: user.id, name: user.name, email: user.email };
+    return { id: user.id, name: user.name, email: user.email, profileImage: user.profileImage || null };
   }
 
   return db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true },
   });
 }
 
@@ -45,12 +45,12 @@ async function findById(id) {
 
   if (!db?.user) {
     const user = memoryUsers.find((item) => item.id === id);
-    return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone } : null;
+    return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage || null } : null;
   }
 
   return db.user.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true },
   });
 }
 
@@ -71,11 +71,12 @@ async function createUser({ name, email, phone, password }) {
       name: name.trim(),
       email: normalizedEmail,
       phone: normalizedPhone,
+      profileImage: null,
       password: passwordHash,
     };
     memoryUsers.push(user);
 
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage };
   }
 
   const exists = await db.user.findUnique({
@@ -95,7 +96,7 @@ async function createUser({ name, email, phone, password }) {
       phone: normalizedPhone,
       password: passwordHash,
     },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true },
   });
 
   return user;
@@ -121,12 +122,13 @@ async function validateUser(email, password) {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      profileImage: user.profileImage || null,
     };
   }
 
   const user = await db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true, phone: true, password: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, password: true },
   });
 
   if (!user) {
@@ -143,7 +145,26 @@ async function validateUser(email, password) {
     name: user.name,
     email: user.email,
     phone: user.phone,
+    profileImage: user.profileImage || null,
   };
+}
+
+async function updateProfileImage(userId, profileImage) {
+  const id = Number(userId);
+  const db = getPrisma();
+
+  if (!db?.user) {
+    const user = memoryUsers.find((item) => item.id === id);
+    if (!user) return null;
+    user.profileImage = profileImage;
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage };
+  }
+
+  return db.user.update({
+    where: { id },
+    data: { profileImage },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true },
+  });
 }
 
 const ADMIN_EMAIL = "admin@prayerstreak.com";
@@ -208,6 +229,7 @@ module.exports = {
   findByEmail,
   createUser,
   validateUser,
+  updateProfileImage,
   seedAdmin,
   listUserIds,
 };

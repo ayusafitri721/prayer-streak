@@ -6,6 +6,8 @@
   const quickSurahs = quickSurahNumbers
     .map((number) => surahs.find((surah) => surah.number === number))
     .filter(Boolean);
+  const savedFavoriteSet = new Set(savedFavoriteReferences || []);
+  const savedQuranFavorites = Array.isArray(quranFavorites) ? quranFavorites : [];
 %>
 
 <main
@@ -117,19 +119,74 @@
         </a>
       </article>
 
-      <article class="rounded-[1.9rem] border border-[#A3B18A]/30 bg-white/82 p-5 shadow-xl shadow-[#344E41]/5" data-quran-bookmark-panel>
+      <article class="rounded-[1.9rem] border border-[#A3B18A]/30 bg-white/82 p-5 shadow-xl shadow-[#344E41]/5" data-favorite-panel>
         <div class="flex items-center justify-between gap-3">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#344E41]/45">Bookmark Saya</p>
-            <h2 class="mt-2 text-2xl font-bold text-[#244338]">Ayat yang disimpan</h2>
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#344E41]/45">Favorit Saya</p>
+            <h2 class="mt-2 text-2xl font-bold text-[#244338]">Qur'an yang disimpan</h2>
           </div>
-          <span class="rounded-full border border-[#A3B18A]/25 bg-[#F6F1E9] px-3 py-1 text-xs font-medium text-[#344E41]/62" data-quran-bookmark-count>0 bookmark</span>
-        </div>
-        <div class="mt-4 space-y-3" data-quran-bookmark-list>
-          <div class="rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58">
-            Belum ada bookmark ayat. Simpan dari halaman detail surat untuk memunculkannya di sini.
+          <div class="flex items-center gap-2">
+            <span class="rounded-full border border-[#A3B18A]/25 bg-[#F6F1E9] px-3 py-1 text-xs font-medium text-[#344E41]/62"><%= savedQuranFavorites.length %> favorit</span>
+            <button
+              type="button"
+              class="grid h-10 w-10 place-items-center rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] text-[#588157] transition hover:bg-[#588157] hover:text-white"
+              aria-expanded="false"
+              aria-controls="quran-favorite-list"
+              data-favorite-toggle
+              title="Buka/tutup favorit"
+            >
+              <svg class="h-4 w-4 transition-transform" viewBox="0 0 24 24" fill="none" aria-hidden="true" data-favorite-toggle-icon>
+                <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
         </div>
+        <p class="mt-3 text-sm text-[#344E41]/62" data-favorite-summary>
+          <% if (savedQuranFavorites.length) { %>
+            Favorit tersimpan. Buka panel untuk melihat daftar lengkapnya.
+          <% } else { %>
+            Belum ada favorit Qur'an.
+          <% } %>
+        </p>
+        <% if (savedQuranFavorites.length) { %>
+          <div id="quran-favorite-list" class="mt-4 hidden space-y-3" data-favorite-list>
+            <% savedQuranFavorites.forEach((item) => { %>
+              <article class="rounded-2xl border border-[#A3B18A]/35 bg-[#F6F1E9]/75 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-[#244338]"><%= item.title %></p>
+                    <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-[#588157]"><%= item.reference %></p>
+                  </div>
+                  <form action="/favorites/<%= item.id %>/delete" method="POST">
+                    <button
+                      type="submit"
+                      class="grid h-8 w-8 place-items-center rounded-full border border-red-200 bg-white text-red-600 transition hover:bg-red-50"
+                      aria-label="Hapus favorit <%= item.title %>"
+                      title="Hapus favorit"
+                    >
+                      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+                <p class="mt-3 line-clamp-2 text-xs leading-6 text-[#344E41]/66"><%= item.content %></p>
+                <% if (item.sourceUrl) { %>
+                  <a href="<%= item.sourceUrl %>" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#588157] transition hover:text-[#344E41]">
+                    Buka kembali
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+                <% } %>
+              </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div id="quran-favorite-list" class="mt-4 hidden rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58" data-favorite-list>
+            Belum ada favorit Qur'an. Tekan tombol Favorit pada card surat atau bintang pada detail ayat.
+          </div>
+        <% } %>
       </article>
     </section>
   <% } %>
@@ -149,9 +206,9 @@
 
     <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       <% surahs.forEach((surah) => { %>
-        <a
-          href="/quran/<%= surah.number %>"
-          class="group relative overflow-hidden rounded-[1.7rem] border border-[#A3B18A]/30 bg-[linear-gradient(160deg,_rgba(246,241,233,0.9)_0%,_rgba(255,255,255,0.98)_100%)] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#588157]/40 hover:shadow-lg hover:shadow-[#344E41]/10"
+        <% const isSurahFavorite = savedFavoriteSet.has(`quran:${surah.number}`); %>
+        <article
+          class="group relative overflow-hidden rounded-[1.7rem] border <%= isSurahFavorite ? 'border-[#588157]/45 bg-[linear-gradient(160deg,_rgba(88,129,87,0.13)_0%,_rgba(255,255,255,0.98)_100%)]' : 'border-[#A3B18A]/30 bg-[linear-gradient(160deg,_rgba(246,241,233,0.9)_0%,_rgba(255,255,255,0.98)_100%)]' %> p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#588157]/40 hover:shadow-lg hover:shadow-[#344E41]/10"
           data-surah-card
           data-surah-search-value="<%= `${surah.number} ${surah.nameLatin} ${surah.nameArabic} ${surah.translation}`.toLowerCase() %>"
           data-surah-number="<%= surah.number %>"
@@ -187,15 +244,40 @@
             </div>
           </div>
 
-          <div class="relative mt-4 flex items-center justify-between border-t border-[#A3B18A]/20 pt-3">
+          <div class="relative mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[#A3B18A]/20 pt-3">
             <p class="text-xs font-medium text-[#344E41]/48">Buka surat dan mulai baca</p>
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/25 bg-white/75 text-[#588157] transition group-hover:border-[#588157]/35 group-hover:bg-[#588157] group-hover:text-white">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
+            <div class="flex items-center gap-2">
+              <% if (user) { %>
+                <form action="/favorites" method="POST">
+                  <input type="hidden" name="type" value="quran">
+                  <input type="hidden" name="title" value="Surat <%= surah.nameLatin %>">
+                  <input type="hidden" name="reference" value="quran:<%= surah.number %>">
+                  <input type="hidden" name="content" value="Surat <%= surah.nameLatin %> - <%= surah.translation %> (<%= surah.versesCount %> ayat)">
+                  <input type="hidden" name="sourceUrl" value="/quran/<%= surah.number %>">
+                  <button
+                    type="submit"
+                    class="inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition <%= isSurahFavorite ? 'border-[#588157] bg-[#588157] text-white shadow-sm shadow-[#588157]/25' : 'border-[#A3B18A]/35 bg-white/80 text-[#588157] hover:border-[#588157]/40 hover:bg-[#588157] hover:text-white' %>"
+                    title="<%= isSurahFavorite ? 'Sudah tersimpan di favorit' : 'Simpan surat ke favorit' %>"
+                  >
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <% if (isSurahFavorite) { %>
+                        <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      <% } else { %>
+                        <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      <% } %>
+                    </svg>
+                    <%= isSurahFavorite ? 'Tersimpan' : 'Favorit' %>
+                  </button>
+                </form>
+              <% } %>
+              <a href="/quran/<%= surah.number %>" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/25 bg-white/75 text-[#588157] transition group-hover:border-[#588157]/35 group-hover:bg-[#588157] group-hover:text-white" aria-label="Buka surat <%= surah.nameLatin %>">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
           </div>
-        </a>
+        </article>
       <% }) %>
     </div>
 

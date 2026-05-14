@@ -1311,12 +1311,30 @@ async function getAchievementsData(userId) {
 
 async function getProfileData(userId) {
   const state = await getUserState(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: Number(userId) },
+    select: { createdAt: true },
+  });
+  const weeklyBreakdown = buildWeeklyBreakdown(state);
+  const currentLevelBase = (state.level - 1) * 100;
+  const nextLevelTarget = state.level * 100;
 
   return {
     xp: state.xp,
     level: state.level,
     streak: state.streak,
     longestStreak: state.longestStreak,
+    memberSince: user?.createdAt || null,
+    currentLevelBase,
+    nextLevelTarget,
+    levelProgress: Math.min(
+      100,
+      Math.max(0, Math.round(((state.xp - currentLevelBase) / Math.max(nextLevelTarget - currentLevelBase, 1)) * 100))
+    ),
+    weeklyBreakdown: weeklyBreakdown.map((day) => ({
+      ...day,
+      shortLabel: day.label.charAt(0).toUpperCase(),
+    })),
     streakProtection: state.streakProtection,
     maxStreakProtection: MAX_STREAK_PROTECTION,
     restoreChallengeActive: state.restoreChallengeActive,

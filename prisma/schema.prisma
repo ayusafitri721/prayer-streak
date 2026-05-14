@@ -12,6 +12,7 @@ model User {
   name        String
   email       String    @unique
   phone       String?
+  profileImage String?
   password    String
   streakProtection Int   @default(3)
   restoreChallengeActive Boolean @default(false)
@@ -25,6 +26,7 @@ model User {
   streakDays  StreakDay[]
   achievements UserAchievement[]
   xpHistories XPHistory[]
+  favoriteContents FavoriteContent[]
 }
 
 model PrayerLog {
@@ -89,4 +91,19 @@ model StreakDay {
 
   @@unique([userId, date])
   @@index([userId, date])
+}
+
+model FavoriteContent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  reference String
+  content   String   @db.Text
+  sourceUrl String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, reference])
+  @@index([userId, createdAt])
 }

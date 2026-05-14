@@ -17,6 +17,7 @@ const quranRoutes = require("./routes/quran");
 const hadisRoutes = require("./routes/hadis");
 const doaRoutes = require("./routes/doa");
 const notificationRoutes = require("./routes/notifications");
+const favoriteRoutes = require("./routes/favorites");
 
 const app = express();
 
@@ -25,8 +26,8 @@ app.set("views", path.join(__dirname, "../views"));
 app.set("layout", "layouts/main");
 
 app.use(expressLayouts);
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: "6mb" }));
+app.use(express.json({ limit: "6mb" }));
 app.use(express.static(path.join(__dirname, "../public")));
 
 app.use(
@@ -50,6 +51,7 @@ app.use("/quran", quranRoutes);
 app.use("/hadis", hadisRoutes);
 app.use("/doa", doaRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/favorites", favoriteRoutes);
 
 app.use(renderNotFound);
 app.use(renderServerError);

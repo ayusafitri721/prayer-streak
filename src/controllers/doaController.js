@@ -4,6 +4,7 @@ const {
   getDoaDetail,
   searchDoa,
 } = require("../services/doaService");
+const { listFavoriteReferences } = require("../services/favoriteService");
 
 async function renderDoaIndex(req, res) {
   const data = await getDoaCategoryList();
@@ -28,10 +29,14 @@ async function renderDoaCollection(req, res) {
     const { slug } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 12;
-    const data = await getDoaByCategory(slug, page, limit);
+    const [data, savedFavoriteReferences] = await Promise.all([
+      getDoaByCategory(slug, page, limit),
+      listFavoriteReferences(req.session.user.id, "doa"),
+    ]);
 
     return res.render("pages/doa/collection", {
       title: `${data.title} - Prayer Streak`,
+      savedFavoriteReferences,
       ...data,
     });
   } catch (error) {
@@ -43,10 +48,14 @@ async function renderDoaCollection(req, res) {
 async function renderDoaDetail(req, res) {
   try {
     const { slug, id } = req.params;
-    const data = await getDoaDetail(slug, id);
+    const [data, savedFavoriteReferences] = await Promise.all([
+      getDoaDetail(slug, id),
+      listFavoriteReferences(req.session.user.id, "doa"),
+    ]);
 
     return res.render("pages/doa/detail", {
       title: `${data.doa.title} - Prayer Streak`,
+      isFavorite: savedFavoriteReferences.includes(`doa:${data.doa.slug}:${data.doa.id}`),
       ...data,
     });
   } catch (error) {

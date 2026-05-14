@@ -1,3 +1,7 @@
+<%
+  const doaIsFavorite = typeof isFavorite !== "undefined" ? isFavorite : false;
+%>
+
 <style>
   .doa-reader-focus [data-doa-meta],
   .doa-reader-focus [data-doa-aux] {
@@ -94,6 +98,27 @@
     <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs" data-doa-aux>
       <span class="rounded-full border border-[#588157]/25 bg-[#588157]/10 px-3 py-1 font-medium text-[#588157]"><%= doa.categoryTitle %></span>
       <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-[#344E41]/70">ID <%= doa.id %></span>
+      <form action="/favorites" method="POST" class="inline-flex">
+        <input type="hidden" name="type" value="doa">
+        <input type="hidden" name="title" value="<%= doa.title %>">
+        <input type="hidden" name="reference" value="doa:<%= doa.slug %>:<%= doa.id %>">
+        <input type="hidden" name="content" value="<%= doa.arabic %> - <%= doa.translation %>">
+        <input type="hidden" name="sourceUrl" value="/doa/<%= doa.slug %>/<%= doa.id %>">
+        <button
+          type="submit"
+          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-semibold transition <%= doaIsFavorite ? 'border-[#588157] bg-[#588157] text-white shadow-sm shadow-[#588157]/25' : 'border-[#588157]/25 bg-[#588157]/10 text-[#588157] hover:bg-[#588157] hover:text-white' %>"
+          title="<%= doaIsFavorite ? 'Sudah tersimpan di favorit' : 'Simpan doa ke favorit' %>"
+        >
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <% if (doaIsFavorite) { %>
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <% } else { %>
+              <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <% } %>
+          </svg>
+          <%= doaIsFavorite ? 'Tersimpan' : 'Simpan Favorit' %>
+        </button>
+      </form>
     </div>
 
     <div class="mt-4 flex flex-wrap items-center justify-center gap-2" data-doa-actions data-doa-aux>

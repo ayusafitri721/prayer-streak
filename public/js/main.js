@@ -30,6 +30,60 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
 }
 
 const passwordToggleButtons = Array.from(document.querySelectorAll("[data-password-toggle]"));
+const favoritePanels = Array.from(document.querySelectorAll("[data-favorite-panel]"));
+const profilePhotoForm = document.querySelector("[data-profile-photo-form]");
+
+if (profilePhotoForm) {
+  const fileInput = profilePhotoForm.querySelector("[data-profile-photo-input]");
+  const imageDataInput = profilePhotoForm.querySelector("[data-profile-photo-data]");
+  const buttons = Array.from(profilePhotoForm.querySelectorAll("[data-profile-photo-button]"));
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => fileInput?.click());
+  });
+
+  fileInput?.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (!file || !imageDataInput) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      window.alert("Format foto harus JPG, PNG, atau WEBP.");
+      fileInput.value = "";
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      window.alert("Ukuran foto maksimal 3MB.");
+      fileInput.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      imageDataInput.value = String(reader.result || "");
+      profilePhotoForm.submit();
+    });
+    reader.readAsDataURL(file);
+  });
+}
+
+favoritePanels.forEach((panel) => {
+  const button = panel.querySelector("[data-favorite-toggle]");
+  const list = panel.querySelector("[data-favorite-list]");
+  const icon = panel.querySelector("[data-favorite-toggle-icon]");
+
+  if (!button || !list) return;
+
+  button.addEventListener("click", () => {
+    const willOpen = list.classList.contains("hidden");
+    list.classList.toggle("hidden", !willOpen);
+    button.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    if (icon) {
+      icon.classList.toggle("rotate-180", willOpen);
+    }
+  });
+});
 
 if (passwordToggleButtons.length) {
   passwordToggleButtons.forEach((button) => {
@@ -203,6 +257,75 @@ if (authSubmitForms.length) {
         form.submit();
       }, prefersReducedMotion ? 0 : 260);
     });
+  });
+}
+
+const userMenu = document.querySelector("[data-user-menu]");
+const userMenuToggle = document.querySelector("[data-user-menu-toggle]");
+const userMenuPanel = document.querySelector("[data-user-menu-panel]");
+const accountMenu = document.querySelector("[data-account-menu]");
+const accountMenuToggle = document.querySelector("[data-account-menu-toggle]");
+const accountMenuPanel = document.querySelector("[data-account-menu-panel]");
+
+if (userMenu && userMenuToggle && userMenuPanel) {
+  const setUserMenuOpen = (isOpen) => {
+    userMenuPanel.dataset.open = isOpen ? "true" : "false";
+    userMenuToggle.setAttribute("aria-expanded", String(isOpen));
+  };
+
+  userMenuToggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setUserMenuOpen(userMenuPanel.dataset.open !== "true");
+  });
+
+  userMenuPanel.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (userMenu.contains(target)) return;
+    setUserMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setUserMenuOpen(false);
+      userMenuToggle.blur();
+    }
+  });
+}
+
+if (accountMenu && accountMenuToggle && accountMenuPanel) {
+  const setAccountMenuOpen = (isOpen) => {
+    accountMenuPanel.dataset.open = isOpen ? "true" : "false";
+    accountMenuToggle.setAttribute("aria-expanded", String(isOpen));
+  };
+
+  accountMenuToggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setAccountMenuOpen(accountMenuPanel.dataset.open !== "true");
+  });
+
+  accountMenuPanel.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (accountMenu.contains(target)) return;
+    setAccountMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setAccountMenuOpen(false);
+      accountMenuToggle.blur();
+    }
   });
 }
 

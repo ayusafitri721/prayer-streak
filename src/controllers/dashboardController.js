@@ -8,13 +8,15 @@ const {
 } = require("../services/prayerProgressService");
 const { getDailyReflection } = require("../services/reflectionService");
 const { getHijriCalendarData, getHijriCalendarMonthData } = require("../services/hijriService");
+const { getRandomFavorite, listFavorites } = require("../services/favoriteService");
 
 async function renderDashboard(req, res) {
   const user = req.session.user;
   try {
-    const [data, dailyReflection] = await Promise.all([
+    const [data, dailyReflection, favoriteMotivation] = await Promise.all([
       getDashboardData(user.id, req.session.prayerLocation || null),
       Promise.resolve(getDailyReflection()),
+      getRandomFavorite(user.id),
     ]);
     const hijriData = await getHijriCalendarData(new Date());
 
@@ -23,6 +25,7 @@ async function renderDashboard(req, res) {
       ...data,
       userName: user.name,
       dailyReflection,
+      favoriteMotivation,
       hijriData,
     });
   } catch (error) {
@@ -108,6 +111,7 @@ async function renderDashboard(req, res) {
         sourceUrl: null,
       },
       dailyReflection: null,
+      favoriteMotivation: null,
     });
   }
 }
@@ -196,11 +200,15 @@ async function renderAchievements(req, res) {
 
 async function renderProfile(req, res) {
   const user = req.session.user;
-  const profile = await getProfileData(user.id);
+  const [profile, favorites] = await Promise.all([
+    getProfileData(user.id),
+    listFavorites(user.id, 12),
+  ]);
   res.render("pages/profile", {
     title: "Profile - Prayer Streak",
     user,
     profile,
+    favorites,
   });
 }
 

@@ -1,29 +1,252 @@
-<main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 text-[#344E41] sm:px-6">
-  <section class="rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <h1 class="text-3xl font-bold text-[#344E41]">Profile</h1>
-    <p class="mt-2 text-[#344E41]/75">Informasi akun dan ringkasan progress.</p>
-    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Nama</p>
-        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.name %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Email</p>
-        <p class="mt-1 text-lg font-semibold text-[#344E41]"><%= user.email %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">XP</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.xp %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4">
-        <p class="text-sm text-[#344E41]/60">Level / Streak</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.level %> / <%= profile.streak %></p>
-      </article>
-      <article class="rounded-2xl border border-[#A3B18A]/40 bg-[#F6F1E9] p-4 sm:col-span-2">
-        <p class="text-sm text-[#344E41]/60">Longest Streak</p>
-        <p class="mt-1 text-lg font-semibold text-[#588157]"><%= profile.longestStreak %> hari</p>
-      </article>
+<%
+  const savedItems = Array.isArray(favorites) ? favorites : [];
+  const weeklyTracker = Array.isArray(profile.weeklyBreakdown) ? profile.weeklyBreakdown : [];
+  const memberSince = profile.memberSince
+    ? new Date(profile.memberSince).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
+    : "Hari ini";
+  const levelProgress = typeof profile.levelProgress === "number" ? profile.levelProgress : 0;
+  const xpToNext = Math.max((profile.nextLevelTarget || profile.level * 100) - profile.xp, 0);
+  const initials = (user.name || "P").trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join("");
+  const quoteText = "Dan dirikanlah salat, sesungguhnya salat itu mencegah dari perbuatan keji dan mungkar.";
+  const profileImage = user.profileImage || null;
+%>
+
+<main class="mx-auto w-full max-w-7xl px-4 pb-12 pt-6 text-[#244338] sm:px-6">
+  <section class="relative overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_top_left,_rgba(163,177,138,0.28),_transparent_34%),linear-gradient(135deg,_#214837_0%,_#345F49_56%,_#244338_100%)] p-5 text-white shadow-2xl shadow-[#344E41]/18 sm:p-7 lg:p-9">
+    <div class="absolute -right-16 top-8 h-52 w-52 rounded-full bg-[#A3B18A]/15 blur-3xl"></div>
+    <div class="absolute bottom-0 right-10 h-28 w-72 bg-[linear-gradient(180deg,_transparent,_rgba(246,241,233,0.08))]"></div>
+
+    <div class="relative grid gap-7 lg:grid-cols-[minmax(280px,0.9fr)_minmax(0,1.4fr)] lg:items-center">
+      <div class="flex flex-col gap-5 sm:flex-row lg:flex-col xl:flex-row">
+        <form action="/profile/photo" method="POST" class="relative h-36 w-36 shrink-0" data-profile-photo-form>
+          <input type="hidden" name="imageData" data-profile-photo-data>
+          <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" data-profile-photo-input>
+          <button
+            type="button"
+            class="group relative h-36 w-36 overflow-hidden rounded-full border-4 border-white/45 bg-[#A3B18A]/25 shadow-xl focus:outline-none focus:ring-4 focus:ring-white/35"
+            data-profile-photo-button
+            title="Upload foto profil"
+          >
+            <% if (profileImage) { %>
+              <img src="<%= profileImage %>" alt="Foto profil <%= user.name %>" class="absolute inset-0 h-full w-full object-cover">
+              <div class="absolute inset-0 bg-[#244338]/0 transition group-hover:bg-[#244338]/30"></div>
+            <% } else { %>
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_35%_25%,_#A3B18A,_#588157_52%,_#244338_100%)]"></div>
+              <div class="absolute inset-0 grid place-items-center text-5xl font-black tracking-tight text-white"><%= initials %></div>
+            <% } %>
+          </button>
+          <button type="button" class="absolute bottom-2 right-2 grid h-10 w-10 place-items-center rounded-full border-2 border-white bg-[#F6F1E9] text-[#588157] shadow-lg transition hover:bg-white" data-profile-photo-button aria-label="Upload foto profil">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.5-2h5L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M12 15.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <h1 class="text-3xl font-black text-white sm:text-4xl"><%= user.name %></h1>
+            <span class="rounded-full bg-[#A3B18A]/24 px-3 py-1 text-xs font-black text-[#DDE8D2]">Member</span>
+          </div>
+          <p class="mt-2 text-sm font-semibold text-white/72">Bergabung sejak <%= memberSince %></p>
+          <p class="mt-1 text-sm text-white/58"><%= user.email %></p>
+
+          <article class="mt-5 rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+            <p class="text-sm leading-7 text-white/82">"<%= quoteText %>"</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <span class="text-xs font-bold text-[#DDE8D2]">QS. Al-Ankabut: 45</span>
+              <svg class="h-5 w-5 text-[#A3B18A]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 17c-1.7 0-3-1.4-3-3.2C4 10.2 6.9 7.5 10.5 7c-.9.8-1.5 2.2-1.5 3.5 0 1.9 1.2 3.5 3 3.5v3H7Zm10 0c-1.7 0-3-1.4-3-3.2 0-3.6 2.9-6.3 6.5-6.8-.9.8-1.5 2.2-1.5 3.5 0 1.9 1.2 3.5 3 3.5v3h-5Z" fill="currentColor"/>
+              </svg>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="grid gap-4">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+            <p class="text-xs font-bold uppercase tracking-wide text-white/62">XP</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <p class="text-3xl font-black text-white"><%= profile.xp %></p>
+              <svg class="h-7 w-7 text-[#A3B18A]" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7l1-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-white/62">Total XP</p>
+          </article>
+          <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+            <p class="text-xs font-bold uppercase tracking-wide text-white/62">Level</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <p class="text-3xl font-black text-white"><%= profile.level %></p>
+              <svg class="h-7 w-7 text-[#A3B18A]" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 4 7l8 4 8-4-8-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-white/62">Pemula</p>
+          </article>
+          <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+            <p class="text-xs font-bold uppercase tracking-wide text-white/62">Streak Saat Ini</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <p class="text-3xl font-black text-[#D4A373]"><%= profile.streak %></p>
+              <svg class="h-7 w-7 text-[#D4A373]" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-white/62">hari</p>
+          </article>
+          <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+            <p class="text-xs font-bold uppercase tracking-wide text-white/62">Longest Streak</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <p class="text-3xl font-black text-white"><%= profile.longestStreak %></p>
+              <svg class="h-7 w-7 text-[#A3B18A]" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6.5v5.8c0 4.6-3.2 7.9-8 9.7-4.8-1.8-8-5.1-8-9.7V6.5L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="mt-2 text-xs font-semibold text-white/62">hari terbaik</p>
+          </article>
+        </div>
+
+        <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur">
+          <div class="flex items-center justify-between gap-3">
+            <p class="font-black text-white">Progress menuju Level <%= profile.level + 1 %></p>
+            <p class="text-sm font-black text-white"><%= profile.xp - profile.currentLevelBase %> / <%= profile.nextLevelTarget - profile.currentLevelBase %> XP</p>
+          </div>
+          <div class="mt-3 h-3 overflow-hidden rounded-full bg-white/16">
+            <div class="h-full rounded-full bg-[#8BC56F]" style="width: <%= levelProgress %>%"></div>
+          </div>
+          <p class="mt-2 text-xs font-semibold text-white/58"><%= xpToNext %> XP lagi untuk naik level.</p>
+        </article>
+      </div>
     </div>
   </section>
 
+  <section class="mt-6 rounded-[2rem] border border-[#A3B18A]/30 bg-white/88 p-5 shadow-xl shadow-[#344E41]/8 sm:p-6">
+    <div class="grid gap-5 lg:grid-cols-[310px_1fr] lg:items-center">
+      <div class="flex items-start gap-4">
+        <div class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[#588157]/10 text-[#588157]">
+          <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="m8 15 2 2 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-black text-[#244338]">Konsistensi Mingguan</h2>
+          <p class="mt-2 text-sm leading-6 text-[#344E41]/70">Pantau salat 5 waktu dalam 7 hari terakhir.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 overflow-hidden rounded-3xl border border-[#A3B18A]/24 bg-[#F6F1E9]/55">
+        <% weeklyTracker.forEach((day) => { %>
+          <div class="border-r border-[#A3B18A]/18 px-3 py-4 text-center last:border-r-0">
+            <p class="text-sm font-black text-[#244338]"><%= day.label %></p>
+            <div class="mt-4 mx-auto grid h-10 w-10 place-items-center rounded-full border <%= day.isFull ? 'border-[#588157] bg-[#588157] text-white' : day.completed > 0 ? 'border-[#A3B18A] bg-[#A3B18A]/25 text-[#588157]' : 'border-[#D8CDBB] bg-white/70 text-[#D8CDBB]' %>">
+              <% if (day.isFull) { %>
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <% } else { %>
+                <span class="text-xs font-black"><%= day.completed %>/5</span>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-6 rounded-[2rem] border border-[#A3B18A]/30 bg-white/88 p-5 shadow-xl shadow-[#344E41]/8 sm:p-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm font-bold uppercase tracking-[0.28em] text-[#588157]">Ruang Simpan</p>
+        <h2 class="mt-2 text-2xl font-black text-[#244338]">Favorit Qur'an, Hadis & Doa</h2>
+        <p class="mt-2 text-sm text-[#344E41]/72">Simpan pengingat spiritual yang ingin kamu baca kembali.</p>
+      </div>
+      <div class="inline-flex w-fit items-center gap-2 rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-4 py-2 text-sm font-bold text-[#588157]">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <%= savedItems.length %> tersimpan
+      </div>
+    </div>
+
+    <% if (savedItems.length) { %>
+      <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <% savedItems.forEach((item) => { %>
+          <article class="rounded-2xl border border-[#A3B18A]/35 bg-[#F6F1E9]/70 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <span class="inline-flex rounded-full bg-[#588157]/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#588157]"><%= item.type %></span>
+                <h3 class="mt-3 line-clamp-2 text-lg font-black text-[#244338]"><%= item.title %></h3>
+                <p class="mt-1 text-xs font-semibold text-[#344E41]/55"><%= item.reference %></p>
+              </div>
+              <form action="/favorites/<%= item.id %>/delete" method="POST">
+                <button type="submit" class="grid h-9 w-9 place-items-center rounded-full border border-red-200 bg-white text-red-600 transition hover:bg-red-50" aria-label="Hapus favorit <%= item.title %>">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </form>
+            </div>
+            <p class="mt-4 line-clamp-3 text-sm leading-7 text-[#344E41]/75"><%= item.content %></p>
+            <% if (item.sourceUrl) { %>
+              <a href="<%= item.sourceUrl %>" class="mt-4 inline-flex items-center gap-2 text-sm font-black text-[#588157] transition hover:text-[#244338]">
+                Buka kembali
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            <% } %>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="mt-6 rounded-2xl border border-dashed border-[#A3B18A]/45 bg-[#F6F1E9] p-8 text-center">
+        <h3 class="text-lg font-black text-[#244338]">Belum ada favorit</h3>
+        <p class="mt-2 text-sm text-[#344E41]/68">Buka halaman Al-Qur'an, Hadis, atau Doa lalu tekan tombol Favorit.</p>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="mt-6 rounded-[2rem] border border-[#A3B18A]/30 bg-white/88 p-5 shadow-xl shadow-[#344E41]/8 sm:p-6" data-push-settings>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-black text-[#244338]">Notifikasi Perangkat</h2>
+        <p class="mt-2 text-sm text-[#344E41]/72">Atur pengingat waktu salat dan motivasi agar tidak terlewat ibadah.</p>
+      </div>
+      <div class="inline-flex w-fit items-center gap-2 rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] px-4 py-2 text-sm font-bold text-[#588157]" data-push-status>
+        Belum aktif.
+      </div>
+    </div>
+
+    <div class="mt-5 grid gap-4 lg:grid-cols-2">
+      <label class="flex items-center justify-between gap-4 rounded-2xl border border-[#A3B18A]/28 bg-[#F6F1E9]/70 p-4">
+        <span><span class="block text-sm font-black text-[#244338]">Reminder waktu salat</span><span class="mt-1 block text-xs text-[#344E41]/60">Pengingat salat 5 waktu setiap hari.</span></span>
+        <select class="w-32 rounded-xl border border-[#A3B18A]/35 bg-white px-3 py-2 text-sm text-[#344E41] outline-none focus:border-[#588157]" data-push-prayer-enabled><option value="true" selected>Aktif</option><option value="false">Nonaktif</option></select>
+      </label>
+      <label class="flex items-center justify-between gap-4 rounded-2xl border border-[#A3B18A]/28 bg-[#F6F1E9]/70 p-4">
+        <span><span class="block text-sm font-black text-[#244338]">Motivasi ayat/hadis</span><span class="mt-1 block text-xs text-[#344E41]/60">Kirim motivasi harian berupa ayat atau hadis.</span></span>
+        <select class="w-32 rounded-xl border border-[#A3B18A]/35 bg-white px-3 py-2 text-sm text-[#344E41] outline-none focus:border-[#588157]" data-push-motivation-enabled><option value="true" selected>Aktif</option><option value="false">Nonaktif</option></select>
+      </label>
+      <label class="flex items-center justify-between gap-4 rounded-2xl border border-[#A3B18A]/28 bg-[#F6F1E9]/70 p-4">
+        <span><span class="block text-sm font-black text-[#244338]">Jam motivasi harian</span><span class="mt-1 block text-xs text-[#344E41]/60">Waktu pengiriman motivasi setiap hari.</span></span>
+        <input type="time" class="w-32 rounded-xl border border-[#A3B18A]/35 bg-white px-3 py-2 text-sm text-[#344E41] outline-none focus:border-[#588157]" value="07:00" data-push-motivation-time />
+      </label>
+      <label class="flex items-center justify-between gap-4 rounded-2xl border border-[#A3B18A]/28 bg-[#F6F1E9]/70 p-4">
+        <span><span class="block text-sm font-black text-[#244338]">Reminder sebelum adzan</span><span class="mt-1 block text-xs text-[#344E41]/60">Ingatkan beberapa menit sebelum adzan.</span></span>
+        <select class="w-32 rounded-xl border border-[#A3B18A]/35 bg-white px-3 py-2 text-sm text-[#344E41] outline-none focus:border-[#588157]" data-push-reminder-minute><option value="5">5 menit</option><option value="10" selected>10 menit</option><option value="15">15 menit</option></select>
+      </label>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-2.5">
+      <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#588157] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#466B47]" data-push-enable>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M13.7 21a2 2 0 0 1-3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Aktifkan Notifikasi
+      </button>
+      <button type="button" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/45 bg-white px-5 py-2.5 text-sm font-black text-[#588157] transition hover:bg-[#F6F1E9]" data-push-test>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Kirim Test
+      </button>
+      <button type="button" class="inline-flex items-center gap-2 rounded-full border border-red-300/55 bg-red-50 px-5 py-2.5 text-sm font-black text-red-700 transition hover:bg-red-100" data-push-disable>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Matikan
+      </button>
+    </div>
+
+    <article class="mt-6 overflow-hidden rounded-2xl border border-[#A3B18A]/25 bg-[linear-gradient(90deg,_rgba(246,241,233,0.95)_0%,_rgba(163,177,138,0.16)_100%)] p-5">
+      <div class="flex items-center gap-4">
+        <div class="grid h-14 w-14 place-items-center rounded-full bg-[#588157]/10 text-[#588157]">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6.5v5.8c0 4.6-3.2 7.9-8 9.7-4.8-1.8-8-5.1-8-9.7V6.5L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <h3 class="font-black text-[#244338]">Aman & Privasi Terjaga</h3>
+          <p class="mt-1 text-sm leading-6 text-[#344E41]/70">Kami tidak membagikan data akun ke pihak ketiga. Data hanya digunakan untuk pengalaman ibadah yang lebih baik.</p>
+        </div>
+      </div>
+    </article>
+  </section>
 </main>

@@ -1,6 +1,7 @@
 <%
   const currentPage = pagination ? pagination.currentPage : 1;
   const totalPages = pagination ? pagination.totalPages : 1;
+  const savedFavoriteSet = new Set(savedFavoriteReferences || []);
 %>
 
 <main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
@@ -64,12 +65,13 @@
 
     <div class="mt-4 space-y-3" data-hadis-list>
       <% items.forEach((item) => { %>
-        <a
-          href="/hadis/<%= slug %>/<%= item.number %>"
-          class="group relative block overflow-hidden rounded-[1.5rem] border border-[#A3B18A]/35 bg-white/90 transition hover:-translate-y-0.5 hover:border-[#588157]/55 hover:shadow-[0_16px_32px_rgba(52,78,65,0.14)]"
+        <% const itemIsFavorite = savedFavoriteSet.has(`hadis:${slug}:${item.number}`); %>
+        <article
+          class="group relative overflow-hidden rounded-[1.5rem] border <%= itemIsFavorite ? 'border-[#588157]/50 bg-[#588157]/10' : 'border-[#A3B18A]/35 bg-white/90' %> transition hover:-translate-y-0.5 hover:border-[#588157]/55 hover:shadow-[0_16px_32px_rgba(52,78,65,0.14)]"
           data-hadis-item
           data-hadis-number="<%= item.number %>"
           data-hadis-search-value="<%= `${item.number} ${item.id}`.toLowerCase() %>"
+          data-detail-url="/hadis/<%= slug %>/<%= item.number %>"
         >
           <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#588157] via-[#A3B18A] to-[#D4A373] opacity-80"></div>
           <div class="p-4 sm:p-5">
@@ -82,9 +84,34 @@
                   HR. <%= name %>
                 </span>
               </div>
-              <svg class="h-4 w-4 flex-shrink-0 text-[#A3B18A] transition group-hover:text-[#588157]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              <div class="flex shrink-0 items-center gap-2">
+                <form action="/favorites" method="POST">
+                  <input type="hidden" name="type" value="hadis">
+                  <input type="hidden" name="title" value="HR. <%= name %> No. <%= item.number %>">
+                  <input type="hidden" name="reference" value="hadis:<%= slug %>:<%= item.number %>">
+                  <input type="hidden" name="content" value="<%= item.id %>">
+                  <input type="hidden" name="sourceUrl" value="/hadis/<%= slug %>/<%= item.number %>">
+                  <button
+                    type="submit"
+                    class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition <%= itemIsFavorite ? 'border-[#588157] bg-[#588157] text-white shadow-sm shadow-[#588157]/25' : 'border-[#A3B18A]/35 bg-white/80 text-[#588157] hover:bg-[#588157] hover:text-white' %>"
+                    title="<%= itemIsFavorite ? 'Sudah tersimpan di favorit' : 'Simpan hadis ke favorit' %>"
+                  >
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <% if (itemIsFavorite) { %>
+                        <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      <% } else { %>
+                        <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                      <% } %>
+                    </svg>
+                    <%= itemIsFavorite ? 'Tersimpan' : 'Favorit' %>
+                  </button>
+                </form>
+                <a href="/hadis/<%= slug %>/<%= item.number %>" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#A3B18A]/30 bg-white/80 text-[#588157] transition hover:bg-[#588157] hover:text-white" aria-label="Buka hadis <%= item.number %>">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
             <div class="mt-3 rounded-2xl border border-[#A3B18A]/28 bg-[#F6F1E9]/85 px-3 py-3">
@@ -102,7 +129,7 @@
               <span class="text-[11px] font-medium text-[#344E41]/55">No. <%= item.number %></span>
             </div>
           </div>
-        </a>
+        </article>
       <% }) %>
     </div>
 
@@ -188,7 +215,7 @@
     if (!Number.isFinite(target) || target < 1) return;
     const found = cards.find((card) => Number(card.getAttribute("data-hadis-number")) === target);
     if (found) {
-      window.location.href = found.getAttribute("href");
+      window.location.href = found.getAttribute("data-detail-url");
       return;
     }
     if (filterInput) {

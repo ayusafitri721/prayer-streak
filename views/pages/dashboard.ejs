@@ -1,6 +1,7 @@
 <%
   const progressPercent = totalToday > 0 ? Math.round((todayCompleted / totalToday) * 100) : 0;
   const safeDailyHadis = typeof dailyHadis !== "undefined" ? dailyHadis : null;
+  const safeFavoriteMotivation = typeof favoriteMotivation !== "undefined" ? favoriteMotivation : null;
   const remainingToday = Math.max(totalToday - todayCompleted, 0);
   const isDailyComplete = todayCompleted === totalToday;
   const weeklyDays = Array.isArray(weeklyBreakdown) ? weeklyBreakdown : [];
@@ -143,6 +144,29 @@
             <div class="mt-4 flex flex-wrap items-center gap-4">
               <span class="rounded-full border border-[#D4A373]/35 bg-[#D4A373]/10 px-4 py-1.5 text-xs font-bold text-[#B7792D]">HR. <%= safeDailyHadis.name %> No. <%= safeDailyHadis.number %></span>
               <a href="/hadis/<%= safeDailyHadis.slug %>/<%= safeDailyHadis.number %>" class="text-sm font-black text-[#2F654D] transition hover:text-[#B7792D]">Baca selengkapnya -></a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (safeFavoriteMotivation) { %>
+      <section class="dashboard-card-enter rounded-[1.75rem] border border-[#A3B18A]/40 bg-[#F6F1E9] p-5 shadow-[0_18px_45px_rgba(52,78,65,0.07)] sm:p-6">
+        <div class="flex items-start gap-4">
+          <div class="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#588157]/12 text-[#588157]">
+            <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-black uppercase tracking-wide text-[#588157]">Favorit Pengingatmu</p>
+            <h3 class="mt-2 text-lg font-black text-[#244338]"><%= safeFavoriteMotivation.title %></h3>
+            <p class="mt-3 line-clamp-3 text-sm leading-7 text-[#244338]/75"><%= safeFavoriteMotivation.content %></p>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <span class="rounded-full border border-[#A3B18A]/40 bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-[#588157]"><%= safeFavoriteMotivation.type %></span>
+              <% if (safeFavoriteMotivation.sourceUrl) { %>
+                <a href="<%= safeFavoriteMotivation.sourceUrl %>" class="text-sm font-black text-[#2F654D] transition hover:text-[#B7792D]">Buka kembali -></a>
+              <% } %>
             </div>
           </div>
         </div>
