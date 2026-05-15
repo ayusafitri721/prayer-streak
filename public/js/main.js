@@ -3129,7 +3129,7 @@ if (iqroRoot) {
     section.appendChild(heading);
 
     const grid = document.createElement("div");
-    grid.className = "mt-3 grid gap-3 sm:grid-cols-2";
+    grid.className = "mt-3 grid grid-cols-2 gap-3";
 
     (lesson.items || []).forEach((item) => {
       const card = document.createElement("div");
@@ -3140,17 +3140,16 @@ if (iqroRoot) {
       arabic.setAttribute("dir", "rtl");
       arabic.textContent = item.arabic || "";
 
-      const desc = document.createElement("p");
-      desc.className = "mt-2 text-sm font-semibold text-[#244338]/70";
-      const latinPart = item.latin || "-";
-      const readPart = item.read || "-";
-      desc.textContent = `${latinPart} - ${readPart}`;
+      const description = document.createElement("p");
+      description.className = "mt-2 text-sm font-semibold leading-6 text-[#244338]/70";
+      description.textContent = `${item.latin || "-"} - ${item.read || "-"}`;
 
-      card.append(arabic, desc);
+      card.append(arabic, description);
       grid.appendChild(card);
     });
 
     section.appendChild(grid);
+
     lessonsWrap.appendChild(section);
 
     const totalPages = currentLessons.length;

@@ -92,7 +92,7 @@
       </div>
     </div>
 
-    <a href="<%= quranLearningPath.href %>" class="block bg-[#FFFDF8] px-5 py-6 transition hover:bg-[#FCF6EA] sm:px-7">
+    <div class="bg-[#FFFDF8] px-5 py-6 sm:px-7">
       <div class="grid gap-3 md:grid-cols-2">
         <% quranLearningPath.stages.forEach((stage) => { %>
           <article class="rounded-2xl border border-[#D8CDBB] bg-white p-4 transition hover:border-[#A3B18A] hover:shadow-md hover:shadow-[#344E41]/8">
@@ -103,12 +103,23 @@
         <% }) %>
       </div>
 
-      <div class="mt-5 inline-flex items-center gap-2 rounded-full bg-[#244338] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#588157]">
-        Mulai Jalur Iqro
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="mt-5 flex flex-wrap items-center gap-2.5">
+        <a href="<%= quranLearningPath.href %>" class="inline-flex items-center gap-2 rounded-full bg-[#244338] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#588157]">
+          Mulai Jalur Iqro
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a
+          href="/belajar/tajwid"
+          class="inline-flex items-center gap-2 rounded-full border border-[#244338]/20 bg-white px-5 py-2.5 text-sm font-black text-[#244338] transition hover:border-[#588157] hover:text-[#588157]"
+        >
+          Buka Halaman Tajwid
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
       </div>
-    </a>
+    </div>
   </section>
 </main>

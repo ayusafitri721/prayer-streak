@@ -979,6 +979,96 @@ const learningDetails = {
       { label: "Qur'an 2:186 (Allah dekat dan mengabulkan doa)", url: "https://quran.com/2/186" },
     ],
   },
+  tajwid: {
+    slug: "tajwid",
+    title: "Halaman Hukum Tajwid",
+    subtitle: "Fokus khusus mempelajari hukum bacaan tajwid dengan contoh yang lebih jelas.",
+    focus: ["Nun mati/tanwin", "Mim mati", "Mad dan qalqalah", "Kuis tajwid"],
+    sections: [
+      {
+        heading: "Cara Belajar Tajwid yang Efektif",
+        items: [
+          "Pelajari hukum per kelompok kecil, jangan semuanya sekaligus.",
+          "Baca contoh dengan tempo pelan sambil cek makhraj.",
+          "Ulangi contoh yang sama beberapa kali sampai konsisten.",
+        ],
+      },
+      {
+        heading: "Urutan Belajar",
+        items: [
+          "Mulai dari hukum nun mati/tanwin dan mim mati.",
+          "Lanjut ke mad (panjang pendek) dan qalqalah.",
+          "Setelah paham teori, praktikkan di ayat-ayat pendek setiap hari.",
+        ],
+      },
+    ],
+    notes: [
+      "Tajwid paling efektif dipelajari dengan bimbingan guru (talaqqi), bukan teori saja.",
+      "Gunakan kuis di bawah untuk mengunci pemahaman dasar sebelum lanjut ke materi sulit.",
+    ],
+    tajwidRules: [
+      {
+        title: "Nun Mati / Tanwin",
+        rules: [
+          { name: "Izhar Halqi", detail: "Dibaca jelas ketika bertemu huruf halqi (ء ه ع ح غ خ).", example: "مِنْهُمْ" },
+          { name: "Idgham Bighunnah", detail: "Masuk disertai dengung jika bertemu ي ن م و.", example: "مِنْ وَالٍ" },
+          { name: "Idgham Bilaghunnah", detail: "Masuk tanpa dengung jika bertemu ل atau ر.", example: "مِنْ رَبِّهِمْ" },
+          { name: "Iqlab", detail: "Nun mati/tanwin berubah bunyi mim samar saat bertemu ب.", example: "سَمِيعٌ بَصِيرٌ" },
+          { name: "Ikhfa Haqiqi", detail: "Dibaca samar berdengung saat bertemu 15 huruf ikhfa.", example: "مِنْ شَرِّ" },
+        ],
+      },
+      {
+        title: "Mim Mati",
+        rules: [
+          { name: "Ikhfa Syafawi", detail: "Mim mati bertemu ب, dibaca samar berdengung.", example: "تَرْمِيهِمْ بِحِجَارَةٍ" },
+          { name: "Idgham Mimi", detail: "Mim mati bertemu mim, dibaca masuk dengan dengung.", example: "لَكُمْ مَا" },
+          { name: "Izhar Syafawi", detail: "Mim mati bertemu selain mim dan ba, dibaca jelas.", example: "عَلَيْهِمْ صَلَوَاتٌ" },
+        ],
+      },
+      {
+        title: "Mad dan Qalqalah",
+        rules: [
+          { name: "Mad Thabi'i", detail: "Panjang 2 harakat.", example: "قَالَ" },
+          { name: "Mad Wajib Muttasil", detail: "Mad bertemu hamzah dalam satu kata (4-5 harakat).", example: "جَاءَ" },
+          { name: "Mad Jaiz Munfasil", detail: "Mad bertemu hamzah beda kata (umumnya 4-5 harakat).", example: "فِي أَنْفُسِكُمْ" },
+          { name: "Mad Lazim", detail: "Mad wajib 6 harakat.", example: "الضَّالِّينَ" },
+          { name: "Qalqalah", detail: "Pantulan bunyi pada huruf ق ط ب ج د saat sukun.", example: "أَحَدْ" },
+        ],
+      },
+    ],
+    tajwidQuiz: [
+      {
+        question: "Pada lafal سَمِيعٌ بَصِيرٌ, hukum tanwin bertemu ب adalah...",
+        options: ["Iqlab", "Izhar Halqi", "Qalqalah", "Mad Lazim"],
+        answer: "Iqlab",
+      },
+      {
+        question: "Pada lafal مِنْهُمْ, hukum nun mati bertemu هـ adalah...",
+        options: ["Izhar Halqi", "Idgham Mimi", "Ikhfa Syafawi", "Mad Thabi'i"],
+        answer: "Izhar Halqi",
+      },
+      {
+        question: "Pada lafal تَرْمِيهِمْ بِحِجَارَةٍ, mim mati bertemu ب termasuk...",
+        options: ["Ikhfa Syafawi", "Idgham Bilaghunnah", "Izhar Syafawi", "Qalqalah"],
+        answer: "Ikhfa Syafawi",
+      },
+      {
+        question: "Mad yang panjangnya wajib 6 harakat disebut...",
+        options: ["Mad Lazim", "Mad Thabi'i", "Mad Jaiz Munfasil", "Mad 'Aridh Lissukun"],
+        answer: "Mad Lazim",
+      },
+      {
+        question: "Pantulan bunyi pada huruf ق ط ب ج د saat sukun disebut...",
+        options: ["Qalqalah", "Ghunnah", "Iqlab", "Izhar Syafawi"],
+        answer: "Qalqalah",
+      },
+    ],
+    references: [
+      { label: "Kemenag Jateng: Hukum Mempelajari Ilmu Tajwid", url: "https://jateng.kemenag.go.id/hukum-mempelajari-ilmu-tajwid/" },
+      { label: "Kemenag Kota Yogyakarta: Kajian Ilmu Tajwid", url: "https://yogyakartakota.kemenag.go.id/kajian-ilmu-tajwid-episode-1-mukadimah/" },
+      { label: "Sunnah.com: Pencarian tentang Qur'an recitation", url: "https://sunnah.com/search?q=recite+quran" },
+    ],
+  },
   "baca-quran": {
     slug: "baca-quran",
     title: "Belajar Baca Al-Qur'an",
