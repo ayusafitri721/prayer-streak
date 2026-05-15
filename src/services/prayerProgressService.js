@@ -57,6 +57,8 @@ const prayerApi = axios.create({
 });
 
 const XP_PER_PRAYER = 10;
+const XP_PER_SUNNAH_PRAYER = 3;
+const MAX_SUNNAH_XP_PER_DAY = 15;
 const DAILY_BONUS_XP = 25;
 const MAX_STREAK_PROTECTION = 3;
 const RESTORE_CHALLENGE_TARGET = 3;
@@ -143,6 +145,7 @@ function getInitialState() {
     onTimeByDate: new Map(),
     achievements: new Set(),
     unlockedAt: new Map(),
+    xpByDate: new Map(),
     lastFullDayDate: null,
     latestAchievement: null,
     streakProtection: MAX_STREAK_PROTECTION,
@@ -188,7 +191,22 @@ function buildStateFromLogs(logs, streakDays = [], user = null) {
       onTimeLogs[log.prayerType] = true;
       state.onTimeByDate.set(dateKey, onTimeLogs);
     }
-    state.xp += log.xpEarned || XP_PER_PRAYER;
+    const dayXp = state.xpByDate.get(dateKey) || { total: 0, fardhu: 0, sunnah: 0 };
+    let earnedXp = log.xpEarned || XP_PER_PRAYER;
+
+    if (SUNNAH_PRAYER_KEYS.includes(log.prayerType)) {
+      const remainingSunnahXp = Math.max(MAX_SUNNAH_XP_PER_DAY - dayXp.sunnah, 0);
+      earnedXp = Math.min(XP_PER_SUNNAH_PRAYER, remainingSunnahXp);
+    }
+
+    dayXp.total += earnedXp;
+    if (FARDHU_PRAYER_KEYS.includes(log.prayerType)) {
+      dayXp.fardhu += earnedXp;
+    } else if (SUNNAH_PRAYER_KEYS.includes(log.prayerType)) {
+      dayXp.sunnah += earnedXp;
+    }
+    state.xpByDate.set(dateKey, dayXp);
+    state.xp += earnedXp;
   });
 
   const fullDates = Array.from(state.logsByDate.entries())
@@ -729,6 +747,49 @@ function countThisWeek(state) {
   return total;
 }
 
+function countSunnahThisWeek(state) {
+  const now = new Date();
+  let total = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(now);
+    day.setDate(now.getDate() - i);
+    const dayKey = toDateString(day);
+    const logs = state.logsByDate.get(dayKey) || {};
+    total += countCompletedByKeys(logs, SUNNAH_PRAYER_KEYS);
+  }
+
+  return total;
+}
+
+function countSunnahCurrentMonth(state) {
+  const now = new Date();
+  const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  let total = 0;
+
+  state.logsByDate.forEach((logs, dateKey) => {
+    if (dateKey.startsWith(monthPrefix)) {
+      total += countCompletedByKeys(logs, SUNNAH_PRAYER_KEYS);
+    }
+  });
+
+  return total;
+}
+
+function sumXpForLastDays(state, days = 7, type = "total") {
+  const now = new Date();
+  let total = 0;
+
+  for (let i = 0; i < days; i++) {
+    const day = new Date(now);
+    day.setDate(now.getDate() - i);
+    const dayXp = state.xpByDate.get(toDateString(day));
+    total += dayXp?.[type] || 0;
+  }
+
+  return total;
+}
+
 function buildWeeklyBreakdown(state) {
   const days = [];
   const today = new Date();
@@ -748,6 +809,31 @@ function buildWeeklyBreakdown(state) {
       total: FARDHU_PRAYER_KEYS.length,
       percent: Math.round((completed / FARDHU_PRAYER_KEYS.length) * 100),
       isFull: completed >= FARDHU_PRAYER_KEYS.length,
+    });
+  }
+
+  return days;
+}
+
+function buildSunnahWeeklyBreakdown(state) {
+  const days = [];
+  const today = new Date();
+
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+
+    const dayKey = toDateString(day);
+    const logs = state.logsByDate.get(dayKey) || {};
+    const completed = countCompletedByKeys(logs, SUNNAH_PRAYER_KEYS);
+
+    days.push({
+      date: day.toISOString(),
+      label: day.toLocaleDateString("id-ID", { weekday: "short" }),
+      completed,
+      total: SUNNAH_PRAYER_KEYS.length,
+      percent: Math.round((completed / SUNNAH_PRAYER_KEYS.length) * 100),
+      isFull: completed >= SUNNAH_PRAYER_KEYS.length,
     });
   }
 
@@ -782,6 +868,31 @@ function buildPrayerPerformance(state) {
   const today = new Date();
 
   return FARDHU_PRAYER_KEYS.map((key) => {
+    let completed = 0;
+
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - offset);
+      const logs = state.logsByDate.get(toDateString(day)) || {};
+      if (logs[key]) {
+        completed += 1;
+      }
+    }
+
+    return {
+      key,
+      label: PRAYER_LABELS[key],
+      completed,
+      total: 7,
+      percent: Math.round((completed / 7) * 100),
+    };
+  });
+}
+
+function buildSunnahPerformance(state) {
+  const today = new Date();
+
+  return SUNNAH_PRAYER_KEYS.map((key) => {
     let completed = 0;
 
     for (let offset = 6; offset >= 0; offset -= 1) {
@@ -932,6 +1043,7 @@ async function getDashboardData(userId, prayerLocation = null) {
   const tomorrowPrayerSchedule = await getPrayerScheduleForDate(tomorrowDate, prayerLocation);
 
   const todayState = pickPrayerState(todayLogs, ALL_PRAYER_KEYS);
+  const todayXp = state.xpByDate.get(today) || { total: 0, fardhu: 0, sunnah: 0 };
   const restoreChallengeTasks = buildRestoreChallengeTasks(state, today);
 
   const todayCompleted = countCompletedByKeys(todayState, FARDHU_PRAYER_KEYS);
@@ -976,6 +1088,11 @@ async function getDashboardData(userId, prayerLocation = null) {
     sunnahChecklist,
     todaySunnahCompleted,
     totalSunnahToday: SUNNAH_PRAYER_KEYS.length,
+    todayXp: todayXp.total,
+    todayFardhuXp: todayXp.fardhu,
+    todaySunnahXp: todayXp.sunnah,
+    sunnahXpPerPrayer: XP_PER_SUNNAH_PRAYER,
+    maxSunnahXpPerDay: MAX_SUNNAH_XP_PER_DAY,
     todayState,
     consistencyPercent: Math.round((countThisWeek(state) / (FARDHU_PRAYER_KEYS.length * 7)) * 100),
     weekCompleted: countThisWeek(state),
@@ -1042,15 +1159,18 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
 
   const beforeLevel = state.level;
   const completedTodayBefore = countCompletedByKeys(todayLogs, FARDHU_PRAYER_KEYS);
-  const xpEarned =
-    XP_PER_PRAYER +
-    (isFardhuPrayer && completedTodayBefore + 1 === FARDHU_PRAYER_KEYS.length ? DAILY_BONUS_XP : 0);
+  const completedSunnahBefore = countCompletedByKeys(todayLogs, SUNNAH_PRAYER_KEYS);
+  const sunnahXpBefore = Math.min(completedSunnahBefore * XP_PER_SUNNAH_PRAYER, MAX_SUNNAH_XP_PER_DAY);
+  const sunnahXpRemaining = Math.max(MAX_SUNNAH_XP_PER_DAY - sunnahXpBefore, 0);
+  const xpEarned = isFardhuPrayer
+    ? XP_PER_PRAYER + (completedTodayBefore + 1 === FARDHU_PRAYER_KEYS.length ? DAILY_BONUS_XP : 0)
+    : Math.min(XP_PER_SUNNAH_PRAYER, sunnahXpRemaining);
   const isOnTime = isFardhuPrayer
     ? isPrayerOnTimeWithSchedule(prayer, prayerSchedule, now)
     : false;
 
   try {
-    await prisma.$transaction([
+    const transactionSteps = [
       prisma.prayerLog.create({
         data: {
           userId: Number(userId),
@@ -1062,18 +1182,23 @@ async function completePrayer(userId, prayer, prayerLocation = null) {
           xpEarned,
         },
       }),
-      prisma.xPHistory.create({
+    ];
+
+    if (xpEarned > 0) {
+      transactionSteps.push(prisma.xPHistory.create({
         data: {
           userId: Number(userId),
           pointChange: xpEarned,
           reason:
-            xpEarned > XP_PER_PRAYER
+            isFardhuPrayer && xpEarned > XP_PER_PRAYER
               ? `${PRAYER_LABELS[prayer]} selesai + bonus full day`
-              : `${PRAYER_LABELS[prayer]} selesai${isFardhuPrayer ? "" : " (Sunnah)"}`,
+              : `${PRAYER_LABELS[prayer]} selesai${isFardhuPrayer ? "" : xpEarned > 0 ? " (Sunnah bonus)" : " (Sunnah tanpa XP)"}`,
           relatedDate: dateKeyToDbDate(today),
         },
-      }),
-    ]);
+      }));
+    }
+
+    await prisma.$transaction(transactionSteps);
   } catch (error) {
     if (error?.code === "P2002") {
       return {
@@ -1133,6 +1258,15 @@ async function getStatsData(userId) {
   const totalThisWeek = countThisWeek(state);
   const weeklyTarget = FARDHU_PRAYER_KEYS.length * 7;
   const monthlyTotal = countCurrentMonth(state);
+  const sunnahThisWeek = countSunnahThisWeek(state);
+  const sunnahThisMonth = countSunnahCurrentMonth(state);
+  const sunnahXpThisWeek = sumXpForLastDays(state, 7, "sunnah");
+  const sunnahWeeklyBreakdown = buildSunnahWeeklyBreakdown(state);
+  const sunnahPerformance = buildSunnahPerformance(state);
+  const bestSunnah = sunnahPerformance.reduce(
+    (best, item) => (item.completed > best.completed ? item : best),
+    { label: "", completed: 0, total: 7, percent: 0 }
+  );
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const monthlyTarget = daysInMonth * FARDHU_PRAYER_KEYS.length;
@@ -1163,6 +1297,16 @@ async function getStatsData(userId) {
     monthlyPercent,
     dailyAverage,
     dailyAverageDelta: totalThisWeek > 0 ? 12 : 0,
+    sunnahThisWeek,
+    sunnahThisMonth,
+    sunnahXpThisWeek,
+    sunnahWeeklyTarget: SUNNAH_PRAYER_KEYS.length * 7,
+    sunnahWeeklyBreakdown,
+    sunnahPerformance,
+    bestSunnah,
+    sunnahDailyAverage: Number((sunnahThisWeek / 7).toFixed(1)),
+    sunnahXpPerPrayer: XP_PER_SUNNAH_PRAYER,
+    maxSunnahXpPerDay: MAX_SUNNAH_XP_PER_DAY,
     currentMonthLabel: now.toLocaleDateString("id-ID", { month: "long", year: "numeric" }),
     streakProtection: state.streakProtection,
     maxStreakProtection: MAX_STREAK_PROTECTION,

@@ -21,10 +21,22 @@
     star: "from-[#D4A373] to-[#7B4EC8]",
     flame: "from-[#F4A261] to-[#4169A8]",
   };
+  const sunnahWeek = typeof sunnahThisWeek === "number" ? sunnahThisWeek : 0;
+  const sunnahMonth = typeof sunnahThisMonth === "number" ? sunnahThisMonth : 0;
+  const sunnahWeekXp = typeof sunnahXpThisWeek === "number" ? sunnahXpThisWeek : 0;
+  const sunnahTarget = typeof sunnahWeeklyTarget === "number" ? sunnahWeeklyTarget : 35;
+  const sunnahDailyXpLimit = typeof maxSunnahXpPerDay === "number" ? maxSunnahXpPerDay : 15;
+  const sunnahPercent = Math.min(100, Math.round((sunnahWeek / Math.max(sunnahTarget, 1)) * 100));
+  const sunnahDays = Array.isArray(sunnahWeeklyBreakdown) ? sunnahWeeklyBreakdown : [];
+  const sunnahItems = Array.isArray(sunnahPerformance) ? sunnahPerformance : [];
+  const sunnahAverage = typeof sunnahDailyAverage === "number" ? sunnahDailyAverage : Number((sunnahWeek / 7).toFixed(1));
+  const bestSunnahText = bestSunnah && bestSunnah.completed > 0
+    ? `${bestSunnah.label} (${bestSunnah.completed}/7 hari)`
+    : "Belum ada sunnah dominan";
 %>
 
 <main class="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 text-[#344E41] sm:px-6 lg:px-6">
-  <section class="dashboard-card-enter overflow-hidden rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
+  <section class="order-1 dashboard-card-enter overflow-hidden rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
     <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
       <div>
         <p class="text-sm font-black text-[#588157]">Statistik Mingguan</p>
@@ -116,7 +128,103 @@
     </div>
   </section>
 
-  <section class="grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
+  <section class="order-3 dashboard-card-enter rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm font-black text-[#588157]">Ibadah Sunnah</p>
+        <h2 class="mt-1 text-2xl font-black text-[#344E41]">Bonus Ibadah Tambahan</h2>
+        <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#344E41]/62">
+          Salat sunnah tidak masuk target wajib 5 waktu dan tidak memengaruhi streak utama. Bagian ini hanya mencatat bonus ibadah tambahan.
+        </p>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:min-w-[640px]">
+        <article class="rounded-2xl border border-[#E4D8C8] bg-[#FFF9F0] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]/75">Minggu Ini</p>
+          <p class="mt-2 text-2xl font-black text-[#344E41]"><%= sunnahWeek %></p>
+          <p class="mt-1 text-xs font-semibold text-[#344E41]/55">sunnah tercatat</p>
+        </article>
+        <article class="rounded-2xl border border-[#E4D8C8] bg-[#FFF9F0] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]/75">Bonus XP</p>
+          <p class="mt-2 text-2xl font-black text-[#344E41]"><%= sunnahWeekXp %> XP</p>
+          <p class="mt-1 text-xs font-semibold text-[#344E41]/55">max <%= sunnahDailyXpLimit %> XP/hari</p>
+        </article>
+        <article class="rounded-2xl border border-[#E4D8C8] bg-[#FFF9F0] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]/75">Bulan Ini</p>
+          <p class="mt-2 text-2xl font-black text-[#344E41]"><%= sunnahMonth %></p>
+          <p class="mt-1 text-xs font-semibold text-[#344E41]/55">aktivitas sunnah</p>
+        </article>
+        <article class="rounded-2xl border border-[#E4D8C8] bg-[#FFF9F0] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]/75">Rata-rata</p>
+          <p class="mt-2 text-2xl font-black text-[#344E41]"><%= sunnahAverage %></p>
+          <p class="mt-1 text-xs font-semibold text-[#344E41]/55">sunnah / hari</p>
+        </article>
+      </div>
+    </div>
+    <div class="mt-5 h-3 overflow-hidden rounded-full bg-[#EDE5D8]">
+      <div class="dashboard-progress h-full rounded-full bg-[#A3B18A]" style="--progress-width: <%= sunnahPercent %>%; width: <%= sunnahPercent %>%"></div>
+    </div>
+    <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+      <div class="rounded-[1.25rem] border border-[#E4D8C8] bg-[#F8F5EE] p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h3 class="font-black text-[#344E41]">Grafik Sunnah 7 Hari</h3>
+            <p class="mt-1 text-xs font-semibold text-[#344E41]/58">Bonus terpisah dari target wajib dan streak utama.</p>
+          </div>
+          <span class="rounded-full bg-[#EEF3E6] px-3 py-1 text-xs font-black text-[#588157]"><%= sunnahWeek %>/<%= sunnahTarget %></span>
+        </div>
+
+        <div class="mt-5 grid grid-cols-7 items-end gap-3">
+          <% sunnahDays.forEach((day, index) => { %>
+            <% const hasSunnahProgress = day.completed > 0; const isSunnahToday = index === sunnahDays.length - 1; %>
+            <div class="flex flex-col items-center gap-2">
+              <div class="relative flex h-24 w-full max-w-10 items-end overflow-hidden rounded-full bg-white/80 ring-1 ring-[#E4D8C8]">
+                <div
+                  class="<%= day.isFull ? 'bg-[#588157]' : day.completed >= 3 ? 'bg-[#A3B18A]' : hasSunnahProgress ? 'bg-[#D4A373]' : 'bg-[#E8E2D7]' %> stats-bar w-full rounded-full"
+                  style="--bar-height: <%= Math.max(day.percent, hasSunnahProgress ? 16 : 3) %>%; animation-delay: <%= index * 70 %>ms;"
+                ></div>
+              </div>
+              <p class="<%= hasSunnahProgress ? 'bg-[#588157] text-white' : 'bg-[#E8E2D7] text-[#344E41]/50' %> rounded-full px-2 py-1 text-[11px] font-black"><%= day.completed %>/<%= day.total %></p>
+              <p class="text-[11px] font-bold text-[#344E41]/62"><%= day.label %></p>
+              <% if (isSunnahToday) { %>
+                <p class="text-[10px] font-black text-[#588157]">Hari ini</p>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="rounded-[1.25rem] border border-[#E4D8C8] bg-[#F8F5EE] p-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-black text-[#344E41]">Breakdown Sunnah</h3>
+            <p class="mt-1 text-xs font-semibold text-[#344E41]/58">Paling sering: <%= bestSunnahText %></p>
+          </div>
+          <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#D4A373]/18 text-[#B7792D]">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M5 8h14M6 16h12M8 3h8a2 2 0 0 1 2 2v14H6V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          <% sunnahItems.forEach((item) => { %>
+            <div>
+              <div class="mb-1 flex items-center justify-between gap-3 text-xs font-black">
+                <span class="text-[#344E41]"><%= item.label %></span>
+                <span class="text-[#588157]"><%= item.completed %>/<%= item.total %> hari</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-white">
+                <div class="dashboard-progress h-full rounded-full bg-[#A3B18A]" style="--progress-width: <%= item.percent %>%; width: <%= item.percent %>%"></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="order-2 grid gap-5 xl:grid-cols-[1.35fr_0.85fr]">
     <div class="dashboard-card-enter rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -175,7 +283,7 @@
     </div>
   </section>
 
-  <section class="grid gap-5 lg:grid-cols-[0.9fr_0.8fr_1fr]">
+  <section class="order-4 grid gap-5 lg:grid-cols-[0.9fr_0.8fr_1fr]">
     <div class="dashboard-card-enter rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
       <h2 class="text-xl font-black text-[#344E41]">Performa Waktu Salat</h2>
       <p class="mt-1 text-sm font-semibold text-[#344E41]/58">Persentase keberhasilan dalam 7 hari terakhir.</p>
@@ -261,7 +369,7 @@
     </div>
   </section>
 
-  <section class="grid gap-5 lg:grid-cols-[1.05fr_0.8fr_1.1fr]">
+  <section class="order-5 grid gap-5 lg:grid-cols-[1.05fr_0.8fr_1.1fr]">
     <div class="dashboard-card-enter rounded-[1.5rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)]">
       <div class="flex items-center gap-5">
         <div class="grid h-24 w-24 shrink-0 place-items-center rounded-full" style="background: conic-gradient(#588157 <%= monthlyPercent %>%, #E8E2D7 0);">

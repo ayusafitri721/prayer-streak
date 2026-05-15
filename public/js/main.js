@@ -1841,6 +1841,7 @@ if (countdownEl) {
   const dashboardProgressLabelEl = dashboardRoot?.querySelector("[data-dashboard-progress-label]");
   const dashboardProgressBarEl = dashboardRoot?.querySelector("[data-dashboard-progress-bar]");
   const dashboardXpTodayEl = dashboardRoot?.querySelector("[data-dashboard-xp-today]");
+  const dashboardXpBreakdownEl = dashboardRoot?.querySelector("[data-dashboard-xp-breakdown]");
   const dashboardTotalXpEl = dashboardRoot?.querySelector("[data-dashboard-total-xp]");
   const dashboardLevelEl = dashboardRoot?.querySelector("[data-dashboard-level]");
   const dashboardLevelHeadingEl = dashboardRoot?.querySelector("[data-dashboard-level-heading]");
@@ -2138,7 +2139,16 @@ if (countdownEl) {
       dashboardProgressBarEl.style.width = `${progressPercent}%`;
       dashboardProgressBarEl.style.setProperty("--progress-width", `${progressPercent}%`);
     }
-    if (dashboardXpTodayEl) dashboardXpTodayEl.textContent = `${dashboard.todayCompleted * 10} XP`;
+    const todayFardhuXp = Number(dashboard.todayFardhuXp || 0);
+    const todaySunnahXp = Number(dashboard.todaySunnahXp || 0);
+    const todayXp = Number.isFinite(Number(dashboard.todayXp))
+      ? Number(dashboard.todayXp)
+      : todayFardhuXp + todaySunnahXp;
+
+    if (dashboardXpTodayEl) dashboardXpTodayEl.textContent = `${todayXp} XP`;
+    if (dashboardXpBreakdownEl) {
+      dashboardXpBreakdownEl.textContent = `Wajib ${todayFardhuXp} + Sunnah ${todaySunnahXp}`;
+    }
     if (dashboardTotalXpEl) dashboardTotalXpEl.textContent = `${dashboard.xp} XP`;
     if (dashboardLevelEl) dashboardLevelEl.textContent = String(dashboard.level);
     if (dashboardLevelHeadingEl) dashboardLevelHeadingEl.textContent = `Level ${dashboard.level}`;
