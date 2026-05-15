@@ -31,12 +31,12 @@ async function findByEmail(email) {
     const user = memoryUsers.find((item) => item.email === normalizedEmail);
     if (!user) return null;
 
-    return { id: user.id, name: user.name, email: user.email, profileImage: user.profileImage || null };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage || null, role: user.role || "USER" };
   }
 
   return db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true, phone: true, profileImage: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, role: true },
   });
 }
 
@@ -45,12 +45,12 @@ async function findById(id) {
 
   if (!db?.user) {
     const user = memoryUsers.find((item) => item.id === id);
-    return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage || null } : null;
+    return user ? { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage || null, role: user.role || "USER" } : null;
   }
 
   return db.user.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true, phone: true, profileImage: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, role: true },
   });
 }
 
@@ -72,11 +72,12 @@ async function createUser({ name, email, phone, password }) {
       email: normalizedEmail,
       phone: normalizedPhone,
       profileImage: null,
+      role: "USER",
       password: passwordHash,
     };
     memoryUsers.push(user);
 
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage, role: user.role };
   }
 
   const exists = await db.user.findUnique({
@@ -94,9 +95,10 @@ async function createUser({ name, email, phone, password }) {
       name: name.trim(),
       email: normalizedEmail,
       phone: normalizedPhone,
+      role: "USER",
       password: passwordHash,
     },
-    select: { id: true, name: true, email: true, phone: true, profileImage: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, role: true },
   });
 
   return user;
@@ -123,12 +125,13 @@ async function validateUser(email, password) {
       email: user.email,
       phone: user.phone,
       profileImage: user.profileImage || null,
+      role: user.role || "USER",
     };
   }
 
   const user = await db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, name: true, email: true, phone: true, profileImage: true, password: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, role: true, password: true },
   });
 
   if (!user) {
@@ -146,6 +149,7 @@ async function validateUser(email, password) {
     email: user.email,
     phone: user.phone,
     profileImage: user.profileImage || null,
+    role: user.role,
   };
 }
 
@@ -157,13 +161,13 @@ async function updateProfileImage(userId, profileImage) {
     const user = memoryUsers.find((item) => item.id === id);
     if (!user) return null;
     user.profileImage = profileImage;
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage, role: user.role || "USER" };
   }
 
   return db.user.update({
     where: { id },
     data: { profileImage },
-    select: { id: true, name: true, email: true, phone: true, profileImage: true },
+    select: { id: true, name: true, email: true, phone: true, profileImage: true, role: true },
   });
 }
 
@@ -185,6 +189,7 @@ async function seedAdmin() {
       name: ADMIN_NAME,
       email: normalizedEmail,
       phone: "",
+      role: "ADMIN",
       password: passwordHash,
     });
     console.log(`Admin account ready: ${ADMIN_EMAIL}`);
@@ -193,10 +198,18 @@ async function seedAdmin() {
 
   const exists = await db.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true },
+    select: { id: true, role: true },
   });
 
-  if (exists) return;
+  if (exists) {
+    if (exists.role !== "ADMIN") {
+      await db.user.update({
+        where: { id: exists.id },
+        data: { role: "ADMIN" },
+      });
+    }
+    return;
+  }
 
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS);
   await db.user.create({
@@ -204,6 +217,7 @@ async function seedAdmin() {
       name: ADMIN_NAME,
       email: normalizedEmail,
       phone: "",
+      role: "ADMIN",
       password: passwordHash,
     },
   });

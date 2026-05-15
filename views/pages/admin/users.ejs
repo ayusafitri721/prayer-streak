@@ -1,0 +1,128 @@
+<main class="mx-auto flex w-full max-w-[92rem] flex-col gap-5 px-3 py-4 text-[#344E41] sm:px-5 lg:px-6">
+  <section class="rounded-2xl border border-[#E6DDD1] bg-white/95 p-6 shadow-[0_12px_35px_rgba(52,78,65,0.07)]">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <a href="/admin" class="inline-flex items-center gap-2 text-sm font-black text-[#588157] hover:text-[#3F6F42]">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Kembali ke Admin
+        </a>
+        <h1 class="mt-3 text-3xl font-black tracking-tight text-[#244338]">Semua User</h1>
+        <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#344E41]/64">
+          Pantau akun pengguna dan admin yang terdaftar di Prayer Streak, termasuk aktivitas checklist, bookmark, dan achievement.
+        </p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[32rem]">
+        <article class="rounded-2xl bg-[#EAF3E5] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Total</p>
+          <p class="mt-2 text-2xl font-black text-[#244338]"><%= summary.total %></p>
+        </article>
+        <article class="rounded-2xl bg-[#F6F1E9] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">User</p>
+          <p class="mt-2 text-2xl font-black text-[#244338]"><%= summary.users %></p>
+        </article>
+        <article class="rounded-2xl bg-[#FFF2D9] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#9A651F]">Admin</p>
+          <p class="mt-2 text-2xl font-black text-[#244338]"><%= summary.admins %></p>
+        </article>
+        <article class="rounded-2xl bg-[#EEF3E6] p-4">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Aktif</p>
+          <p class="mt-2 text-2xl font-black text-[#244338]"><%= summary.active %></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-xl font-black text-[#244338]">Daftar Akun</h2>
+        <p class="mt-1 text-sm font-semibold text-[#344E41]/58">Urut berdasarkan akun terbaru.</p>
+      </div>
+      <div class="inline-flex w-fit rounded-full border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-2 text-sm font-black text-[#3F6F42]">
+        <%= users.length %> akun
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-[#E8E0D5]">
+      <table class="w-full min-w-[980px] text-left text-sm">
+        <thead class="bg-[#FBF8F2] text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#344E41]/58">
+          <tr>
+            <th class="px-4 py-3">User</th>
+            <th class="px-4 py-3">Kontak</th>
+            <th class="px-4 py-3">Role</th>
+            <th class="px-4 py-3">Checklist</th>
+            <th class="px-4 py-3">Bookmark</th>
+            <th class="px-4 py-3">Achievement</th>
+            <th class="px-4 py-3">Aktivitas Terakhir</th>
+            <th class="px-4 py-3">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E8E0D5] bg-white">
+          <% users.forEach((item) => { %>
+            <tr class="hover:bg-[#F8F5EE]">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <span class="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-[#588157] text-sm font-black text-white">
+                    <% if (item.profileImage) { %>
+                      <img src="<%= item.profileImage %>" alt="Foto <%= item.name %>" class="h-full w-full object-cover" />
+                    <% } else { %>
+                      <%= item.name ? item.name.charAt(0).toUpperCase() : "U" %>
+                    <% } %>
+                  </span>
+                  <div>
+                    <p class="font-black text-[#244338]"><%= item.name %></p>
+                    <p class="mt-0.5 text-xs font-semibold text-[#344E41]/50">ID #<%= item.id %></p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <p class="font-semibold text-[#344E41]/72"><%= item.email %></p>
+                <p class="mt-0.5 text-xs font-semibold text-[#344E41]/45"><%= item.phone || "No phone" %></p>
+              </td>
+              <td class="px-4 py-3">
+                <span class="<%= item.role === 'ADMIN' ? 'bg-[#D4A373]/20 text-[#9A651F]' : 'bg-[#A3B18A]/20 text-[#3F6F42]' %> rounded-full px-3 py-1 text-xs font-black"><%= item.role %></span>
+              </td>
+              <td class="px-4 py-3 font-black text-[#244338]"><%= item._count.prayerLogs %></td>
+              <td class="px-4 py-3 font-black text-[#244338]"><%= item._count.favoriteContents %></td>
+              <td class="px-4 py-3 font-black text-[#244338]"><%= item._count.achievements %></td>
+              <td class="px-4 py-3 font-semibold text-[#344E41]/60">
+                <% if (item.prayerLogs[0]?.prayedAt) { %>
+                  <%= item.prayerLogs[0].prayedAt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) %>
+                <% } else { %>
+                  Belum ada
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a href="/admin/users/<%= item.id %>" class="inline-flex items-center gap-1.5 rounded-full bg-[#588157] px-3 py-2 text-xs font-black text-white hover:bg-[#466B47]" title="Lihat detail user">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Detail
+                  </a>
+                  <a href="/admin/users/<%= item.id %>#role" class="inline-flex items-center gap-1.5 rounded-full border border-[#D8CDBB] bg-white px-3 py-2 text-xs font-black text-[#3F6F42] hover:bg-[#EEF3E6]" title="Ubah role user">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+                    </svg>
+                    Role
+                  </a>
+                  <a href="/admin/users/<%= item.id %>#reset" class="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100" title="Reset progress user">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6"/>
+                    </svg>
+                    Reset
+                  </a>
+                </div>
+              </td>
+                  </svg>
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

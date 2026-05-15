@@ -58,7 +58,7 @@ async function doLogin(req, res) {
     name: user.name || "",
   };
   req.flash("message", "Login berhasil.");
-  return res.redirect("/dashboard");
+  return res.redirect(user.role === "ADMIN" ? "/admin" : "/dashboard");
 }
 
 function logout(req, res) {

@@ -19,6 +19,7 @@ const doaRoutes = require("./routes/doa");
 const learningRoutes = require("./routes/learning");
 const notificationRoutes = require("./routes/notifications");
 const favoriteRoutes = require("./routes/favorites");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use("/doa", doaRoutes);
 app.use("/belajar", learningRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/favorites", favoriteRoutes);
+app.use("/admin", adminRoutes);
 
 app.use(renderNotFound);
 app.use(renderServerError);

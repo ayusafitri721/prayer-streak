@@ -1,0 +1,132 @@
+<main class="mx-auto flex w-full max-w-[92rem] flex-col gap-5 px-3 py-4 text-[#344E41] sm:px-5 lg:px-6">
+  <section class="rounded-2xl border border-[#E6DDD1] bg-white/95 p-6 shadow-[0_12px_35px_rgba(52,78,65,0.07)]">
+    <a href="/admin/users" class="inline-flex items-center gap-2 text-sm font-black text-[#588157] hover:text-[#3F6F42]">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Kembali ke semua user
+    </a>
+
+    <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_24rem] lg:items-start">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <span class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[1.5rem] bg-[#588157] text-3xl font-black text-white">
+          <% if (targetUser.profileImage) { %>
+            <img src="<%= targetUser.profileImage %>" alt="Foto <%= targetUser.name %>" class="h-full w-full object-cover" />
+          <% } else { %>
+            <%= targetUser.name ? targetUser.name.charAt(0).toUpperCase() : "U" %>
+          <% } %>
+        </span>
+        <div>
+          <h1 class="text-3xl font-black tracking-tight text-[#244338]"><%= targetUser.name %></h1>
+          <p class="mt-1 text-sm font-semibold text-[#344E41]/64"><%= targetUser.email %></p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="<%= targetUser.role === 'ADMIN' ? 'bg-[#D4A373]/20 text-[#9A651F]' : 'bg-[#A3B18A]/20 text-[#3F6F42]' %> rounded-full px-3 py-1 text-xs font-black"><%= targetUser.role %></span>
+            <span class="rounded-full bg-[#F6F1E9] px-3 py-1 text-xs font-black text-[#344E41]/65">Bergabung <%= targetUser.createdAt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) %></span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="rounded-2xl border border-[#E8E0D5] bg-[#F8F5EE] p-4">
+        <p class="text-sm font-black text-[#244338]">Quick Actions</p>
+        <form action="/admin/users/<%= targetUser.id %>/role" method="POST" class="mt-4 scroll-mt-24" id="role">
+          <label class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Ubah Role</label>
+          <div class="mt-2 flex gap-2">
+            <select name="role" class="min-w-0 flex-1 rounded-xl border border-[#D8CDBB] bg-white px-3 py-2 text-sm font-bold text-[#244338] outline-none">
+              <option value="USER" <%= targetUser.role === "USER" ? "selected" : "" %>>USER</option>
+              <option value="ADMIN" <%= targetUser.role === "ADMIN" ? "selected" : "" %>>ADMIN</option>
+            </select>
+            <button class="rounded-xl bg-[#588157] px-4 py-2 text-sm font-black text-white hover:bg-[#466B47]" type="submit">Simpan</button>
+          </div>
+        </form>
+
+        <form action="/admin/users/<%= targetUser.id %>/reset-progress" method="POST" class="mt-4 scroll-mt-24" id="reset" onsubmit="return confirm('Reset progress user ini? Checklist, XP, streak, dan achievement akan dihapus. Bookmark tetap aman.');">
+          <button class="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700 hover:bg-red-100" type="submit">
+            Reset Progress User
+          </button>
+        </form>
+      </aside>
+    </div>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <article class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Total XP</p>
+      <p class="mt-2 text-3xl font-black text-[#244338]"><%= totalXp %></p>
+    </article>
+    <article class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Checklist</p>
+      <p class="mt-2 text-3xl font-black text-[#244338]"><%= targetUser._count.prayerLogs %></p>
+    </article>
+    <article class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Bookmark</p>
+      <p class="mt-2 text-3xl font-black text-[#244338]"><%= targetUser._count.favoriteContents %></p>
+    </article>
+    <article class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Achievement</p>
+      <p class="mt-2 text-3xl font-black text-[#244338]"><%= targetUser._count.achievements %></p>
+    </article>
+    <article class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-[#588157]">Protection</p>
+      <p class="mt-2 text-3xl font-black text-[#244338]"><%= targetUser.streakProtection %></p>
+    </article>
+  </section>
+
+  <section class="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+    <div class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+      <h2 class="text-xl font-black text-[#244338]">Log Checklist Terbaru</h2>
+      <div class="mt-4 space-y-3">
+        <% if (targetUser.prayerLogs.length) { %>
+          <% targetUser.prayerLogs.forEach((log) => { %>
+            <div class="flex items-center justify-between gap-4 rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-3">
+              <div>
+                <p class="font-black capitalize text-[#244338]"><%= log.prayerType.replaceAll("_", " ") %></p>
+                <p class="mt-1 text-xs font-semibold text-[#344E41]/55">
+                  <%= log.date.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) %>
+                  <% if (log.prayedAt) { %> pukul <%= log.prayedAt.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) %><% } %>
+                </p>
+              </div>
+              <span class="rounded-full bg-[#EAF3E5] px-3 py-1 text-xs font-black text-[#3F6F42]">+<%= log.xpEarned %> XP</span>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p class="rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-6 text-sm font-semibold text-[#344E41]/58">Belum ada checklist.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="grid gap-5">
+      <div class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+        <h2 class="text-xl font-black text-[#244338]">Bookmark Terbaru</h2>
+        <div class="mt-4 space-y-3">
+          <% if (targetUser.favoriteContents.length) { %>
+            <% targetUser.favoriteContents.forEach((item) => { %>
+              <div class="rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-3">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-[#588157]"><%= item.type %></p>
+                <p class="mt-1 font-black text-[#244338]"><%= item.title %></p>
+                <p class="mt-1 text-xs font-semibold text-[#344E41]/55"><%= item.reference %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-6 text-sm font-semibold text-[#344E41]/58">Belum ada bookmark.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-[#E6DDD1] bg-white/96 p-5 shadow-[0_10px_28px_rgba(52,78,65,0.06)]">
+        <h2 class="text-xl font-black text-[#244338]">Achievement Terbaru</h2>
+        <div class="mt-4 space-y-3">
+          <% if (targetUser.achievements.length) { %>
+            <% targetUser.achievements.forEach((item) => { %>
+              <div class="rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-3">
+                <p class="font-black text-[#244338]"><%= item.achievement.name %></p>
+                <p class="mt-1 text-xs font-semibold text-[#344E41]/55"><%= item.achievement.description %></p>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="rounded-xl border border-[#E8E0D5] bg-[#FBF8F2] px-4 py-6 text-sm font-semibold text-[#344E41]/58">Belum ada achievement.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

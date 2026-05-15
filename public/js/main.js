@@ -3039,12 +3039,19 @@ const notificationBadges = Array.from(document.querySelectorAll("[data-notificat
 
 if (notificationPanel && notificationPanelToggles.length) {
   const openPanel = () => {
+    notificationPanel.classList.remove("hidden");
+    notificationPanel.setAttribute("aria-hidden", "false");
     notificationPanel.classList.remove("pointer-events-none", "opacity-0");
     notificationBadges.forEach((badge) => badge.classList.add("hidden"));
   };
 
   const closePanel = () => {
+    if (document.activeElement instanceof HTMLElement && notificationPanel.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
     notificationPanel.classList.add("pointer-events-none", "opacity-0");
+    notificationPanel.setAttribute("aria-hidden", "true");
+    notificationPanel.classList.add("hidden");
   };
 
   notificationPanelToggles.forEach((button) => {
