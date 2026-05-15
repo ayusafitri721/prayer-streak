@@ -266,8 +266,16 @@
             <% topic.illustrations.forEach((ill) => { %>
               <div class="rounded-xl border border-[#D8CDBB] bg-[#FFF9F0] p-3">
                 <div class="flex items-start gap-3">
-                  <div class="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-[#D8CDBB] bg-white text-[#2F654D]">
-                    <% if (ill.kind === "shalat-berdiri") { %>
+                  <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#D8CDBB] bg-white text-[#2F654D]">
+                    <% if (ill.image) { %>
+                      <img
+                        src="<%= ill.image %>"
+                        alt="<%= ill.title %>"
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                        referrerpolicy="no-referrer"
+                      />
+                    <% } else if (ill.kind === "shalat-berdiri") { %>
                       <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="4.5" r="2" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v6m0 0-3 4m3-4 3 4M9 9l3 2 3-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <% } else if (ill.kind === "shalat-ruku") { %>
                       <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="8" cy="5.2" r="1.8" stroke="currentColor" stroke-width="1.7"/><path d="M9.8 7.2 13 10h5M13 10l-2 4m2-4 3.5 4M8 10l3.2-2.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -308,8 +316,18 @@
                     <% } %>
                   </div>
                   <div>
-                    <p class="text-sm font-black text-[#244338]"><%= ill.title %></p>
-                    <p class="mt-1 text-xs leading-5 text-[#244338]/65"><%= ill.caption %></p>
+                    <p class="text-base font-black text-[#244338]"><%= ill.title %></p>
+                    <p class="mt-1 text-sm leading-5 text-[#244338]/65"><%= ill.caption %></p>
+                    <% if (ill.sourceUrl) { %>
+                      <a
+                        href="<%= ill.sourceUrl %>"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-1 inline-flex text-xs font-semibold text-[#2F654D] underline underline-offset-2 hover:text-[#B7792D]"
+                      >
+                        Sumber gambar: <%= ill.sourceLabel || "Referensi" %>
+                      </a>
+                    <% } %>
                   </div>
                 </div>
               </div>

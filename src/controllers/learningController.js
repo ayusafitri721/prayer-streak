@@ -403,10 +403,38 @@ const learningDetails = {
       },
     ],
     illustrations: [
-      { title: "Posisi Berdiri", caption: "Berdiri tegak, pandangan ke tempat sujud.", kind: "shalat-berdiri" },
-      { title: "Ruku", caption: "Punggung rata, tangan memegang lutut.", kind: "shalat-ruku" },
-      { title: "Sujud", caption: "Dahi dan hidung menempel tempat sujud.", kind: "shalat-sujud" },
-      { title: "Duduk", caption: "Duduk di antara dua sujud/tasyahud dengan tenang.", kind: "shalat-duduk" },
+      {
+        title: "Posisi Berdiri",
+        caption: "Berdiri tegak, pandangan ke tempat sujud.",
+        kind: "shalat-berdiri",
+        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Muslim%20Standing%20in%20Prayer%20with%20Hands%20Placed%20on%20the%20Chest.jpg",
+        sourceLabel: "Wikimedia Commons",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Muslim_Standing_in_Prayer_with_Hands_Placed_on_the_Chest.jpg",
+      },
+      {
+        title: "Ruku",
+        caption: "Punggung rata, tangan memegang lutut.",
+        kind: "shalat-ruku",
+        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Muslim%20Performing%20Ruk%C5%AB%CA%BF%20in%20Prayer%20During%20Ramadan.jpg",
+        sourceLabel: "Wikimedia Commons",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Muslim_Performing_Ruk%C5%AB%CA%BF_in_Prayer_During_Ramadan.jpg",
+      },
+      {
+        title: "Sujud",
+        caption: "Dahi dan hidung menempel tempat sujud.",
+        kind: "shalat-sujud",
+        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Sujud%20Salah%20Satu%20Gerakan%20Salat.jpg",
+        sourceLabel: "Wikimedia Commons",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Sujud_Salah_Satu_Gerakan_Salat.jpg",
+      },
+      {
+        title: "Duduk",
+        caption: "Duduk di antara dua sujud/tasyahud dengan tenang.",
+        kind: "shalat-duduk",
+        image: "https://commons.wikimedia.org/wiki/Special:FilePath/Final%20Sitting%20%28Tashahhud%29%20in%20Prayer%20with%20Finger%20Raised.jpg",
+        sourceLabel: "Wikimedia Commons",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Final_Sitting_(Tashahhud)_in_Prayer_with_Finger_Raised.jpg",
+      },
     ],
     sections: [
       {
