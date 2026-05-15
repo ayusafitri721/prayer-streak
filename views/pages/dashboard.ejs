@@ -32,6 +32,41 @@
   const hijriCalendar = safeHijriData.calendar || { monthLabel: "Kalender Hijriyah", entries: [] };
   const hijriWarning = safeHijriData.warning || null;
   const hijriSourceName = safeHijriData.sourceName || null;
+  const dashboardHeaderQuotes = [
+    {
+      text: "Amalan yang paling dicintai Allah adalah yang dikerjakan terus-menerus walaupun sedikit.",
+      source: "HR. Bukhari & Muslim",
+    },
+    {
+      text: "Sesungguhnya Allah beserta orang-orang yang sabar.",
+      source: "QS. Al-Baqarah: 153",
+    },
+    {
+      text: "Dan sembahlah Tuhanmu sampai datang kepadamu yang diyakini (ajal).",
+      source: "QS. Al-Hijr: 99",
+    },
+    {
+      text: "Maka apabila engkau telah selesai (dari suatu urusan), tetaplah bekerja keras (untuk urusan yang lain).",
+      source: "QS. Ash-Sharh: 7",
+    },
+    {
+      text: "Bahwa manusia hanya memperoleh apa yang telah diusahakannya.",
+      source: "QS. An-Najm: 39",
+    },
+    {
+      text: "Mukmin yang kuat lebih Allah cintai daripada mukmin yang lemah, dan pada keduanya ada kebaikan.",
+      source: "HR. Muslim",
+    },
+    {
+      text: "Sesungguhnya bersama kesulitan ada kemudahan.",
+      source: "QS. Ash-Sharh: 6",
+    },
+  ];
+  const dashboardQuoteDateKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
+  const dashboardQuoteSeed = dashboardQuoteDateKey
+    .split("-")
+    .reduce((sum, part) => sum + Number(part), 0);
+  const dashboardHeaderQuote = dashboardHeaderQuotes[dashboardQuoteSeed % dashboardHeaderQuotes.length];
   const prayerIconPaths = {
     shubuh: '<path d="M4 15a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 3v3M5.6 6.6l2.1 2.1M18.4 6.6l-2.1 2.1M3 15h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
     dzuhur: '<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
@@ -55,6 +90,19 @@
             <p class="text-sm font-bold text-[#2F654D]">Assalamu'alaikum, <%= userName %></p>
             <h1 class="mt-4 text-4xl font-black leading-tight text-[#244338] sm:text-5xl">Dashboard Harian</h1>
             <p class="mt-3 text-base text-[#244338]/70">Catat dan jaga konsistensi salatmu setiap hari.</p>
+            <div class="relative mt-5 max-w-2xl overflow-hidden rounded-3xl border border-[#D4A373]/38 bg-[linear-gradient(145deg,#FFFDF8_0%,#F8F2E7_100%)] p-4 shadow-[0_14px_30px_rgba(36,67,56,0.08)] sm:p-5">
+              <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[#D4A373]/16 blur-2xl"></div>
+              <div class="relative flex items-start gap-3">
+                <span class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#D4A373]/16 text-[#B7792D]">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 11H5.5c0-2.9 1.6-4.9 4.4-5.9M18.5 11H15c0-2.9 1.6-4.9 4.4-5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M6.4 11c0 5.2 2 7.9 5.5 7.9M15.9 11c0 5.2 2 7.9 5.5 7.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <p class="text-base font-medium italic leading-8 text-[#1f3b31] sm:text-[1.08rem]" style="font-family: 'Amiri', serif;">"<%= dashboardHeaderQuote.text %>"</p>
+              </div>
+              <p class="relative mt-4 inline-flex rounded-full border border-[#A3B18A]/45 bg-white/80 px-3 py-1 text-xs font-black uppercase tracking-wide text-[#2F654D]/82"><%= dashboardHeaderQuote.source %></p>
+            </div>
           </div>
 
           <div class="flex w-full items-center justify-between gap-4 rounded-3xl border border-[#D4A373]/35 bg-[#FFF9F0] p-4 shadow-sm lg:w-44 lg:flex-col lg:text-center">

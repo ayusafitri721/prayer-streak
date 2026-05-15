@@ -2674,6 +2674,28 @@ if (homeCarousel) {
   }
 }
 
+const homeAnchorLinks = Array.from(document.querySelectorAll('a[href^="#"]'));
+
+if (homeCarousel && homeAnchorLinks.length) {
+  const smoothBehavior =
+    !prefersReducedMotion && "scrollBehavior" in document.documentElement.style
+      ? "smooth"
+      : "auto";
+
+  homeAnchorLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const targetSelector = link.getAttribute("href");
+      if (!targetSelector || targetSelector === "#") return;
+
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+
+      event.preventDefault();
+      target.scrollIntoView({ behavior: smoothBehavior, block: "start" });
+    });
+  });
+}
+
 const pushSettings = document.querySelector("[data-push-settings]");
 
 if (pushSettings) {
@@ -3039,4 +3061,321 @@ if (notificationPanel && notificationPanelToggles.length) {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closePanel();
   });
+}
+
+const iqroRoot = document.querySelector("[data-iqro-root]");
+
+if (iqroRoot) {
+  const apiBase = iqroRoot.dataset.iqroApiBase || "/belajar/iqro-api/levels";
+  const externalBase =
+    iqroRoot.dataset.iqroJsonBase || "https://cdn.jsdelivr.net/gh/dyazincahya/iqro-json@main/iqro";
+  const titleEl = iqroRoot.querySelector("[data-iqro-title]");
+  const objectiveEl = iqroRoot.querySelector("[data-iqro-objective]");
+  const currentLevelEl = iqroRoot.querySelector("[data-iqro-current-level]");
+  const lessonsWrap = iqroRoot.querySelector("[data-iqro-lessons]");
+  const tipsWrap = iqroRoot.querySelector("[data-iqro-tips]");
+  const prevBtn = iqroRoot.querySelector("[data-iqro-prev]");
+  const nextBtn = iqroRoot.querySelector("[data-iqro-next]");
+  const pageIndicatorEl = iqroRoot.querySelector("[data-iqro-page-indicator]");
+  const sourceEl = iqroRoot.querySelector("[data-iqro-source]");
+  const levelButtons = Array.from(iqroRoot.querySelectorAll("[data-iqro-level-btn]"));
+  let currentLessons = [];
+  let currentLessonIndex = 0;
+
+  const setActiveLevelButton = (levelNumber) => {
+    levelButtons.forEach((button) => {
+      const isActive = Number(button.dataset.iqroLevel) === Number(levelNumber);
+      button.classList.toggle("bg-[#588157]", isActive);
+      button.classList.toggle("text-white", isActive);
+      button.classList.toggle("ring-2", isActive);
+      button.classList.toggle("ring-[#588157]/20", isActive);
+      button.classList.toggle("bg-white", !isActive);
+      button.classList.toggle("text-[#2F654D]", !isActive);
+    });
+  };
+
+  const renderCurrentLessonPage = () => {
+    if (!lessonsWrap) return;
+    lessonsWrap.innerHTML = "";
+
+    const lesson = currentLessons[currentLessonIndex];
+    if (!lesson) {
+      const empty = document.createElement("p");
+      empty.className = "text-sm text-[#244338]/70";
+      empty.textContent = "Materi belum tersedia pada halaman ini.";
+      lessonsWrap.appendChild(empty);
+      if (pageIndicatorEl) pageIndicatorEl.textContent = "Halaman 0 dari 0";
+      if (prevBtn) prevBtn.disabled = true;
+      if (nextBtn) nextBtn.disabled = true;
+      return;
+    }
+
+    const section = document.createElement("section");
+    section.className = "rounded-2xl border border-[#D8CDBB] bg-white p-4 sm:p-5";
+
+    const heading = document.createElement("p");
+    heading.className = "text-base font-black text-[#2F654D]";
+    heading.textContent = lesson.label || "Materi";
+    section.appendChild(heading);
+
+    const grid = document.createElement("div");
+    grid.className = "mt-3 grid gap-3 sm:grid-cols-2";
+
+    (lesson.items || []).forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "rounded-2xl border border-[#D8CDBB] bg-[#FFFCF7] px-4 py-4 sm:px-5";
+
+      const arabic = document.createElement("p");
+      arabic.className = "text-right font-['Amiri'] text-5xl leading-[1.4] text-[#1f3b31] sm:text-6xl";
+      arabic.setAttribute("dir", "rtl");
+      arabic.textContent = item.arabic || "";
+
+      const desc = document.createElement("p");
+      desc.className = "mt-2 text-sm font-semibold text-[#244338]/70";
+      const latinPart = item.latin || "-";
+      const readPart = item.read || "-";
+      desc.textContent = `${latinPart} - ${readPart}`;
+
+      card.append(arabic, desc);
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    lessonsWrap.appendChild(section);
+
+    const totalPages = currentLessons.length;
+    const activePage = totalPages ? currentLessonIndex + 1 : 0;
+    if (pageIndicatorEl) {
+      pageIndicatorEl.textContent = `Halaman ${activePage} dari ${totalPages}`;
+    }
+    if (prevBtn) prevBtn.disabled = activePage <= 1;
+    if (nextBtn) nextBtn.disabled = activePage >= totalPages;
+  };
+
+  const renderIqroLevel = (level, sourceLabel = "") => {
+    if (!level || !titleEl || !objectiveEl || !lessonsWrap || !tipsWrap) return;
+
+    titleEl.textContent = level.title || "Modul Iqro";
+    objectiveEl.textContent = level.objective || "";
+    if (currentLevelEl) currentLevelEl.textContent = `Level ${level.level || "-"}`;
+    if (sourceEl) {
+      sourceEl.textContent = sourceLabel ? `Sumber: ${sourceLabel}` : "Sumber: tidak diketahui";
+    }
+
+    currentLessons = Array.isArray(level.lessons) ? level.lessons : [];
+    currentLessonIndex = 0;
+    renderCurrentLessonPage();
+
+    tipsWrap.innerHTML = "";
+    (level.tips || []).forEach((tip) => {
+      const line = document.createElement("li");
+      line.className = "flex gap-2 text-sm leading-6 text-[#244338]/72";
+
+      const dot = document.createElement("span");
+      dot.className = "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#588157]";
+
+      const text = document.createElement("span");
+      text.textContent = tip;
+
+      line.append(dot, text);
+      tipsWrap.appendChild(line);
+    });
+  };
+
+  const normalizeExternalEntries = (rawPayload) => {
+    if (Array.isArray(rawPayload)) return rawPayload;
+    if (!rawPayload || typeof rawPayload !== "object") return [];
+
+    const candidateKeys = ["data", "items", "list", "content", "huruf", "letters", "materi"];
+    for (const key of candidateKeys) {
+      if (Array.isArray(rawPayload[key])) return rawPayload[key];
+    }
+
+    return [];
+  };
+
+  const normalizeExternalItem = (item) => {
+    if (typeof item === "string") {
+      return { arabic: item, latin: "-", read: "-" };
+    }
+    if (!item || typeof item !== "object") {
+      return { arabic: "-", latin: "-", read: "-" };
+    }
+
+    const arabic =
+      item.arabic ||
+      item.arab ||
+      item.huruf ||
+      item.text ||
+      item.kata ||
+      item.word ||
+      item.example ||
+      "-";
+    const latin =
+      item.latin || item.transliteration || item.nama || item.name || item.description || "-";
+    const read =
+      item.read || item.baca || item.pronounce || item.pelafalan || item.sound || item.audioText || "-";
+
+    return {
+      arabic: String(arabic),
+      latin: String(latin),
+      read: String(read),
+    };
+  };
+
+  const loadIqroLevelFromExternal = async (levelNumber) => {
+    const lessonBlocks = [];
+    let misses = 0;
+
+    for (let page = 1; page <= 40; page += 1) {
+      const url = `${externalBase}/iqro-${levelNumber}/${levelNumber}-${page}.json`;
+      let response;
+      try {
+        response = await fetch(url);
+      } catch {
+        misses += 1;
+        if (misses >= 2) break;
+        continue;
+      }
+
+      if (!response.ok) {
+        misses += 1;
+        if (misses >= 2) break;
+        continue;
+      }
+
+      misses = 0;
+      const payload = await response.json();
+      const entries = normalizeExternalEntries(payload).map(normalizeExternalItem);
+
+      if (!entries.length) continue;
+      lessonBlocks.push({
+        label: `Bagian ${levelNumber}-${page}`,
+        items: entries,
+      });
+    }
+
+    if (!lessonBlocks.length) {
+      throw new Error("Data Iqro eksternal belum ditemukan untuk level ini.");
+    }
+
+    return {
+      level: levelNumber,
+      title: `Iqro ${levelNumber} - dyazincahya/iqro-json`,
+      objective: "Materi dimuat dari sumber Iqro JSON eksternal.",
+      lessons: lessonBlocks,
+      tips: [
+        "Baca perlahan lalu ulang 3-5 kali tiap baris.",
+        "Fokus bunyi huruf sebelum kecepatan.",
+        "Jika ada guru, utamakan koreksi langsung (talaqqi).",
+      ],
+    };
+  };
+
+  const loadIqroLevel = async (levelNumber) => {
+    if (objectiveEl) objectiveEl.textContent = "Memuat materi Iqro...";
+    try {
+      const externalLevel = await loadIqroLevelFromExternal(levelNumber);
+      renderIqroLevel(externalLevel, "dyazincahya/iqro-json (jsDelivr)");
+      setActiveLevelButton(levelNumber);
+      return;
+    } catch {}
+
+    try {
+      const response = await fetch(`${apiBase}/${levelNumber}`);
+      if (!response.ok) throw new Error("Gagal memuat level Iqro.");
+      const payload = await response.json();
+      if (!payload?.level) throw new Error("Data level Iqro tidak tersedia.");
+      renderIqroLevel(payload.level, "API internal (fallback)");
+      setActiveLevelButton(levelNumber);
+    } catch (error) {
+      if (objectiveEl) {
+        objectiveEl.textContent = error.message || "Gagal memuat materi Iqro.";
+      }
+      if (sourceEl) sourceEl.textContent = "Sumber: gagal memuat data";
+    }
+  };
+
+  levelButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const levelNumber = Number(button.dataset.iqroLevel);
+      if (!Number.isInteger(levelNumber)) return;
+      loadIqroLevel(levelNumber);
+    });
+  });
+
+  prevBtn?.addEventListener("click", () => {
+    if (currentLessonIndex <= 0) return;
+    currentLessonIndex -= 1;
+    renderCurrentLessonPage();
+  });
+
+  nextBtn?.addEventListener("click", () => {
+    if (currentLessonIndex >= currentLessons.length - 1) return;
+    currentLessonIndex += 1;
+    renderCurrentLessonPage();
+  });
+
+  const activeButton = levelButtons.find((button) => button.classList.contains("bg-[#588157]"));
+  const initialLevel = Number(activeButton?.dataset.iqroLevel || levelButtons[0]?.dataset.iqroLevel || 1);
+  if (Number.isInteger(initialLevel)) {
+    loadIqroLevel(initialLevel);
+  }
+}
+
+const tajwidQuizRoot = document.querySelector("[data-tajwid-quiz]");
+
+if (tajwidQuizRoot) {
+  const questions = Array.from(tajwidQuizRoot.querySelectorAll("[data-tajwid-question]"));
+  const scoreEl = tajwidQuizRoot.querySelector("[data-tajwid-score]");
+  let score = 0;
+
+  const updateScore = () => {
+    if (!scoreEl) return;
+    scoreEl.textContent = `${score} / ${questions.length}`;
+  };
+
+  questions.forEach((question) => {
+    const answer = String(question.dataset.answer || "").trim();
+    const feedbackEl = question.querySelector("[data-tajwid-feedback]");
+    const options = Array.from(question.querySelectorAll("[data-tajwid-option]"));
+    let answered = false;
+
+    options.forEach((optionBtn) => {
+      optionBtn.addEventListener("click", () => {
+        if (answered) return;
+        answered = true;
+
+        const value = String(optionBtn.dataset.optionValue || "").trim();
+        const isCorrect = value === answer;
+
+        if (isCorrect) {
+          score += 1;
+          optionBtn.classList.remove("border-[#A3B18A]/45");
+          optionBtn.classList.add("border-[#4F7F53]", "bg-[#4F7F53]", "text-white");
+          if (feedbackEl) feedbackEl.textContent = "Benar.";
+        } else {
+          optionBtn.classList.remove("border-[#A3B18A]/45");
+          optionBtn.classList.add("border-red-300", "bg-red-50", "text-red-700");
+          const correctOption = options.find(
+            (button) => String(button.dataset.optionValue || "").trim() === answer
+          );
+          if (correctOption) {
+            correctOption.classList.remove("border-[#A3B18A]/45");
+            correctOption.classList.add("border-[#4F7F53]", "bg-[#4F7F53]", "text-white");
+          }
+          if (feedbackEl) feedbackEl.textContent = `Belum tepat. Jawaban benar: ${answer}.`;
+        }
+
+        options.forEach((button) => {
+          button.disabled = true;
+          button.classList.add("cursor-not-allowed", "opacity-95");
+        });
+
+        updateScore();
+      });
+    });
+  });
+
+  updateScore();
 }

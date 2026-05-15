@@ -1,0 +1,326 @@
+<main class="mx-auto flex w-full <%= topic.slug === 'baca-quran' ? 'max-w-[92rem]' : 'max-w-7xl' %> flex-col gap-5 px-4 pb-28 pt-5 text-[#244338] sm:px-6 lg:py-6">
+  <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.10)] sm:p-6">
+    <a href="/belajar" class="inline-flex items-center gap-2 text-sm font-bold text-[#2F654D] transition hover:text-[#B7792D]">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 19 8 12l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Kembali ke Menu Belajar
+    </a>
+    <h1 class="mt-3 text-3xl font-black leading-tight text-[#244338] sm:text-4xl"><%= topic.title %></h1>
+    <p class="mt-2 text-base text-[#244338]/72"><%= topic.subtitle %></p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <% topic.focus.forEach((tag) => { %>
+        <span class="rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]"><%= tag %></span>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="<%= topic.slug === 'baca-quran' ? 'flex flex-col gap-5' : 'grid gap-5 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]' %>">
+    <article class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
+      <% if (topic.intentions && topic.intentions.length) { %>
+        <div class="rounded-2xl border border-[#D8CDBB] bg-[#FFF9F0] p-4">
+          <h2 class="text-2xl font-black text-[#244338]">Lafal Niat</h2>
+          <% if (topic.intentionIntro) { %>
+            <p class="mt-2 text-sm leading-6 text-[#244338]/70"><%= topic.intentionIntro %></p>
+          <% } %>
+          <div class="mt-4 space-y-3">
+            <% topic.intentions.forEach((niat) => { %>
+              <div class="rounded-xl border border-[#D8CDBB] bg-white p-3">
+                <p class="text-sm font-black text-[#2F654D]"><%= niat.label %></p>
+                <% if (niat.arabic) { %>
+                  <p class="mt-2 text-right font-['Amiri'] text-3xl leading-[1.9] text-[#1f3b31] sm:text-4xl" dir="rtl"><%= niat.arabic %></p>
+                <% } %>
+                <p class="mt-2 text-sm italic text-[#244338]/75"><%= niat.latin %></p>
+                <% if (niat.meaning) { %>
+                  <p class="mt-1 text-xs text-[#244338]/60"><%= niat.meaning %></p>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (topic.sunnahPrayers && topic.sunnahPrayers.length) { %>
+        <div class="mt-4 rounded-2xl border border-[#D8CDBB] bg-[#FFF9F0] p-4">
+          <h2 class="text-xl font-black text-[#244338]">Sholat Sunnah Terkait</h2>
+          <p class="mt-2 text-sm text-[#244338]/66">Daftar singkat yang bisa kamu jadikan target bertahap.</p>
+          <div class="mt-3 space-y-2">
+            <% topic.sunnahPrayers.forEach((item) => { %>
+              <div class="rounded-xl border border-[#D8CDBB] bg-white p-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="text-sm font-black text-[#244338]"><%= item.name %></p>
+                  <span class="rounded-full bg-[#EDE5D8] px-2.5 py-1 text-xs font-bold text-[#2F654D]"><%= item.rakaat %></span>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-[#244338]/62">Waktu: <%= item.time %></p>
+                <p class="mt-1 text-xs italic text-[#244338]/72"><%= item.intention %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (topic.slug === "baca-quran" && iqroSummaries && iqroSummaries.length && iqroInitialLevel) { %>
+        <div
+          class="mt-6 overflow-hidden rounded-[1.9rem] border border-[#D8CDBB] bg-white shadow-[0_22px_60px_rgba(52,78,65,0.10)]"
+          data-iqro-root
+          data-iqro-api-base="/belajar/iqro-api/levels"
+          data-iqro-json-base="https://cdn.jsdelivr.net/gh/dyazincahya/iqro-json@main/iqro"
+        >
+          <div class="bg-[linear-gradient(135deg,#2F654D_0%,#244338_100%)] px-5 py-5 text-white sm:px-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-2xl font-black leading-tight sm:text-3xl">Iqro Reader</h2>
+                <p class="mt-1 text-sm text-white/75">Belajar Alif-Ba-Ta sampai tajwid dasar dalam mode halaman.</p>
+              </div>
+              <span class="rounded-full bg-white/14 px-3 py-1 text-sm font-black text-white ring-1 ring-white/20" data-iqro-current-level>
+                Level <%= iqroInitialLevel.level %>
+              </span>
+            </div>
+            <p class="mt-3 text-xs text-white/70" data-iqro-source>Sumber: memuat data...</p>
+          </div>
+
+          <div class="p-5 sm:p-6">
+            <div class="flex flex-wrap gap-2.5" data-iqro-level-buttons>
+              <% iqroSummaries.forEach((level) => { %>
+                <button
+                  type="button"
+                  class="<%= level.level === iqroInitialLevel.level ? 'bg-[#588157] text-white ring-2 ring-[#588157]/20' : 'bg-white text-[#2F654D]' %> rounded-full border border-[#A3B18A]/45 px-4 py-2 text-sm font-black transition hover:bg-[#588157] hover:text-white"
+                  data-iqro-level-btn
+                  data-iqro-level="<%= level.level %>"
+                >
+                  Iqro <%= level.level %>
+                </button>
+              <% }) %>
+            </div>
+
+            <div class="mt-5 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]" data-iqro-content>
+              <aside class="rounded-2xl border border-[#D8CDBB] bg-[#FFF9F0] p-4 sm:p-5">
+                <h3 class="text-xl font-black text-[#244338] sm:text-2xl" data-iqro-title><%= iqroInitialLevel.title %></h3>
+                <p class="mt-2 text-sm leading-6 text-[#244338]/72" data-iqro-objective><%= iqroInitialLevel.objective %></p>
+
+                <div class="mt-4 rounded-xl border border-[#D8CDBB] bg-white px-3 py-3">
+                  <p class="text-sm font-bold text-[#244338]/70" data-iqro-page-indicator>Halaman 1 dari <%= iqroInitialLevel.lessons.length %></p>
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      class="rounded-xl border border-[#A3B18A]/45 bg-white px-3 py-2 text-sm font-bold text-[#2F654D] transition hover:bg-[#588157] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      data-iqro-prev
+                    >
+                      Sebelumnya
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-xl border border-[#A3B18A]/45 bg-white px-3 py-2 text-sm font-bold text-[#2F654D] transition hover:bg-[#588157] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      data-iqro-next
+                    >
+                      Berikutnya
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 rounded-xl border border-[#D8CDBB] bg-white p-3.5">
+                  <p class="text-sm font-black text-[#244338]">Tips Latihan</p>
+                  <ul class="mt-2 space-y-1.5" data-iqro-tips>
+                    <% iqroInitialLevel.tips.forEach((tip) => { %>
+                      <li class="flex gap-2 text-sm leading-6 text-[#244338]/72">
+                        <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#588157]"></span>
+                        <span><%= tip %></span>
+                      </li>
+                    <% }) %>
+                  </ul>
+                </div>
+              </aside>
+
+              <div class="rounded-2xl border border-[#D8CDBB] bg-[#F8F3E8] p-4 sm:p-5">
+                <div class="space-y-3" data-iqro-lessons>
+                  <% iqroInitialLevel.lessons.forEach((lesson) => { %>
+                    <section class="rounded-2xl border border-[#D8CDBB] bg-white p-4 sm:p-5">
+                      <p class="text-base font-black text-[#2F654D]"><%= lesson.label %></p>
+                      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                        <% lesson.items.forEach((item) => { %>
+                          <div class="rounded-2xl border border-[#D8CDBB] bg-[#FFFCF7] px-4 py-4 sm:px-5">
+                            <p class="text-right font-['Amiri'] text-5xl leading-[1.4] text-[#1f3b31] sm:text-6xl" dir="rtl"><%= item.arabic %></p>
+                            <p class="mt-2 text-sm font-semibold text-[#244338]/70"><%= item.latin %> - <%= item.read %></p>
+                          </div>
+                        <% }) %>
+                      </div>
+                    </section>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (topic.tajwidRules && topic.tajwidRules.length) { %>
+        <div class="mt-6 rounded-3xl border border-[#D8CDBB] bg-[#FFF9F0] p-5 sm:p-6">
+          <h2 class="text-2xl font-black text-[#244338]">Ringkasan Hukum Tajwid</h2>
+          <p class="mt-2 text-sm leading-6 text-[#244338]/70">
+            Ini ringkasan tajwid yang paling sering muncul saat membaca Al-Qur'an. Mulai dari ini dulu, lalu lanjut bertahap.
+          </p>
+          <div class="mt-4 grid gap-3 md:grid-cols-2">
+            <% topic.tajwidRules.forEach((group) => { %>
+              <section class="rounded-2xl border border-[#D8CDBB] bg-white p-4">
+                <h3 class="text-lg font-black text-[#2F654D]"><%= group.title %></h3>
+                <div class="mt-3 space-y-2">
+                  <% group.rules.forEach((rule) => { %>
+                    <div class="rounded-xl border border-[#E4D8C8] bg-[#FFFCF7] px-3 py-2.5">
+                      <p class="text-sm font-black text-[#244338]"><%= rule.name %></p>
+                      <p class="mt-1 text-xs leading-5 text-[#244338]/70"><%= rule.detail %></p>
+                      <% if (rule.example) { %>
+                        <p class="mt-1.5 rounded-lg bg-[#F1E8DA] px-2 py-1 text-[11px] font-semibold text-[#2F654D]">Contoh: <%= rule.example %></p>
+                      <% } %>
+                    </div>
+                  <% }) %>
+                </div>
+              </section>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (topic.tajwidQuiz && topic.tajwidQuiz.length) { %>
+        <div class="mt-5 rounded-3xl border border-[#D8CDBB] bg-white p-5 sm:p-6" data-tajwid-quiz>
+          <h2 class="text-2xl font-black text-[#244338]">Kuis Tajwid Singkat</h2>
+          <p class="mt-2 text-sm text-[#244338]/66">Coba cek pemahamanmu. Jawab langsung dan lihat skor di akhir.</p>
+          <div class="mt-4 space-y-3">
+            <% topic.tajwidQuiz.forEach((item, idx) => { %>
+              <section class="rounded-2xl border border-[#D8CDBB] bg-[#FFF9F0] p-4" data-tajwid-question data-answer="<%= item.answer %>">
+                <p class="text-sm font-black text-[#244338]"><%= idx + 1 %>. <%= item.question %></p>
+                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                  <% item.options.forEach((option) => { %>
+                    <button
+                      type="button"
+                      class="rounded-xl border border-[#A3B18A]/45 bg-white px-3 py-2 text-left text-sm font-semibold text-[#2F654D] transition hover:bg-[#588157] hover:text-white"
+                      data-tajwid-option
+                      data-option-value="<%= option %>"
+                    >
+                      <%= option %>
+                    </button>
+                  <% }) %>
+                </div>
+                <p class="mt-2 text-xs font-semibold text-[#244338]/62" data-tajwid-feedback></p>
+              </section>
+            <% }) %>
+          </div>
+          <div class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-[#D8CDBB] bg-[#FFF9F0] px-4 py-3">
+            <p class="text-sm font-bold text-[#244338]">Skor</p>
+            <p class="text-lg font-black text-[#2F654D]" data-tajwid-score>0 / <%= topic.tajwidQuiz.length %></p>
+          </div>
+        </div>
+      <% } %>
+
+      <h2 class="text-2xl font-black text-[#244338]">Langkah-langkah</h2>
+      <div class="mt-5 space-y-4">
+        <% topic.sections.forEach((section, sectionIndex) => { %>
+          <section class="rounded-2xl border border-[#D8CDBB] bg-[#FFF9F0] p-4">
+            <div class="flex items-center gap-3">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#588157] text-xs font-black text-white"><%= sectionIndex + 1 %></span>
+              <h3 class="text-lg font-black text-[#244338]"><%= section.heading %></h3>
+            </div>
+            <ol class="mt-3 space-y-2">
+              <% section.items.forEach((item, itemIndex) => { %>
+                <li class="flex gap-2 text-sm leading-6 text-[#244338]/76">
+                  <span class="mt-0.5 text-xs font-black text-[#2F654D]"><%= itemIndex + 1 %>.</span>
+                  <span><%= item %></span>
+                </li>
+              <% }) %>
+            </ol>
+          </section>
+        <% }) %>
+      </div>
+    </article>
+
+    <aside class="<%= topic.slug === 'baca-quran' ? 'grid gap-5 md:grid-cols-2' : 'flex flex-col gap-5' %>">
+      <% if (topic.illustrations && topic.illustrations.length) { %>
+        <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
+          <h2 class="text-xl font-black text-[#244338]">Ilustrasi Tata Cara</h2>
+          <p class="mt-2 text-sm text-[#244338]/66">Ilustrasi ringkas untuk membantu membayangkan urutan praktik.</p>
+          <div class="mt-4 space-y-2">
+            <% topic.illustrations.forEach((ill) => { %>
+              <div class="rounded-xl border border-[#D8CDBB] bg-[#FFF9F0] p-3">
+                <div class="flex items-start gap-3">
+                  <div class="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-[#D8CDBB] bg-white text-[#2F654D]">
+                    <% if (ill.kind === "shalat-berdiri") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="4.5" r="2" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v6m0 0-3 4m3-4 3 4M9 9l3 2 3-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "shalat-ruku") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="8" cy="5.2" r="1.8" stroke="currentColor" stroke-width="1.7"/><path d="M9.8 7.2 13 10h5M13 10l-2 4m2-4 3.5 4M8 10l3.2-2.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "shalat-sujud") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="16.8" cy="13.4" r="1.8" stroke="currentColor" stroke-width="1.7"/><path d="M4 15h8m0 0 2.8-1.6M8 15l-1.5 2M12 15l.7 2m1.3-3.6 2.6-1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "shalat-duduk") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9.2" cy="4.8" r="1.8" stroke="currentColor" stroke-width="1.7"/><path d="M9.2 6.8v4.2L13 13m-3.8-2.1L6.8 13M7.2 15h8.8M9 13.8 8 17m4-3.2 1.8 3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "wudhu-wajah") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="9" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 18c1-.9 2.7-1.5 4.5-1.5s3.5.6 4.5 1.5M4.5 6.5 6 8m13.5-1.5L18 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "wudhu-tangan") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13V7.5a1 1 0 1 1 2 0V11m0-4a1 1 0 1 1 2 0v4m0-3a1 1 0 1 1 2 0v3m0-2a1 1 0 1 1 2 0v6c0 2.2-1.8 4-4 4h-1a4 4 0 0 1-4-4v-2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "wudhu-kepala") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 9c1.2-3.2 3.8-5 7-5s5.8 1.8 7 5M7 13c1.2-.9 3.1-1.5 5-1.5s3.8.6 5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 11.5V18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "wudhu-kaki") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 15h8l2 4H7.5A2.5 2.5 0 0 1 5 16.5V15Zm9-4h3a2 2 0 0 1 2 2v4h-2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "mandi-niat") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v5m0 0a4 4 0 1 1-4 4m4-4a4 4 0 1 0 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6 19h12" stroke="currentColor" stroke-width="1.7"/></svg>
+                    <% } else if (ill.kind === "mandi-wudhu") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 15c0-4.4 3.6-8 8-8m8 8c0 2.8-2.2 5-5 5H9a5 5 0 0 1-5-5m5-3h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "mandi-kepala") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 20c.7-2.5 2.2-4 4-4s3.3 1.5 4 4M6 5l1.2 1.2M18 5l-1.2 1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "mandi-rata") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 6h10M8 10h8M9 14h6M10 18h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 4v16M19 4v16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "tayamum-tepuk") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="14" width="16" height="4" rx="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 10h3m5 0h-3M12 6v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "tayamum-wajah") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="9" r="4.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 13.5 6.5 15M16 13.5l1.5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "tayamum-tangan") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13V8a1 1 0 1 1 2 0v3m0-2a1 1 0 1 1 2 0v2m0-1a1 1 0 1 1 2 0v2m0-1a1 1 0 1 1 2 0v4.5A3.5 3.5 0 0 1 11.5 20h-1A3.5 3.5 0 0 1 7 16.5V13Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } else if (ill.kind === "quran-hijaiyah") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6h14v12H5z" stroke="currentColor" stroke-width="1.7"/><path d="M9 10h6M9 14h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "quran-makhraj") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="9" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M8 17c1-.8 2.4-1.3 4-1.3s3 .5 4 1.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <% } else if (ill.kind === "quran-tajwid") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="18" cy="12" r="2" stroke="currentColor" stroke-width="1.7"/></svg>
+                    <% } else if (ill.kind === "quran-rutin") { %>
+                      <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <% } %>
+                  </div>
+                  <div>
+                    <p class="text-sm font-black text-[#244338]"><%= ill.title %></p>
+                    <p class="mt-1 text-xs leading-5 text-[#244338]/65"><%= ill.caption %></p>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
+        <h2 class="text-xl font-black text-[#244338]">Catatan Penting</h2>
+        <ul class="mt-3 space-y-2">
+          <% topic.notes.forEach((note) => { %>
+            <li class="flex gap-2 text-sm leading-6 text-[#244338]/75">
+              <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#588157]"></span>
+              <span><%= note %></span>
+            </li>
+          <% }) %>
+        </ul>
+      </section>
+
+      <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
+        <h2 class="text-xl font-black text-[#244338]">Sumber Rujukan</h2>
+        <p class="mt-2 text-sm text-[#244338]/66">Agar materi tetap bisa kamu cek ulang ke referensi asli.</p>
+        <div class="mt-4 space-y-2">
+          <% topic.references.forEach((ref) => { %>
+            <a
+              href="<%= ref.url %>"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block rounded-xl border border-[#D8CDBB] bg-[#FFF9F0] px-3 py-2.5 text-sm font-semibold text-[#2F654D] transition hover:border-[#A3B18A] hover:bg-white"
+            >
+              <%= ref.label %>
+            </a>
+          <% }) %>
+        </div>
+      </section>
+    </aside>
+  </section>
+</main>

@@ -16,6 +16,7 @@ const profileRoutes = require("./routes/profile");
 const quranRoutes = require("./routes/quran");
 const hadisRoutes = require("./routes/hadis");
 const doaRoutes = require("./routes/doa");
+const learningRoutes = require("./routes/learning");
 const notificationRoutes = require("./routes/notifications");
 const favoriteRoutes = require("./routes/favorites");
 
@@ -50,6 +51,7 @@ app.use("/profile", profileRoutes);
 app.use("/quran", quranRoutes);
 app.use("/hadis", hadisRoutes);
 app.use("/doa", doaRoutes);
+app.use("/belajar", learningRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/favorites", favoriteRoutes);
 
