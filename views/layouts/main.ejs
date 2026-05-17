@@ -42,24 +42,26 @@
 >
     <%- include('../partials/splash-screen') %>
     <div class="<%= hideTopbar ? 'min-h-screen bg-white' : 'min-h-screen bg-[linear-gradient(180deg,_#F6F1E9_0%,_#F3ECDf_100%)]' %>">
-      <% if (!hideTopbar) { %>
-        <%- include('../partials/topbar') %>
-      <% } %>
-      <% if (flashMessage) { %>
-        <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
-          <div class="rounded-2xl border border-[#A3B18A]/50 bg-white/75 px-4 py-3 text-sm font-medium text-[#344E41] shadow-sm">
-            <%= flashMessage %>
+      <div>
+        <% if (!hideTopbar) { %>
+          <%- include('../partials/topbar') %>
+        <% } %>
+        <% if (flashMessage) { %>
+          <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
+            <div class="rounded-2xl border border-[#A3B18A]/50 bg-white/75 px-4 py-3 text-sm font-medium text-[#344E41] shadow-sm">
+              <%= flashMessage %>
+            </div>
           </div>
-        </div>
-      <% } %>
-      <% if (flashError) { %>
-        <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
-          <div class="rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
-            <%= flashError %>
+        <% } %>
+        <% if (flashError) { %>
+          <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
+            <div class="rounded-2xl border border-red-300/40 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
+              <%= flashError %>
+            </div>
           </div>
-        </div>
-      <% } %>
-      <%- body %>
+        <% } %>
+        <%- body %>
+      </div>
     </div>
     <script src="/js/main.js"></script>
   </body>

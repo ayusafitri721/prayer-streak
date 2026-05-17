@@ -1487,10 +1487,129 @@ async function getProfileData(userId) {
   };
 }
 
+async function getAdminAchievementsData() {
+  const [totalUsers, catalog, unlockedRows, recentUnlocks, topUsers] = await Promise.all([
+    prisma.user.count({ where: { role: "USER" } }),
+    prisma.achievement.findMany({
+      orderBy: { id: "asc" },
+      include: {
+        _count: {
+          select: { userAchievements: true },
+        },
+      },
+    }),
+    prisma.userAchievement.findMany({
+      select: {
+        achievementId: true,
+      },
+    }),
+    prisma.userAchievement.findMany({
+      orderBy: { unlockedAt: "desc" },
+      take: 8,
+      select: {
+        unlockedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImage: true,
+          },
+        },
+        achievement: {
+          select: {
+            name: true,
+            description: true,
+            slug: true,
+          },
+        },
+      },
+    }),
+    prisma.user.findMany({
+      where: { role: "USER" },
+      orderBy: {
+        achievements: {
+          _count: "desc",
+        },
+      },
+      take: 6,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profileImage: true,
+        achievements: {
+          orderBy: { unlockedAt: "desc" },
+          take: 1,
+          select: {
+            achievement: {
+              select: { name: true },
+            },
+            unlockedAt: true,
+          },
+        },
+        _count: {
+          select: { achievements: true },
+        },
+      },
+    }),
+  ]);
+
+  const unlockCountByAchievement = unlockedRows.reduce((result, row) => {
+    result[row.achievementId] = (result[row.achievementId] || 0) + 1;
+    return result;
+  }, {});
+  const totalUnlocked = unlockedRows.length;
+  const usersWithAchievements = await prisma.user.count({
+    where: {
+      role: "USER",
+      achievements: {
+        some: {},
+      },
+    },
+  });
+  const mostUnlocked = catalog.reduce(
+    (best, item) => (item._count.userAchievements > best.count ? { name: item.name, count: item._count.userAchievements } : best),
+    { name: "Belum ada", count: 0 }
+  );
+  const neverUnlocked = catalog.filter((item) => item._count.userAchievements === 0).length;
+  const achievementCatalog = catalog.map((item) => {
+    const unlockedCount = unlockCountByAchievement[item.id] || 0;
+    const percent = totalUsers ? Math.round((unlockedCount / totalUsers) * 100) : 0;
+
+    return {
+      id: item.id,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      targetType: item.targetType,
+      targetValue: item.targetValue,
+      unlockedCount,
+      percent,
+      status: unlockedCount === 0 ? "Belum terbuka" : percent >= 50 ? "Populer" : "Jarang",
+    };
+  });
+
+  return {
+    adminAchievementSummary: {
+      totalUnlocked,
+      usersWithAchievements,
+      totalUsers,
+      mostUnlocked,
+      neverUnlocked,
+      catalogCount: catalog.length,
+    },
+    achievementCatalog,
+    topUsers,
+    recentUnlocks,
+  };
+}
+
 module.exports = {
   completePrayer,
   getDashboardData,
   getAchievementsData,
+  getAdminAchievementsData,
   getStatsData,
   getProfileData,
   markRestoreReflection,

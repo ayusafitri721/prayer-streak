@@ -1,0 +1,91 @@
+<%
+const sidebarPrimaryItems = user ? [
+  { href: "/dashboard", label: "Dashboard", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2 7-7 7 7 2 2M5 10v10a1 1 0 0 0 1 1h3m10-11v10a1 1 0 0 1-1 1h-3m-4 0v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" />' },
+  { href: "/statistics", label: "Statistik", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m8 10V5m8 14v-7M3 19h18" />' },
+  { href: "/achievements", label: "Achievement", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.3 5.5 6 .5-4.6 3.9 1.4 5.9L12 15.7l-5.1 3.1 1.4-5.9L3.7 9l6-.5L12 3Z" />' },
+] : [];
+
+if (user && user.role === "ADMIN") {
+  sidebarPrimaryItems.unshift({
+    href: "/admin",
+    label: "Admin",
+    icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 13h6V4H4v9Zm10 7h6V4h-6v16ZM4 20h6v-4H4v4Z" />',
+  });
+}
+
+const sidebarSpiritualItems = user ? [
+  { href: "/belajar", label: "Belajar", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13H6.5A2.5 2.5 0 0 0 4 19.5V6.5Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 17v3H6.5A2.5 2.5 0 1 1 6.5 15H20" />' },
+  { href: "/quran", label: "Al-Qur’an", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.25v13m0-13C10.8 5.48 9.25 5 7.5 5S4.17 5.48 3 6.25v13C4.17 18.48 5.75 18 7.5 18s3.33.48 4.5 1.25m0-13C13.17 5.48 14.75 5 16.5 5c1.75 0 3.33.48 4.5 1.25v13C19.83 18.48 18.25 18 16.5 18c-1.75 0-3.33.48-4.5 1.25" />' },
+  { href: "/hadis", label: "Hadis", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6a9 9 0 0 0-6-2.25c-1.05 0-2.06.18-3 .51v14.25A9 9 0 0 1 6 18c2.3 0 4.4.87 6 2.29m0-14.25a9 9 0 0 1 6-2.29c1.05 0 2.06.18 3 .51v14.25A9 9 0 0 0 18 18a9 9 0 0 0-6 2.29m0-14.25v14.25" />' },
+  { href: "/doa", label: "Doa", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5a4.07 4.07 0 0 1 2.61 7.21 4.07 4.07 0 1 1-5.22 0A4.07 4.07 0 0 1 12 4.5Z" />' },
+  { href: "/profile", label: "Profile", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7Z" />' },
+] : [];
+
+const sidebarInitial = user && user.name ? user.name.trim().charAt(0).toUpperCase() : "P";
+const sidebarProfileImage = user && user.profileImage ? user.profileImage : null;
+%>
+
+<aside class="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-[#E4D8C8] bg-white/92 px-4 py-5 shadow-[18px_0_50px_rgba(52,78,65,0.08)] backdrop-blur-xl lg:flex lg:flex-col">
+  <a href="/dashboard" class="flex items-center gap-3 rounded-3xl px-2 py-2">
+    <span class="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl shadow-md shadow-[#344E41]/12 ring-1 ring-[#A3B18A]/25">
+      <img src="/assets/prayer-streak-logo.svg" alt="Prayer Streak" class="h-full w-full" />
+    </span>
+    <span>
+      <span class="block text-xl font-black tracking-wide text-[#244338]">Prayer Streak</span>
+      <span class="block text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#588157]/70">Habit ibadah harian</span>
+    </span>
+  </a>
+
+  <div class="mt-5 rounded-[1.35rem] border border-[#E4D8C8] bg-[#F6F1E9]/78 p-3">
+    <div class="flex items-center gap-3">
+      <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-[#588157] text-sm font-black text-white">
+        <% if (sidebarProfileImage) { %>
+          <img src="<%= sidebarProfileImage %>" alt="Foto profil <%= user.name %>" class="h-full w-full object-cover" />
+        <% } else { %>
+          <%= sidebarInitial %>
+        <% } %>
+      </span>
+      <span class="min-w-0">
+        <span class="block truncate text-sm font-black text-[#244338]"><%= user.name %></span>
+        <span class="block truncate text-xs font-semibold text-[#344E41]/52"><%= user.email %></span>
+      </span>
+    </div>
+  </div>
+
+  <nav class="mt-5 flex-1 overflow-y-auto pr-1">
+    <p class="px-3 text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#588157]/70">Main Menu</p>
+    <div class="mt-2 space-y-1">
+      <% sidebarPrimaryItems.forEach((item) => { %>
+        <% const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`); %>
+        <a href="<%= item.href %>" class="<%= isActive ? 'bg-[#588157] text-white shadow-md shadow-[#588157]/18' : 'text-[#344E41]/74 hover:bg-[#F6F1E9] hover:text-[#244338]' %> flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition">
+          <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <%- item.icon %>
+          </svg>
+          <span><%= item.label %></span>
+        </a>
+      <% }) %>
+    </div>
+
+    <p class="mt-6 px-3 text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#588157]/70">Spiritual</p>
+    <div class="mt-2 space-y-1">
+      <% sidebarSpiritualItems.forEach((item) => { %>
+        <% const isActive = currentPath === item.href || currentPath.startsWith(`${item.href}/`); %>
+        <a href="<%= item.href %>" class="<%= isActive ? 'bg-[#A3B18A]/22 text-[#244338]' : 'text-[#344E41]/72 hover:bg-[#F6F1E9]' %> flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition">
+          <svg class="h-5 w-5 shrink-0 <%= isActive ? 'text-[#588157]' : 'text-[#A3B18A]' %>" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <%- item.icon %>
+          </svg>
+          <span><%= item.label %></span>
+        </a>
+      <% }) %>
+    </div>
+  </nav>
+
+  <form action="/logout" method="POST" class="mt-4 border-t border-[#E4D8C8] pt-4" data-auth-submit="logout">
+    <button type="submit" class="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0-4-4m4 4H7m6 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1" />
+      </svg>
+      Logout
+    </button>
+  </form>
+</aside>

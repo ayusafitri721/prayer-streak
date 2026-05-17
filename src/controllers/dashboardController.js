@@ -2,6 +2,7 @@ const {
   completePrayer,
   getDashboardData,
   getAchievementsData,
+  getAdminAchievementsData,
   getStatsData,
   getProfileData,
   markRestoreReflection,
@@ -190,9 +191,18 @@ async function renderStatistics(req, res) {
 
 async function renderAchievements(req, res) {
   const user = req.session.user;
+  if (user.role === "ADMIN") {
+    const adminAchievementsData = await getAdminAchievementsData();
+
+    return res.render("pages/admin/achievements", {
+      title: "Achievement Monitoring - Prayer Streak",
+      ...adminAchievementsData,
+    });
+  }
+
   const achievementsData = await getAchievementsData(user.id);
 
-  res.render("pages/achievements", {
+  return res.render("pages/achievements", {
     title: "Achievements - Prayer Streak",
     ...achievementsData,
   });
