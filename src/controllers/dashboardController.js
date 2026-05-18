@@ -3,6 +3,7 @@ const {
   getDashboardData,
   getAchievementsData,
   getAdminAchievementsData,
+  getAdminStatsData,
   getStatsData,
   getProfileData,
   markRestoreReflection,
@@ -182,8 +183,17 @@ async function getHijriCalendarMonthAction(req, res) {
 
 async function renderStatistics(req, res) {
   const user = req.session.user;
+  if (user.role === "ADMIN") {
+    const adminStats = await getAdminStatsData();
+
+    return res.render("pages/admin/statistics", {
+      title: "Statistics Monitoring - Prayer Streak",
+      ...adminStats,
+    });
+  }
+
   const stats = await getStatsData(user.id);
-  res.render("pages/statistics", {
+  return res.render("pages/statistics", {
     title: "Statistics - Prayer Streak",
     ...stats,
   });

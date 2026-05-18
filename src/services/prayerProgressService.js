@@ -1316,6 +1316,323 @@ async function getStatsData(userId) {
   };
 }
 
+async function getAdminStatsData() {
+  const today = new Date();
+  const todayKey = startOfTodayKey();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - 6);
+  const weekStartKey = toDateString(weekStart);
+  const monthStartKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
+  const thirtyDaysStart = new Date(today);
+  thirtyDaysStart.setDate(today.getDate() - 29);
+  const thirtyDaysStartKey = toDateString(thirtyDaysStart);
+
+  const [totalUsers, users, weekLogs, monthLogs, thirtyDayLogs, totalAdmins, favorites, achievementsUnlocked, weekXp] = await Promise.all([
+    prisma.user.count({ where: { role: "USER" } }),
+    prisma.user.findMany({
+      where: { role: "USER" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profileImage: true,
+      },
+    }),
+    prisma.prayerLog.findMany({
+      where: {
+        status: true,
+        date: {
+          gte: dateKeyToDbDate(weekStartKey),
+          lte: dateKeyToDbDate(todayKey),
+        },
+        user: {
+          role: "USER",
+        },
+      },
+      select: {
+        userId: true,
+        prayerType: true,
+        date: true,
+        isOnTime: true,
+        xpEarned: true,
+      },
+    }),
+    prisma.prayerLog.findMany({
+      where: {
+        status: true,
+        date: {
+          gte: dateKeyToDbDate(monthStartKey),
+          lte: dateKeyToDbDate(todayKey),
+        },
+        user: {
+          role: "USER",
+        },
+      },
+      select: {
+        userId: true,
+        prayerType: true,
+        date: true,
+        xpEarned: true,
+      },
+    }),
+    prisma.prayerLog.findMany({
+      where: {
+        status: true,
+        date: {
+          gte: dateKeyToDbDate(thirtyDaysStartKey),
+          lte: dateKeyToDbDate(todayKey),
+        },
+        user: {
+          role: "USER",
+        },
+      },
+      select: {
+        userId: true,
+        prayerType: true,
+        date: true,
+      },
+    }),
+    prisma.user.count({ where: { role: "ADMIN" } }),
+    prisma.favoriteContent.findMany({
+      where: {
+        user: {
+          role: "USER",
+        },
+      },
+      select: {
+        type: true,
+        createdAt: true,
+      },
+    }),
+    prisma.userAchievement.count({
+      where: {
+        user: {
+          role: "USER",
+        },
+      },
+    }),
+    prisma.xPHistory.aggregate({
+      where: {
+        relatedDate: {
+          gte: dateKeyToDbDate(weekStartKey),
+          lte: dateKeyToDbDate(todayKey),
+        },
+        user: {
+          role: "USER",
+        },
+      },
+      _sum: {
+        pointChange: true,
+      },
+    }),
+  ]);
+
+  const userCount = Math.max(totalUsers, 0);
+  const weeklyTarget = userCount * FARDHU_PRAYER_KEYS.length * 7;
+  const monthlyTarget =
+    userCount * FARDHU_PRAYER_KEYS.length * new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const fardhuWeekLogs = weekLogs.filter((log) => FARDHU_PRAYER_KEYS.includes(log.prayerType));
+  const sunnahWeekLogs = weekLogs.filter((log) => SUNNAH_PRAYER_KEYS.includes(log.prayerType));
+  const fardhuMonthLogs = monthLogs.filter((log) => FARDHU_PRAYER_KEYS.includes(log.prayerType));
+  const sunnahMonthLogs = monthLogs.filter((log) => SUNNAH_PRAYER_KEYS.includes(log.prayerType));
+  const totalThisWeek = fardhuWeekLogs.length;
+  const totalSunnahThisWeek = sunnahWeekLogs.length;
+  const totalThisMonth = fardhuMonthLogs.length;
+  const totalSunnahThisMonth = sunnahMonthLogs.length;
+  const consistencyPercent = weeklyTarget ? Math.round((totalThisWeek / weeklyTarget) * 100) : 0;
+  const monthlyPercent = monthlyTarget ? Math.round((totalThisMonth / monthlyTarget) * 100) : 0;
+  const activeUsersThisWeek = new Set(weekLogs.map((log) => log.userId)).size;
+  const activeUsersToday = new Set(weekLogs.filter((log) => toDateString(log.date) === todayKey).map((log) => log.userId)).size;
+
+  const dayUserFardhuCounts = fardhuWeekLogs.reduce((result, log) => {
+    const key = `${log.userId}:${toDateString(log.date)}`;
+    result[key] = (result[key] || 0) + 1;
+    return result;
+  }, {});
+  const fullCompletedDays = Object.values(dayUserFardhuCounts).filter((count) => count >= FARDHU_PRAYER_KEYS.length).length;
+  const usersFullToday = Object.entries(dayUserFardhuCounts)
+    .filter(([key, count]) => key.endsWith(`:${todayKey}`) && count >= FARDHU_PRAYER_KEYS.length)
+    .length;
+
+  const weeklyBreakdown = [];
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+    const dateKey = toDateString(day);
+    const fardhu = fardhuWeekLogs.filter((log) => toDateString(log.date) === dateKey).length;
+    const sunnah = sunnahWeekLogs.filter((log) => toDateString(log.date) === dateKey).length;
+    const target = userCount * FARDHU_PRAYER_KEYS.length;
+
+    weeklyBreakdown.push({
+      date: day.toISOString(),
+      label: day.toLocaleDateString("id-ID", { weekday: "short" }),
+      fardhu,
+      sunnah,
+      target,
+      percent: target ? Math.min(100, Math.round((fardhu / target) * 100)) : 0,
+      isToday: dateKey === todayKey,
+    });
+  }
+
+  const heatmapDays = [];
+  for (let offset = 29; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+    const dateKey = toDateString(day);
+    const fardhu = thirtyDayLogs.filter(
+      (log) => toDateString(log.date) === dateKey && FARDHU_PRAYER_KEYS.includes(log.prayerType)
+    ).length;
+    const target = userCount * FARDHU_PRAYER_KEYS.length;
+    const percent = target ? Math.round((fardhu / target) * 100) : 0;
+
+    heatmapDays.push({
+      date: day.toISOString(),
+      label: day.toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+      completed: fardhu,
+      target,
+      level: percent >= 75 ? "great" : percent >= 45 ? "good" : percent > 0 ? "low" : "empty",
+    });
+  }
+
+  const prayerPerformance = FARDHU_PRAYER_KEYS.map((key) => {
+    const completed = fardhuWeekLogs.filter((log) => log.prayerType === key).length;
+    const target = userCount * 7;
+
+    return {
+      key,
+      label: PRAYER_LABELS[key],
+      completed,
+      target,
+      percent: target ? Math.round((completed / target) * 100) : 0,
+    };
+  });
+  const sunnahPerformance = SUNNAH_PRAYER_KEYS.map((key) => {
+    const completed = sunnahWeekLogs.filter((log) => log.prayerType === key).length;
+    const target = userCount * 7;
+
+    return {
+      key,
+      label: PRAYER_LABELS[key],
+      completed,
+      target,
+      percent: target ? Math.round((completed / target) * 100) : 0,
+    };
+  });
+
+  const userWeeklyStats = users.map((user) => {
+    const fardhu = fardhuWeekLogs.filter((log) => log.userId === user.id).length;
+    const sunnah = sunnahWeekLogs.filter((log) => log.userId === user.id).length;
+    const onTime = fardhuWeekLogs.filter((log) => log.userId === user.id && log.isOnTime).length;
+    const xp = weekLogs
+      .filter((log) => log.userId === user.id)
+      .reduce((sum, log) => sum + (log.xpEarned || 0), 0);
+
+    return {
+      ...user,
+      fardhu,
+      sunnah,
+      onTime,
+      xp,
+      percent: Math.round((fardhu / (FARDHU_PRAYER_KEYS.length * 7)) * 100),
+    };
+  });
+  const topConsistencyUsers = userWeeklyStats
+    .slice()
+    .sort((a, b) => b.fardhu - a.fardhu || b.onTime - a.onTime || b.sunnah - a.sunnah)
+    .slice(0, 6);
+
+  const streakUsers = await Promise.all(users.map(async (user) => {
+    const state = await getUserState(user.id);
+    return {
+      ...user,
+      streak: state.streak,
+      longestStreak: state.longestStreak,
+      level: state.level,
+      xp: state.xp,
+    };
+  }));
+  const topStreakUsers = streakUsers
+    .sort((a, b) => b.longestStreak - a.longestStreak || b.streak - a.streak || b.xp - a.xp)
+    .slice(0, 6);
+  const activeStreakUsers = streakUsers.filter((user) => user.streak > 0).length;
+
+  const favoritesByType = favorites.reduce((result, favorite) => {
+    result[favorite.type] = (result[favorite.type] || 0) + 1;
+    return result;
+  }, {});
+  const todayFavorites = favorites.filter((favorite) => toDateString(favorite.createdAt) === todayKey).length;
+  const bestPrayer = prayerPerformance.reduce(
+    (best, item) => (item.completed > best.completed ? item : best),
+    { label: "Belum ada", completed: 0, percent: 0 }
+  );
+  const weakestPrayer = prayerPerformance.reduce(
+    (weakest, item) => (item.completed < weakest.completed ? item : weakest),
+    prayerPerformance[0] || { label: "Belum ada", completed: 0, percent: 0 }
+  );
+  const bestDay = weeklyBreakdown.reduce(
+    (best, day) => (day.fardhu > best.fardhu ? day : best),
+    { label: "Belum ada", fardhu: 0, target: 0 }
+  );
+  const adminInsights = [
+    {
+      type: "success",
+      title: `${activeUsersThisWeek} user aktif minggu ini`,
+      description: `${userCount ? Math.round((activeUsersThisWeek / userCount) * 100) : 0}% dari total user memiliki aktivitas ibadah minggu ini.`,
+    },
+    {
+      type: "info",
+      title: `${bestPrayer.label} paling konsisten`,
+      description: `${bestPrayer.completed}/${bestPrayer.target} checklist tercatat untuk waktu ini.`,
+    },
+    {
+      type: "warning",
+      title: `${weakestPrayer.label} perlu perhatian`,
+      description: `Persentase terendah minggu ini: ${weakestPrayer.percent}%.`,
+    },
+    {
+      type: "spark",
+      title: `${bestDay.label} hari aktivitas tertinggi`,
+      description: `${bestDay.fardhu}/${bestDay.target} salat wajib tercatat pada hari tersebut.`,
+    },
+  ];
+
+  return {
+    adminStatsSummary: {
+      totalUsers: userCount,
+      totalAdmins,
+      activeUsersToday,
+      activeUsersThisWeek,
+      totalThisWeek,
+      totalSunnahThisWeek,
+      totalThisMonth,
+      totalSunnahThisMonth,
+      weeklyTarget,
+      monthlyTarget,
+      remainingThisWeek: Math.max(weeklyTarget - totalThisWeek, 0),
+      consistencyPercent,
+      monthlyPercent,
+      fullCompletedDays,
+      usersFullToday,
+      totalXpThisWeek: weekXp._sum.pointChange || 0,
+      achievementsUnlocked,
+      activeStreakUsers,
+      totalBookmarks: favorites.length,
+      quranBookmarks: favoritesByType.quran || 0,
+      hadisBookmarks: favoritesByType.hadis || 0,
+      doaBookmarks: favoritesByType.doa || 0,
+      todayFavorites,
+    },
+    weeklyBreakdown,
+    heatmapDays,
+    prayerPerformance,
+    sunnahPerformance,
+    topConsistencyUsers,
+    topStreakUsers,
+    adminInsights,
+    currentMonthLabel: today.toLocaleDateString("id-ID", { month: "long", year: "numeric" }),
+  };
+}
+
 async function getAchievementsData(userId) {
   const state = await getUserState(userId);
   updateAchievements(state);
@@ -1610,6 +1927,7 @@ module.exports = {
   getDashboardData,
   getAchievementsData,
   getAdminAchievementsData,
+  getAdminStatsData,
   getStatsData,
   getProfileData,
   markRestoreReflection,
