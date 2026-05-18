@@ -1,0 +1,318 @@
+<main class="mx-auto w-full max-w-3xl px-4 pb-20 pt-8 sm:px-6 lg:max-w-[88rem] lg:pt-4">
+  <section
+    class="rounded-[1.8rem] border border-[#DCCFBF] bg-white/90 p-5 shadow-[0_20px_55px_rgba(52,78,65,0.12)] sm:p-7"
+    data-dzikir-practice
+    data-session="<%= session %>"
+    data-index="<%= index %>"
+    data-item-id="<%= currentItem.id %>"
+    data-target="<%= currentItem.repeatCount %>"
+    data-total="<%= total %>"
+  >
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <a
+        href="/dzikir"
+        class="inline-flex items-center rounded-full border border-[#DCCFBF] bg-[#F6F1E9] px-4 py-2 text-sm font-semibold text-[#344E41] transition hover:bg-[#EFE6D8]"
+      >
+        Kembali
+      </a>
+      <h1 class="text-xl font-black text-[#244338] sm:text-2xl"><%= sessionMeta.title %></h1>
+      <p class="rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#466B47]"><%= currentItem.order %> / <%= total %></p>
+    </div>
+
+    <article class="rounded-[1.45rem] border border-[#DCCFBF] bg-[#FAF6EE] p-5 shadow-sm sm:p-6 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-6">
+      <div class="lg:pr-2">
+      <h2 class="text-3xl font-black tracking-tight text-[#244338]"><%= currentItem.title %></h2>
+      <p class="mt-3 inline-flex rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-[#466B47]">
+        Dibaca: <%= currentItem.repeatLabel %>
+      </p>
+      <div class="mt-3">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/35 bg-white px-3 py-1.5 text-xs font-semibold text-[#344E41] transition hover:bg-[#F6F1E9]"
+          data-reading-settings-toggle
+        >
+          Pengaturan Bacaan
+        </button>
+      </div>
+      <div class="mt-3 hidden rounded-2xl border border-[#A3B18A]/25 bg-[#F6F1E9]/75 p-4" data-reading-settings-panel data-reading-context="dzikir">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="inline-flex items-center gap-2 text-sm font-medium text-[#344E41]">
+            <input type="checkbox" class="h-4 w-4 rounded border-[#A3B18A] text-[#588157]" data-setting-latin />
+            Tampilkan Latin
+          </label>
+          <label class="inline-flex items-center gap-2 text-sm font-medium text-[#344E41]">
+            <input type="checkbox" class="h-4 w-4 rounded border-[#A3B18A] text-[#588157]" data-setting-translation />
+            Tampilkan Terjemahan
+          </label>
+        </div>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <label class="text-sm font-medium text-[#344E41]">
+          Ukuran teks Arab
+          <input type="range" min="1.8" max="3.4" step="0.1" class="mt-2 w-full accent-[#588157]" data-setting-arabic-size />
+        </label>
+        <label class="text-sm font-medium text-[#344E41]">
+          Ukuran teks arti/latin
+          <input type="range" min="0.9" max="1.5" step="0.05" class="mt-2 w-full accent-[#588157]" data-setting-translation-size />
+        </label>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center rounded-full border border-[#DCCFBF] bg-white px-3 py-1.5 text-xs font-semibold text-[#344E41] transition hover:bg-[#EFE6D8]"
+          data-setting-reset
+        >
+          Reset ke default
+        </button>
+      </div>
+    </div>
+
+      <% if (currentItem.arabic) { %>
+        <p class="mt-6 text-right font-['Amiri'] text-[2.4rem] leading-[1.7] text-[#1F2C2A]" dir="rtl" data-dzikir-arabic><%= currentItem.arabic %></p>
+      <% } else { %>
+        <p class="mt-6 rounded-xl border border-dashed border-[#BFAF95] bg-[#EFE6D3]/55 px-4 py-3 text-sm text-[#344E41]/80">
+          Teks Arab belum ditambahkan di versi ini. Fokuskan dulu pada urutan dan jumlah bacaan.
+        </p>
+      <% } %>
+
+      <% if (currentItem.latin) { %>
+        <p class="mt-5 text-xl font-semibold text-[#344E41]" data-dzikir-latin><%= currentItem.latin %></p>
+      <% } %>
+      <% if (currentItem.translation) { %>
+        <p class="mt-3 text-xl leading-9 text-[#1F2C2A]/90" data-dzikir-translation><%= currentItem.translation %></p>
+      <% } %>
+
+      <details class="mt-5">
+        <summary class="cursor-pointer text-xl font-black text-[#466B47] underline underline-offset-4">Lihat keterangan</summary>
+        <div class="mt-3 rounded-xl border border-[#D2C6B3] bg-[#EFE6D3]/50 p-3 text-sm leading-7 text-[#344E41]">
+          Untuk menjaga ritme, bacaan ini mengikuti daftar dzikir <%= sessionMeta.title.toLowerCase() %> di aplikasi.
+          Progress tersimpan per hari pada browser perangkat ini.
+        </div>
+      </details>
+      </div>
+
+      <aside class="mt-5 rounded-2xl border border-[#DCCFBF] bg-white/70 p-4 lg:mt-0 lg:sticky lg:top-0">
+        <% if (currentItem.repeatCount > 1) { %>
+          <div>
+            <div class="mb-3 flex items-center justify-between">
+              <p class="text-lg font-black text-[#244338]">Jumlah bacaan</p>
+              <p class="text-lg font-black text-[#244338]"><%= currentItem.repeatLabel %></p>
+            </div>
+            <div class="grid grid-cols-[52px_1fr_52px] items-center gap-2">
+              <button
+                type="button"
+                class="h-12 rounded-2xl border border-[#DCCFBF] bg-[#F6F1E9] text-3xl font-black text-[#244338] shadow-sm transition hover:bg-[#EFE6D8]"
+                data-count-minus
+              >
+                -
+              </button>
+              <div class="rounded-2xl border border-[#DCCFBF] bg-white px-4 py-2.5 text-center text-3xl font-black text-[#244338] shadow-sm" data-count-display>
+                0 / <%= currentItem.repeatCount %>
+              </div>
+              <button
+                type="button"
+                class="h-12 rounded-2xl border border-[#DCCFBF] bg-[#F6F1E9] text-3xl font-black text-[#244338] shadow-sm transition hover:bg-[#EFE6D8]"
+                data-count-plus
+              >
+                +
+              </button>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="<%= currentItem.repeatCount > 1 ? 'mt-4' : '' %> grid gap-2">
+          <a
+            href="/dzikir/practice/<%= session %>/<%= prevIndex %>"
+            class="<%= hasPrev ? 'bg-[#F6F1E9] text-[#244338]' : 'pointer-events-none bg-[#ECE2D1] text-[#244338]/40' %> inline-flex items-center justify-center rounded-2xl border border-[#DCCFBF] px-4 py-3 text-base font-bold shadow-sm transition"
+          >
+            Sebelumnya
+          </a>
+          <a
+            href="/dzikir/practice/<%= session %>/<%= nextIndex %>"
+            class="inline-flex items-center justify-center rounded-2xl bg-[#588157] px-4 py-3 text-base font-bold text-white shadow-md shadow-[#588157]/25 transition hover:bg-[#466B47]"
+            data-next-link
+          >
+            <%= hasNext ? "Lanjut" : "Selesai" %>
+          </a>
+        </div>
+      </aside>
+    </article>
+  </section>
+</main>
+
+<script>
+  (function () {
+    const root = document.querySelector("[data-dzikir-practice]");
+    if (!root) return;
+
+    const session = root.dataset.session || "pagi";
+    const itemId = root.dataset.itemId || "";
+    const target = Number(root.dataset.target || "1");
+    const total = Number(root.dataset.total || "1");
+    const index = Number(root.dataset.index || "0");
+    const display = root.querySelector("[data-count-display]");
+    const minusBtn = root.querySelector("[data-count-minus]");
+    const plusBtn = root.querySelector("[data-count-plus]");
+    const nextLink = root.querySelector("[data-next-link]");
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const storageKey = `prayer-streak:dzikir:practice:${session}:${todayKey}`;
+
+    const readState = () => {
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    };
+
+    const writeState = (state) => {
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch {}
+    };
+
+    const getCurrentValue = () => {
+      const state = readState();
+      const value = Number(state[itemId] || 0);
+      if (!Number.isFinite(value) || value < 0) return 0;
+      return Math.min(target, value);
+    };
+
+    const setCurrentValue = (value) => {
+      const state = readState();
+      const safeValue = Math.max(0, Math.min(target, value));
+      state[itemId] = safeValue;
+      writeState(state);
+      refresh();
+    };
+
+    const refresh = () => {
+      const value = getCurrentValue();
+      if (display) display.textContent = `${value} / ${target}`;
+      if (minusBtn) minusBtn.disabled = value <= 0;
+      if (plusBtn) plusBtn.disabled = value >= target;
+
+      if (!nextLink) return;
+      const isLast = index >= total - 1;
+      if (isLast && value >= target) {
+        nextLink.textContent = "Selesai & Kembali";
+        nextLink.href = "/dzikir";
+      } else if (isLast) {
+        nextLink.textContent = "Selesai";
+        nextLink.href = "/dzikir";
+      } else {
+        nextLink.textContent = "Lanjut";
+      }
+    };
+
+    if (target <= 1) {
+      setCurrentValue(1);
+    }
+
+    minusBtn?.addEventListener("click", () => {
+      setCurrentValue(getCurrentValue() - 1);
+    });
+
+    plusBtn?.addEventListener("click", () => {
+      setCurrentValue(getCurrentValue() + 1);
+    });
+
+    refresh();
+  })();
+</script>
+<script>
+  (() => {
+    const panel = document.querySelector("[data-reading-settings-panel]");
+    const toggle = document.querySelector("[data-reading-settings-toggle]");
+    if (!panel || !toggle) return;
+
+    const latinNode = document.querySelector("[data-dzikir-latin]");
+    const translationNode = document.querySelector("[data-dzikir-translation]");
+    const arabicNode = document.querySelector("[data-dzikir-arabic]");
+    const latinInput = panel.querySelector("[data-setting-latin]");
+    const translationInput = panel.querySelector("[data-setting-translation]");
+    const arabicSizeInput = panel.querySelector("[data-setting-arabic-size]");
+    const translationSizeInput = panel.querySelector("[data-setting-translation-size]");
+    const resetButton = panel.querySelector("[data-setting-reset]");
+    const storageKey = "prayer-streak:reading-settings:v1";
+
+    const defaults = {
+      showLatin: true,
+      showTranslation: true,
+      arabicSize: 2.4,
+      translationSize: 1.0,
+    };
+
+    const readSettings = () => {
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
+      } catch {
+        return defaults;
+      }
+    };
+
+    const writeSettings = (settings) => {
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(settings));
+      } catch {}
+    };
+
+    const applySettings = (settings) => {
+      if (latinNode) latinNode.classList.toggle("hidden", !settings.showLatin);
+      if (translationNode) translationNode.classList.toggle("hidden", !settings.showTranslation);
+      if (arabicNode) {
+        arabicNode.style.fontSize = `${settings.arabicSize}rem`;
+        arabicNode.style.lineHeight = "1.9";
+      }
+      const textSize = `${settings.translationSize}rem`;
+      if (latinNode) latinNode.style.fontSize = textSize;
+      if (translationNode) translationNode.style.fontSize = textSize;
+
+      if (latinInput) latinInput.checked = Boolean(settings.showLatin);
+      if (translationInput) translationInput.checked = Boolean(settings.showTranslation);
+      if (arabicSizeInput) arabicSizeInput.value = String(settings.arabicSize);
+      if (translationSizeInput) translationSizeInput.value = String(settings.translationSize);
+    };
+
+    let settings = readSettings();
+    applySettings(settings);
+
+    toggle.addEventListener("click", () => {
+      panel.classList.toggle("hidden");
+    });
+
+    latinInput?.addEventListener("change", () => {
+      settings = { ...settings, showLatin: latinInput.checked };
+      applySettings(settings);
+      writeSettings(settings);
+    });
+
+    translationInput?.addEventListener("change", () => {
+      settings = { ...settings, showTranslation: translationInput.checked };
+      applySettings(settings);
+      writeSettings(settings);
+    });
+
+    arabicSizeInput?.addEventListener("input", () => {
+      settings = { ...settings, arabicSize: Number(arabicSizeInput.value || defaults.arabicSize) };
+      applySettings(settings);
+      writeSettings(settings);
+    });
+
+    translationSizeInput?.addEventListener("input", () => {
+      settings = {
+        ...settings,
+        translationSize: Number(translationSizeInput.value || defaults.translationSize),
+      };
+      applySettings(settings);
+      writeSettings(settings);
+    });
+
+    resetButton?.addEventListener("click", () => {
+      settings = { ...defaults };
+      applySettings(settings);
+      writeSettings(settings);
+    });
+  })();
+</script>

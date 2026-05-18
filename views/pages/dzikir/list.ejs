@@ -1,0 +1,53 @@
+<main class="mx-auto w-full max-w-5xl px-4 pb-20 pt-8 sm:px-6">
+  <section class="rounded-[1.8rem] border border-[#DCCFBF] bg-white/90 p-6 shadow-[0_20px_50px_rgba(52,78,65,0.12)] sm:p-8">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#588157]">Daftar Dzikir</p>
+        <h1 class="mt-1 text-3xl font-black tracking-tight text-[#244338]"><%= sessionMeta.title %></h1>
+      </div>
+      <a
+        href="/dzikir"
+        class="inline-flex items-center rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-4 py-2 text-sm font-semibold text-[#344E41] transition hover:bg-[#EDE3D1]"
+      >
+        Kembali
+      </a>
+    </div>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:max-w-md">
+      <a
+        href="/dzikir/list?waktu=pagi"
+        class="<%= activeSession === 'pagi' ? 'border-[#588157] bg-[#588157] text-white shadow-md shadow-[#588157]/20' : 'border-[#DCCFBF] bg-[#F6F1E9] text-[#344E41]' %> rounded-2xl border px-4 py-3 text-sm font-semibold transition"
+      >
+        Dzikir Pagi (<%= summary.pagi %>)
+      </a>
+      <a
+        href="/dzikir/list?waktu=petang"
+        class="<%= activeSession === 'petang' ? 'border-[#588157] bg-[#588157] text-white shadow-md shadow-[#588157]/20' : 'border-[#DCCFBF] bg-[#F6F1E9] text-[#344E41]' %> rounded-2xl border px-4 py-3 text-sm font-semibold transition"
+      >
+        Dzikir Petang (<%= summary.petang %>)
+      </a>
+    </div>
+  </section>
+
+  <section class="mt-6 grid gap-3">
+    <% dzikirItems.forEach((item) => { %>
+      <a
+        href="/dzikir/practice/<%= activeSession %>/<%= item.order - 1 %>"
+        class="group block rounded-2xl border border-[#DCCFBF] bg-white/88 px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#A3B18A] hover:bg-white sm:px-5"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-black text-[#244338] sm:text-base"><%= item.order %>. <%= item.title %></p>
+            <p class="mt-1 text-xs font-medium text-[#344E41]/66">Klik untuk mulai dari bacaan ini</p>
+          </div>
+          <div class="flex shrink-0 items-center gap-2">
+            <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-2.5 py-1 text-xs font-bold text-[#466B47]">
+              <%= item.repeatLabel %>
+            </span>
+            <span class="text-[#588157] transition group-hover:translate-x-0.5" aria-hidden="true">→</span>
+          </div>
+        </div>
+      </a>
+    <% }) %>
+  </section>
+</main>

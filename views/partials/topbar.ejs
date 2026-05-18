@@ -18,6 +18,7 @@ const spiritualNavItems = user ? [
   { href: "/quran", label: "Al-Qur'an", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />' },
   { href: "/hadis", label: "Hadis", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />' },
   { href: "/doa", label: "Doa", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5c2.25 0 4.07 1.82 4.07 4.07 0 1.26-.57 2.39-1.46 3.14.89.75 1.46 1.88 1.46 3.14 0 2.25-1.82 4.08-4.07 4.08S7.93 17.1 7.93 14.85c0-1.26.57-2.39 1.46-3.14-.89-.75-1.46-1.88-1.46-3.14C7.93 6.32 9.75 4.5 12 4.5z" />' },
+  { href: "/dzikir", label: "Dzikir", icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4c4.6 0 8.4 3.8 8.4 8.4S16.6 20.8 12 20.8 3.6 17 3.6 12.4 7.4 4 12 4z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.2v4.2l2.8 2.1" /><path stroke-linecap="round" stroke-linejoin="round" d="M8.4 3.8 7.1 5.1M15.6 3.8l1.3 1.3" />' },
 ] : [];
 
 const navItems = user ? [
@@ -27,6 +28,7 @@ const navItems = user ? [
 ] : [];
 
 const isSpiritualActive = user && spiritualNavItems.some((item) => currentPath === item.href || currentPath.startsWith(`${item.href}/`));
+const showReadingSettingsShortcut = user && (currentPath.startsWith("/quran") || currentPath.startsWith("/dzikir"));
 const streakValue = typeof streak !== "undefined" ? streak : (typeof activeStreak !== "undefined" ? activeStreak : 0);
 const userInitial = user && user.name ? user.name.trim().charAt(0).toUpperCase() : "P";
 const userProfileImage = user && user.profileImage ? user.profileImage : null;
@@ -89,6 +91,20 @@ const userProfileImage = user && user.profileImage ? user.profileImage : null;
           <span><%= streakValue %></span>
         </div>
 
+        <% if (showReadingSettingsShortcut) { %>
+          <button
+            type="button"
+            class="relative grid h-11 w-11 place-items-center rounded-full border border-[#E3D5C2] bg-white text-[#244338] shadow-sm transition hover:-translate-y-0.5 hover:border-[#A3B18A]"
+            aria-label="Pengaturan bacaan"
+            title="Pengaturan bacaan"
+            data-reading-settings-modal-open
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.983 5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-6-4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+            </svg>
+          </button>
+        <% } %>
+
         <button type="button" class="relative grid h-11 w-11 place-items-center rounded-full border border-[#E3D5C2] bg-white text-[#244338] shadow-sm transition hover:-translate-y-0.5 hover:border-[#A3B18A]" aria-label="Notifikasi" data-notification-panel-toggle>
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M15 17H9m10-2h-1V9a6 6 0 1 0-12 0v6H5a2 2 0 0 0 0 4h14a2 2 0 0 0 0-4ZM10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -124,6 +140,19 @@ const userProfileImage = user && user.profileImage ? user.profileImage : null;
           <span class="text-[#B7792D]"><%= streakValue %></span>
           Streak
         </span>
+        <% if (showReadingSettingsShortcut) { %>
+          <button
+            type="button"
+            class="grid h-10 w-10 place-items-center rounded-full border border-[#E3D5C2] bg-white text-[#244338]"
+            aria-label="Pengaturan bacaan"
+            title="Pengaturan bacaan"
+            data-reading-settings-modal-open
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.983 5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-6-4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+            </svg>
+          </button>
+        <% } %>
         <button type="button" class="relative grid h-10 w-10 place-items-center rounded-full border border-[#E3D5C2] bg-white text-[#244338]" aria-label="Notifikasi" data-notification-panel-toggle>
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M15 17H9m10-2h-1V9a6 6 0 1 0-12 0v6H5a2 2 0 0 0 0 4h14a2 2 0 0 0 0-4ZM10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -217,6 +246,75 @@ const userProfileImage = user && user.profileImage ? user.profileImage : null;
         </div>
       </section>
     </div>
+
+    <% if (showReadingSettingsShortcut) { %>
+      <div class="fixed inset-0 z-[95] hidden items-center justify-center p-4" data-reading-settings-modal>
+        <button type="button" class="absolute inset-0 bg-[#244338]/45 backdrop-blur-[2px]" data-reading-settings-modal-close aria-label="Tutup modal pengaturan bacaan"></button>
+        <section class="relative z-10 w-full max-w-2xl rounded-[1.5rem] border border-[#DCCFBF] bg-white p-5 shadow-[0_24px_64px_rgba(52,78,65,0.24)] sm:p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#588157]">Pengaturan Bacaan</p>
+              <h3 class="mt-1 text-xl font-black text-[#244338]">Qur'an & Dzikir</h3>
+              <p class="mt-1 text-xs text-[#344E41]/62">Berlaku global untuk halaman detail ayat dan dzikir.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex items-center rounded-full border border-[#DCCFBF] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#344E41] transition hover:bg-[#EFE6D8]"
+                data-reading-settings-reset
+              >
+                Reset ke default
+              </button>
+              <button
+                type="button"
+                class="grid h-9 w-9 place-items-center rounded-full border border-[#E3D5C2] text-[#344E41]/70 transition hover:bg-[#F6F1E9]"
+                data-reading-settings-modal-close
+                aria-label="Tutup modal pengaturan bacaan"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 18 18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <label class="inline-flex items-center gap-2 text-sm font-medium text-[#344E41]">
+              <input type="checkbox" class="h-4 w-4 rounded border-[#A3B18A] text-[#588157]" data-reading-setting-latin />
+              Tampilkan Latin
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm font-medium text-[#344E41]">
+              <input type="checkbox" class="h-4 w-4 rounded border-[#A3B18A] text-[#588157]" data-reading-setting-translation />
+              Tampilkan Terjemahan
+            </label>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <label class="text-sm font-medium text-[#344E41]">
+              Ukuran teks Arab
+              <input type="range" min="1.8" max="3.4" step="0.1" class="mt-2 w-full accent-[#588157]" data-reading-setting-arabic-size />
+            </label>
+            <label class="text-sm font-medium text-[#344E41]">
+              Ukuran teks arti/latin
+              <input type="range" min="0.9" max="1.5" step="0.05" class="mt-2 w-full accent-[#588157]" data-reading-setting-translation-size />
+            </label>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/72 p-3">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#344E41]/50">Contoh Tampilan</p>
+            <p class="mt-2 text-right font-['Amiri'] leading-[1.9] text-[#244338]" dir="rtl" data-reading-preview-arabic>
+              ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ
+            </p>
+            <p class="mt-2 text-sm font-semibold text-[#466B47]" data-reading-preview-latin>
+              Alhamdu lillaahi rabbil-'aalamiin.
+            </p>
+            <p class="mt-1 text-sm leading-7 text-[#344E41]/80" data-reading-preview-translation>
+              Segala puji bagi Allah, Tuhan seluruh alam.
+            </p>
+          </div>
+        </section>
+      </div>
+    <% } %>
   <% } %>
 </header>
 
@@ -310,6 +408,151 @@ const userProfileImage = user && user.profileImage ? user.profileImage : null;
   openBtn.addEventListener("click", openSidebar);
   if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
   if (backdrop) backdrop.addEventListener("click", closeSidebar);
+})();
+</script>
+
+<script>
+(function () {
+  var modal = document.querySelector("[data-reading-settings-modal]");
+  var openButtons = Array.prototype.slice.call(
+    document.querySelectorAll("[data-reading-settings-modal-open]")
+  );
+  if (!modal || !openButtons.length) return;
+
+  var closeButtons = Array.prototype.slice.call(
+    modal.querySelectorAll("[data-reading-settings-modal-close]")
+  );
+  var latinInput = modal.querySelector("[data-reading-setting-latin]");
+  var translationInput = modal.querySelector("[data-reading-setting-translation]");
+  var arabicSizeInput = modal.querySelector("[data-reading-setting-arabic-size]");
+  var translationSizeInput = modal.querySelector("[data-reading-setting-translation-size]");
+  var resetButton = modal.querySelector("[data-reading-settings-reset]");
+  var previewArabic = modal.querySelector("[data-reading-preview-arabic]");
+  var previewLatin = modal.querySelector("[data-reading-preview-latin]");
+  var previewTranslation = modal.querySelector("[data-reading-preview-translation]");
+  var storageKey = "prayer-streak:reading-settings:v1";
+  var defaults = {
+    showLatin: true,
+    showTranslation: true,
+    arabicSize: 2.4,
+    translationSize: 1.0
+  };
+  var settings = defaults;
+
+  function readSettings() {
+    try {
+      var raw = window.localStorage.getItem(storageKey);
+      return raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
+    } catch (_) {
+      return defaults;
+    }
+  }
+
+  function writeSettings(next) {
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch (_) {}
+  }
+
+  function applyToPreview(next) {
+    if (latinInput) latinInput.checked = Boolean(next.showLatin);
+    if (translationInput) translationInput.checked = Boolean(next.showTranslation);
+    if (arabicSizeInput) arabicSizeInput.value = String(next.arabicSize);
+    if (translationSizeInput) translationSizeInput.value = String(next.translationSize);
+
+    if (previewLatin) {
+      previewLatin.classList.toggle("hidden", !next.showLatin);
+      previewLatin.style.fontSize = String(next.translationSize) + "rem";
+    }
+    if (previewTranslation) {
+      previewTranslation.classList.toggle("hidden", !next.showTranslation);
+      previewTranslation.style.fontSize = String(next.translationSize) + "rem";
+    }
+    if (previewArabic) {
+      previewArabic.style.fontSize = String(next.arabicSize) + "rem";
+    }
+  }
+
+  function applyToLiveContent(next) {
+    var latinNodes = document.querySelectorAll("[data-quran-latin], [data-dzikir-latin]");
+    var translationNodes = document.querySelectorAll("[data-quran-translation], [data-dzikir-translation]");
+    var arabicNodes = document.querySelectorAll("[data-quran-arabic], [data-dzikir-arabic]");
+
+    latinNodes.forEach(function (node) {
+      node.classList.toggle("hidden", !next.showLatin);
+      node.style.fontSize = String(next.translationSize) + "rem";
+    });
+
+    translationNodes.forEach(function (node) {
+      node.classList.toggle("hidden", !next.showTranslation);
+      node.style.fontSize = String(next.translationSize) + "rem";
+    });
+
+    arabicNodes.forEach(function (node) {
+      node.style.fontSize = String(next.arabicSize) + "rem";
+      node.style.lineHeight = "1.9";
+    });
+  }
+
+  function applySettings(next) {
+    settings = Object.assign({}, next);
+    applyToPreview(settings);
+    applyToLiveContent(settings);
+    writeSettings(settings);
+  }
+
+  function openModal() {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.style.overflow = "";
+  }
+
+  openButtons.forEach(function (button) {
+    button.addEventListener("click", openModal);
+  });
+
+  closeButtons.forEach(function (button) {
+    button.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+      closeModal();
+    }
+  });
+
+  latinInput && latinInput.addEventListener("change", function () {
+    applySettings(Object.assign({}, settings, { showLatin: latinInput.checked }));
+  });
+
+  translationInput && translationInput.addEventListener("change", function () {
+    applySettings(Object.assign({}, settings, { showTranslation: translationInput.checked }));
+  });
+
+  arabicSizeInput && arabicSizeInput.addEventListener("input", function () {
+    applySettings(Object.assign({}, settings, { arabicSize: Number(arabicSizeInput.value || defaults.arabicSize) }));
+  });
+
+  translationSizeInput && translationSizeInput.addEventListener("input", function () {
+    applySettings(
+      Object.assign({}, settings, {
+        translationSize: Number(translationSizeInput.value || defaults.translationSize)
+      })
+    );
+  });
+
+  resetButton && resetButton.addEventListener("click", function () {
+    applySettings(defaults);
+  });
+
+  settings = readSettings();
+  applyToPreview(settings);
 })();
 </script>
 <% } %>

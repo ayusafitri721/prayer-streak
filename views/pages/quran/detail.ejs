@@ -91,7 +91,7 @@
   </section>
 
   <section class="mt-5 rounded-[2rem] border border-[#A3B18A]/40 bg-white/80 p-6 shadow-2xl shadow-[#344E41]/10">
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-xl font-bold text-[#344E41]">Daftar Ayat</h2>
       <span class="rounded-full border border-[#A3B18A]/30 bg-[#F6F1E9] px-3 py-1 text-xs text-[#344E41]/60"><%= verses.length %> ayat</span>
     </div>
@@ -241,14 +241,14 @@
             </div>
           </div>
 
-          <p class="mt-5 text-right font-[Amiri,serif] text-3xl leading-[2.5] text-[#344E41] sm:text-4xl" dir="rtl"><%= verse.arabic %></p>
+          <p class="mt-5 text-right font-[Amiri,serif] text-3xl leading-[2.5] text-[#344E41] sm:text-4xl" dir="rtl" data-quran-arabic><%= verse.arabic %></p>
 
           <div class="mt-4 h-px bg-gradient-to-r from-transparent via-[#A3B18A]/40 to-transparent"></div>
 
           <% if (verse.latin) { %>
-            <p class="mt-4 text-sm italic leading-7 text-[#588157]"><%= verse.latin %></p>
+            <p class="mt-4 text-sm italic leading-7 text-[#588157]" data-quran-latin><%= verse.latin %></p>
           <% } %>
-          <p class="mt-2 text-sm leading-7 text-[#344E41]/80"><%= verse.translation %></p>
+          <p class="mt-2 text-sm leading-7 text-[#344E41]/80" data-quran-translation><%= verse.translation %></p>
         </article>
       <% }) %>
     </div>
@@ -323,6 +323,103 @@
       toggleEl.addEventListener("click", () => {
         previewEl.classList.add("hidden");
         fullEl.classList.remove("hidden");
+      });
+    })();
+  </script>
+  <script>
+    (() => {
+      const panel = document.querySelector("[data-reading-settings-panel]");
+      const toggle = document.querySelector("[data-reading-settings-toggle]");
+
+      const latinNodes = Array.from(document.querySelectorAll("[data-quran-latin]"));
+      const translationNodes = Array.from(document.querySelectorAll("[data-quran-translation]"));
+      const arabicNodes = Array.from(document.querySelectorAll("[data-quran-arabic]"));
+      const latinInput = panel?.querySelector("[data-setting-latin]");
+      const translationInput = panel?.querySelector("[data-setting-translation]");
+      const arabicSizeInput = panel?.querySelector("[data-setting-arabic-size]");
+      const translationSizeInput = panel?.querySelector("[data-setting-translation-size]");
+      const resetButton = panel?.querySelector("[data-setting-reset]");
+      const storageKey = "prayer-streak:reading-settings:v1";
+
+      const defaults = {
+        showLatin: true,
+        showTranslation: true,
+        arabicSize: 2.4,
+        translationSize: 1.0,
+      };
+
+      const readSettings = () => {
+        try {
+          const raw = window.localStorage.getItem(storageKey);
+          return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
+        } catch {
+          return defaults;
+        }
+      };
+
+      const writeSettings = (settings) => {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(settings));
+        } catch {}
+      };
+
+      const applySettings = (settings) => {
+        latinNodes.forEach((node) => node.classList.toggle("hidden", !settings.showLatin));
+        translationNodes.forEach((node) =>
+          node.classList.toggle("hidden", !settings.showTranslation)
+        );
+        arabicNodes.forEach((node) => {
+          node.style.fontSize = `${settings.arabicSize}rem`;
+          node.style.lineHeight = "1.9";
+        });
+        const textSize = `${settings.translationSize}rem`;
+        latinNodes.forEach((node) => (node.style.fontSize = textSize));
+        translationNodes.forEach((node) => (node.style.fontSize = textSize));
+
+        if (latinInput) latinInput.checked = Boolean(settings.showLatin);
+        if (translationInput) translationInput.checked = Boolean(settings.showTranslation);
+        if (arabicSizeInput) arabicSizeInput.value = String(settings.arabicSize);
+        if (translationSizeInput) translationSizeInput.value = String(settings.translationSize);
+      };
+
+      let settings = readSettings();
+      applySettings(settings);
+
+      toggle?.addEventListener("click", () => {
+        panel?.classList.toggle("hidden");
+      });
+
+      latinInput?.addEventListener("change", () => {
+        settings = { ...settings, showLatin: latinInput.checked };
+        applySettings(settings);
+        writeSettings(settings);
+      });
+
+      translationInput?.addEventListener("change", () => {
+        settings = { ...settings, showTranslation: translationInput.checked };
+        applySettings(settings);
+        writeSettings(settings);
+      });
+
+      arabicSizeInput?.addEventListener("input", () => {
+        settings = { ...settings, arabicSize: Number(arabicSizeInput.value || defaults.arabicSize) };
+        applySettings(settings);
+        writeSettings(settings);
+      });
+
+      translationSizeInput?.addEventListener("input", () => {
+        settings = {
+          ...settings,
+          translationSize: Number(translationSizeInput.value || defaults.translationSize),
+        };
+        applySettings(settings);
+        writeSettings(settings);
+      });
+
+      resetButton?.addEventListener("click", () => {
+        settings = { ...defaults };
+        applySettings(settings);
+        writeSettings(settings);
       });
     })();
   </script>

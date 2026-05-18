@@ -1,0 +1,157 @@
+<main class="mx-auto w-full max-w-6xl px-4 pb-20 pt-8 sm:px-6">
+  <section class="rounded-[1.9rem] border border-[#DCCFBF] bg-white/85 p-6 shadow-[0_24px_60px_rgba(52,78,65,0.12)] sm:p-8">
+    <p class="text-xs font-bold uppercase tracking-[0.24em] text-[#588157]">Dzikir Harian</p>
+    <h1 class="mt-2 text-3xl font-black tracking-tight text-[#244338] sm:text-4xl">
+      Dzikir Pagi & Petang
+    </h1>
+    <p class="mt-3 max-w-3xl text-sm leading-7 text-[#344E41]/78 sm:text-base">
+      Pilih sesi dzikir yang ingin kamu lanjutkan. Progress disimpan otomatis per hari.
+    </p>
+  </section>
+
+  <section class="mt-5 grid gap-4 lg:grid-cols-2">
+    <article
+      class="rounded-[1.8rem] border border-[#DCCFBF] bg-white/90 p-6 shadow-[0_20px_55px_rgba(52,78,65,0.12)] sm:p-7"
+      data-dzikir-card
+      data-session="pagi"
+      data-total="<%= summary.pagi %>"
+      data-items='<%- JSON.stringify(pagiItems.map((item) => ({ id: item.id, repeatCount: item.repeatCount }))) %>'
+    >
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#588157]">Sesi Pagi</p>
+        <span class="rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#466B47]"><%= summary.pagi %> item</span>
+      </div>
+      <h2 class="mt-1 text-3xl font-black tracking-tight text-[#244338] sm:text-[2rem]"><%= pagiMeta.title %></h2>
+      <p class="mt-2 text-base text-[#344E41]/80"><%= pagiMeta.subtitle %></p>
+
+      <p
+        class="mt-5 inline-flex rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#466B47]"
+        data-continue-label
+      >
+        Lanjutkan dari bacaan ke-1 dari <%= summary.pagi %>
+      </p>
+
+      <div class="mt-5 grid gap-3 sm:grid-cols-2">
+        <a
+          href="/dzikir/practice/pagi/0"
+          class="inline-flex items-center justify-center rounded-2xl bg-[#588157] px-4 py-3 text-base font-bold text-white shadow-md shadow-[#588157]/25 transition hover:-translate-y-0.5 hover:bg-[#466B47]"
+          data-continue-link
+        >
+          Lanjutkan Dzikir Pagi
+        </a>
+        <a
+          href="/dzikir/practice/pagi/0"
+          class="inline-flex items-center justify-center rounded-2xl border border-[#DCCFBF] bg-[#F6F1E9] px-4 py-3 text-base font-bold text-[#244338] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#EFE6D8]"
+          data-restart-link
+        >
+          Mulai dari Awal
+        </a>
+      </div>
+    </article>
+
+    <article
+      class="rounded-[1.8rem] border border-[#DCCFBF] bg-white/90 p-6 shadow-[0_20px_55px_rgba(52,78,65,0.12)] sm:p-7"
+      data-dzikir-card
+      data-session="petang"
+      data-total="<%= summary.petang %>"
+      data-items='<%- JSON.stringify(petangItems.map((item) => ({ id: item.id, repeatCount: item.repeatCount }))) %>'
+    >
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#588157]">Sesi Petang</p>
+        <span class="rounded-full border border-[#A3B18A]/35 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#466B47]"><%= summary.petang %> item</span>
+      </div>
+      <h2 class="mt-1 text-3xl font-black tracking-tight text-[#244338] sm:text-[2rem]"><%= petangMeta.title %></h2>
+      <p class="mt-2 text-base text-[#344E41]/80"><%= petangMeta.subtitle %></p>
+
+      <p
+        class="mt-5 inline-flex rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-[#466B47]"
+        data-continue-label
+      >
+        Lanjutkan dari bacaan ke-1 dari <%= summary.petang %>
+      </p>
+
+      <div class="mt-5 grid gap-3 sm:grid-cols-2">
+        <a
+          href="/dzikir/practice/petang/0"
+          class="inline-flex items-center justify-center rounded-2xl bg-[#588157] px-4 py-3 text-base font-bold text-white shadow-md shadow-[#588157]/25 transition hover:-translate-y-0.5 hover:bg-[#466B47]"
+          data-continue-link
+        >
+          Lanjutkan Dzikir Petang
+        </a>
+        <a
+          href="/dzikir/practice/petang/0"
+          class="inline-flex items-center justify-center rounded-2xl border border-[#DCCFBF] bg-[#F6F1E9] px-4 py-3 text-base font-bold text-[#244338] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#EFE6D8]"
+          data-restart-link
+        >
+          Mulai dari Awal
+        </a>
+      </div>
+    </article>
+  </section>
+
+  <section class="mt-5">
+    <a
+      href="/dzikir/list?waktu=pagi"
+      class="inline-flex w-full items-center justify-center rounded-2xl border border-[#DCCFBF] bg-[#F6F1E9] px-4 py-3 text-base font-bold text-[#244338] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#EFE6D8] sm:w-auto"
+    >
+      Lihat Semua Dzikir
+    </a>
+  </section>
+</main>
+
+<script>
+  (function () {
+    const cards = Array.from(document.querySelectorAll("[data-dzikir-card]"));
+    if (!cards.length) return;
+
+    const todayKey = new Date().toISOString().slice(0, 10);
+
+    const readProgress = (session) => {
+      try {
+        const raw = window.localStorage.getItem(
+          `prayer-streak:dzikir:practice:${session}:${todayKey}`
+        );
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    };
+
+    cards.forEach((card) => {
+      const session = card.dataset.session || "pagi";
+      const total = Number(card.dataset.total || "0");
+      const itemMeta = JSON.parse(card.dataset.items || "[]");
+      const progressMap = readProgress(session);
+
+      let resumeIndex = 0;
+      for (let index = 0; index < itemMeta.length; index += 1) {
+        const item = itemMeta[index];
+        const current = Number(progressMap[item.id] || 0);
+        if (current < Number(item.repeatCount || 1)) {
+          resumeIndex = index;
+          break;
+        }
+        if (index === itemMeta.length - 1) {
+          resumeIndex = index;
+        }
+      }
+
+      const continueLabel = card.querySelector("[data-continue-label]");
+      const continueLink = card.querySelector("[data-continue-link]");
+      const restartLink = card.querySelector("[data-restart-link]");
+
+      if (continueLabel) {
+        continueLabel.textContent = `Lanjutkan dari bacaan ke-${resumeIndex + 1} dari ${total}`;
+      }
+
+      if (continueLink) continueLink.href = `/dzikir/practice/${session}/${resumeIndex}`;
+      if (restartLink) {
+        restartLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          window.localStorage.removeItem(`prayer-streak:dzikir:practice:${session}:${todayKey}`);
+          window.location.href = `/dzikir/practice/${session}/0`;
+        });
+      }
+    });
+  })();
+</script>
