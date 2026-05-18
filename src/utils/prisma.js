@@ -30,11 +30,13 @@ function createMemoryPrismaClient() {
     prayerLogs: [],
     streakDays: [],
     xpHistories: [],
+    quranBookmarks: [],
     ids: {
       user: 1,
       prayerLog: 1,
       streakDay: 1,
       xpHistory: 1,
+      quranBookmark: 1,
     },
   };
 
@@ -235,6 +237,64 @@ function createMemoryPrismaClient() {
         };
         store.xpHistories.push(record);
         return { ...record };
+      },
+    },
+
+    quranBookmark: {
+      async findMany({ where = {}, orderBy, take, select } = {}) {
+        let rows = store.quranBookmarks.filter((item) => {
+          if (where.userId != null && item.userId !== Number(where.userId)) return false;
+          if (where.surahNumber != null && item.surahNumber !== Number(where.surahNumber)) return false;
+          if (where.verseNumber != null && item.verseNumber !== Number(where.verseNumber)) return false;
+          return true;
+        });
+
+        if (orderBy?.createdAt) {
+          rows = rows.sort((a, b) =>
+            orderBy.createdAt === "asc"
+              ? a.createdAt - b.createdAt
+              : b.createdAt - a.createdAt
+          );
+        }
+
+        const limited = Number.isInteger(take) ? rows.slice(0, Math.max(0, take)) : rows;
+        return limited.map((item) => pickFields({ ...item }, select));
+      },
+
+      async upsert({ where = {}, create = {} } = {}) {
+        const key = where.userId_surahNumber_verseNumber || {};
+        const userId = Number(key.userId);
+        const surahNumber = Number(key.surahNumber);
+        const verseNumber = Number(key.verseNumber);
+
+        const existing = store.quranBookmarks.find(
+          (item) =>
+            item.userId === userId &&
+            item.surahNumber === surahNumber &&
+            item.verseNumber === verseNumber
+        );
+        if (existing) return { ...existing };
+
+        const record = {
+          id: store.ids.quranBookmark++,
+          userId: Number(create.userId),
+          surahNumber: Number(create.surahNumber),
+          verseNumber: Number(create.verseNumber),
+          createdAt: new Date(),
+        };
+        store.quranBookmarks.push(record);
+        return { ...record };
+      },
+
+      async deleteMany({ where = {} } = {}) {
+        const before = store.quranBookmarks.length;
+        store.quranBookmarks = store.quranBookmarks.filter((item) => {
+          if (where.userId != null && item.userId !== Number(where.userId)) return true;
+          if (where.surahNumber != null && item.surahNumber !== Number(where.surahNumber)) return true;
+          if (where.verseNumber != null && item.verseNumber !== Number(where.verseNumber)) return true;
+          return false;
+        });
+        return { count: Math.max(0, before - store.quranBookmarks.length) };
       },
     },
 

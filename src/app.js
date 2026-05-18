@@ -20,6 +20,7 @@ const learningRoutes = require("./routes/learning");
 const notificationRoutes = require("./routes/notifications");
 const favoriteRoutes = require("./routes/favorites");
 const adminRoutes = require("./routes/admin");
+const bookmarkRoutes = require("./routes/bookmarks");
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use("/belajar", learningRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/favorites", favoriteRoutes);
 app.use("/admin", adminRoutes);
+app.use("/bookmarks", bookmarkRoutes);
 
 app.use(renderNotFound);
 app.use(renderServerError);

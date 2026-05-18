@@ -33,6 +33,7 @@ model User {
   achievements UserAchievement[]
   xpHistories XPHistory[]
   favoriteContents FavoriteContent[]
+  quranBookmarks QuranBookmark[]
 }
 
 model PrayerLog {
@@ -111,5 +112,17 @@ model FavoriteContent {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, reference])
+  @@index([userId, createdAt])
+}
+
+model QuranBookmark {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  surahNumber Int
+  verseNumber Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, surahNumber, verseNumber])
   @@index([userId, createdAt])
 }

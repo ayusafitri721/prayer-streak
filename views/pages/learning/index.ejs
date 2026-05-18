@@ -1,25 +1,34 @@
 <main class="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-28 pt-5 text-[#244338] sm:px-6 lg:py-6">
-  <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.10)] sm:p-6">
-    <p class="text-sm font-bold text-[#2F654D]">Belajar Bertahap</p>
-    <h1 class="mt-3 text-3xl font-black leading-tight text-[#244338] sm:text-4xl">Panduan Ibadah & Belajar Baca Al-Qur'an</h1>
-    <p class="mt-3 max-w-3xl text-base text-[#244338]/72">
-      Halaman ini disiapkan untuk belajar dasar ibadah secara ringkas dan terstruktur. Fokusnya supaya kamu bisa mulai dari materi paling penting, lalu lanjut konsisten setiap hari.
-    </p>
-    <div class="mt-5 flex flex-wrap gap-2">
-      <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Pemula Friendly</span>
-      <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Step-by-step</span>
-      <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Rencana Mingguan</span>
+  <section class="relative overflow-hidden rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.10)] sm:p-6">
+    <div class="pointer-events-none absolute -right-14 -top-20 h-52 w-52 rounded-full bg-[#A3B18A]/20 blur-2xl"></div>
+    <div class="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-[#DDB892]/20 blur-2xl"></div>
+    <div class="relative">
+      <p class="text-xs font-black uppercase tracking-[0.2em] text-[#2F654D]">Belajar Bertahap</p>
+      <h1 class="mt-3 text-3xl font-black leading-tight text-[#244338] sm:text-4xl">Panduan Ibadah & Belajar Baca Al-Qur'an</h1>
+      <p class="mt-3 max-w-3xl text-base text-[#244338]/72">
+        Mulai dari materi dasar yang paling penting, lanjut bertahap sampai jadi rutinitas harian. Semua disusun biar kamu tidak bingung harus mulai dari mana.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-2">
+        <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Pemula Friendly</span>
+        <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Step-by-step</span>
+        <span class="rounded-full border border-[#A3B18A]/40 bg-[#F6F1E9] px-3 py-1 text-xs font-bold text-[#2F654D]">Checklist Harian</span>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-2.5">
+        <a href="#panduan-ibadah" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/45 bg-white px-4 py-2 text-sm font-black text-[#2F654D] transition hover:bg-[#588157] hover:text-white">Panduan Ibadah</a>
+        <a href="#jalur-iqro" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/45 bg-white px-4 py-2 text-sm font-black text-[#2F654D] transition hover:bg-[#588157] hover:text-white">Jalur Iqro</a>
+        <a href="/quran" class="inline-flex items-center gap-2 rounded-full border border-[#A3B18A]/45 bg-white px-4 py-2 text-sm font-black text-[#2F654D] transition hover:bg-[#588157] hover:text-white">Latihan Qur'an</a>
+      </div>
     </div>
   </section>
 
   <section class="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-    <article class="overflow-hidden rounded-[1.9rem] border border-[#D8CDBB] bg-white shadow-[0_20px_55px_rgba(52,78,65,0.10)]">
+    <article id="panduan-ibadah" class="overflow-hidden rounded-[1.9rem] border border-[#D8CDBB] bg-white shadow-[0_20px_55px_rgba(52,78,65,0.10)]">
       <div class="bg-[linear-gradient(140deg,#244338_0%,#2F654D_65%,#4F7F53_100%)] px-5 py-6 text-white sm:px-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-xs font-black uppercase tracking-[0.22em] text-[#D9E7D1]">Fiqih Praktis</p>
             <h2 class="mt-1 text-3xl font-black leading-tight sm:text-4xl">Panduan Ibadah Dasar</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-7 text-white/80">Materi inti dari thaharah, sholat fardhu, sampai sholat sunnah agar belajar tidak acak.</p>
+            <p class="mt-2 max-w-3xl text-sm leading-7 text-white/80">Materi inti dari thaharah, sholat fardhu, sampai sholat sunnah agar belajarmu rapi dan konsisten.</p>
           </div>
           <span class="rounded-full border border-white/20 bg-white/15 px-4 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-white">
             <%= fiqihGuides.length %> Materi
@@ -28,25 +37,31 @@
       </div>
 
       <div class="bg-[#FFFCF7] px-5 py-5 sm:px-6 sm:py-6">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <% fiqihGuides.forEach((item) => { %>
-          <a href="<%= item.href %>" class="group rounded-2xl border border-[#D8CDBB] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#A3B18A] hover:shadow-md hover:shadow-[#344E41]/8">
-            <div class="flex items-start justify-between gap-3">
-              <h3 class="text-lg font-black text-[#244338]"><%= item.title %></h3>
-              <span class="mt-1 inline-flex rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2F654D] transition group-hover:bg-[#588157] group-hover:text-white">Buka</span>
-            </div>
-            <p class="mt-2 text-sm leading-6 text-[#244338]/70"><%= item.summary %></p>
-            <% if (item.category) { %>
-              <p class="mt-3 inline-flex rounded-full bg-[#EDE5D8] px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[#2F654D]/88"><%= item.category %></p>
-            <% } %>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <% item.points.forEach((point) => { %>
-                <span class="rounded-full border border-[#A3B18A]/40 bg-[#FFF9F0] px-3 py-1 text-xs font-semibold text-[#2F654D]"><%= point %></span>
-              <% }) %>
-            </div>
-          </a>
-        <% }) %>
-      </div>
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <% fiqihGuides.forEach((item, index) => { %>
+            <a href="<%= item.href %>" class="group rounded-2xl border border-[#D8CDBB] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#A3B18A] hover:shadow-md hover:shadow-[#344E41]/8">
+              <div class="flex items-start justify-between gap-3">
+                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[#EDE5D8] px-2 text-[11px] font-black text-[#2F654D]"><%= index + 1 %></span>
+                <% if (item.category) { %>
+                  <span class="inline-flex rounded-full border border-[#A3B18A]/45 bg-[#F6F1E9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2F654D]"><%= item.category %></span>
+                <% } %>
+              </div>
+              <h3 class="mt-2 text-lg font-black leading-tight text-[#244338]"><%= item.title %></h3>
+              <p class="mt-2 text-sm leading-6 text-[#244338]/70"><%= item.summary %></p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <% item.points.forEach((point) => { %>
+                  <span class="rounded-full border border-[#A3B18A]/40 bg-[#FFF9F0] px-3 py-1 text-xs font-semibold text-[#2F654D]"><%= point %></span>
+                <% }) %>
+              </div>
+              <div class="mt-4 inline-flex items-center gap-2 text-sm font-black text-[#2F654D] transition group-hover:text-[#588157]">
+                <span>Buka panduan</span>
+                <svg class="h-4 w-4 transition group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </a>
+          <% }) %>
+        </div>
       </div>
     </article>
 
@@ -54,7 +69,7 @@
       <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
         <h2 class="text-xl font-black text-[#244338]">Rencana 7 Hari Belajar Baca Qur'an</h2>
         <p class="mt-2 text-sm leading-6 text-[#244338]/66">
-          Target kecil tiap hari lebih mudah dijaga daripada belajar panjang sekaligus.
+          Target kecil yang konsisten biasanya jauh lebih efektif daripada belajar panjang tapi jarang.
         </p>
         <div class="mt-4 space-y-2">
           <% weeklyPlan.forEach((step, index) => { %>
@@ -69,7 +84,7 @@
       <section class="rounded-[1.75rem] border border-[#D8CDBB] bg-white/92 p-5 shadow-[0_18px_45px_rgba(52,78,65,0.08)] sm:p-6">
         <h2 class="text-xl font-black text-[#244338]">Latihan Harian</h2>
         <p class="mt-2 text-sm leading-6 text-[#244338]/66">
-          Pakai menu Al-Qur'an untuk latihan bacaan setelah menyelesaikan materi dasar.
+          Setelah materi dasar, lanjutkan latihan harian di menu Al-Qur'an agar bacaan makin stabil.
         </p>
         <a href="/quran" class="mt-4 inline-flex rounded-full bg-[#588157] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[#466B47]">
           Buka Menu Al-Qur'an
@@ -78,7 +93,7 @@
     </aside>
   </section>
 
-  <section class="overflow-hidden rounded-[1.9rem] border border-[#D8CDBB] bg-white shadow-[0_20px_55px_rgba(52,78,65,0.10)]">
+  <section id="jalur-iqro" class="overflow-hidden rounded-[1.9rem] border border-[#D8CDBB] bg-white shadow-[0_20px_55px_rgba(52,78,65,0.10)]">
     <div class="bg-[linear-gradient(130deg,#244338_0%,#2F654D_55%,#4F7F53_100%)] px-5 py-6 text-white sm:px-7">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -94,8 +109,9 @@
 
     <div class="bg-[#FFFDF8] px-5 py-6 sm:px-7">
       <div class="grid gap-3 md:grid-cols-2">
-        <% quranLearningPath.stages.forEach((stage) => { %>
-          <article class="rounded-2xl border border-[#D8CDBB] bg-white p-4 transition hover:border-[#A3B18A] hover:shadow-md hover:shadow-[#344E41]/8">
+        <% quranLearningPath.stages.forEach((stage, index) => { %>
+          <article class="relative rounded-2xl border border-[#D8CDBB] bg-white p-4 transition hover:border-[#A3B18A] hover:shadow-md hover:shadow-[#344E41]/8">
+            <span class="absolute right-3 top-3 inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[#EDE5D8] px-2 text-[11px] font-black text-[#2F654D]"><%= index + 1 %></span>
             <p class="text-xs font-black uppercase tracking-[0.16em] text-[#588157]"><%= stage.name %></p>
             <p class="mt-1 text-xl font-black text-[#244338]"><%= stage.title %></p>
             <p class="mt-1.5 text-sm leading-6 text-[#244338]/68"><%= stage.note %></p>

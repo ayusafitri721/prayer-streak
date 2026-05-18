@@ -8,6 +8,7 @@
     .filter(Boolean);
   const savedFavoriteSet = new Set(savedFavoriteReferences || []);
   const savedQuranFavorites = Array.isArray(quranFavorites) ? quranFavorites : [];
+  const savedVerseBookmarks = Array.isArray(quranVerseBookmarks) ? quranVerseBookmarks : [];
 %>
 
 <main
@@ -185,6 +186,58 @@
         <% } else { %>
           <div id="quran-favorite-list" class="mt-4 hidden rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58" data-favorite-list>
             Belum ada favorit Qur'an. Tekan tombol Favorit pada card surat atau bintang pada detail ayat.
+          </div>
+        <% } %>
+      </article>
+
+      <article class="rounded-[1.9rem] border border-[#A3B18A]/30 bg-white/82 p-5 shadow-xl shadow-[#344E41]/5 lg:col-span-2">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[#344E41]/45">Bookmark Ayat</p>
+            <h2 class="mt-2 text-2xl font-bold text-[#244338]">Penanda ayat yang kamu simpan</h2>
+          </div>
+          <span class="rounded-full border border-[#A3B18A]/25 bg-[#F6F1E9] px-3 py-1 text-xs font-medium text-[#344E41]/62">
+            <%= savedVerseBookmarks.length %> bookmark
+          </span>
+        </div>
+        <p class="mt-3 text-sm text-[#344E41]/62">
+          Ini berbeda dari Favorit. Bookmark ayat ini tersimpan di akunmu dan akan muncul kembali saat login.
+        </p>
+        <% if (savedVerseBookmarks.length) { %>
+          <div class="mt-4 space-y-3">
+            <% savedVerseBookmarks.forEach((entry) => { %>
+              <article class="rounded-2xl border border-[#A3B18A]/35 bg-[#F6F1E9]/75 p-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-[#244338]"><%= entry.surahNameLatin %> - Ayat <%= entry.verseNumber %></p>
+                    <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-[#588157]">QS. <%= entry.surahNumber %> : <%= entry.verseNumber %></p>
+                    <p class="mt-1 text-xs text-[#344E41]/62"><%= entry.surahMeaning %><%= entry.versesCount ? ` (${entry.versesCount} ayat)` : "" %></p>
+                  </div>
+                  <form action="/bookmarks/<%= entry.surahNumber %>/<%= entry.verseNumber %>/delete" method="POST">
+                    <button
+                      type="submit"
+                      class="grid h-8 w-8 place-items-center rounded-full border border-red-200 bg-white text-red-600 transition hover:bg-red-50"
+                      aria-label="Hapus bookmark ayat <%= entry.verseNumber %>"
+                      title="Hapus bookmark"
+                    >
+                      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+                <a href="<%= entry.sourceUrl %>" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#588157] transition hover:text-[#344E41]">
+                  Buka ayat
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="mt-4 rounded-2xl border border-dashed border-[#A3B18A]/35 bg-[#F6F1E9]/70 px-4 py-5 text-sm text-[#344E41]/58">
+            Belum ada bookmark ayat. Buka detail surat lalu tekan ikon bookmark di kanan atas ayat.
           </div>
         <% } %>
       </article>

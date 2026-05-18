@@ -1,5 +1,6 @@
 <%
   const savedFavoriteSet = new Set(savedFavoriteReferences || []);
+  const savedVerseBookmarkSet = new Set(savedVerseBookmarkReferences || []);
 %>
 
 <main class="mx-auto mt-8 w-full max-w-5xl px-4 pb-10 sm:px-6">
@@ -144,6 +145,7 @@
     >
       <% verses.forEach((verse) => { %>
         <% const isVerseFavorite = savedFavoriteSet.has(`quran:${surah.number}:${verse.number}`); %>
+        <% const isVerseBookmarked = savedVerseBookmarkSet.has(`quran:${surah.number}:${verse.number}`); %>
         <article
           id="verse-<%= verse.number %>"
           class="rounded-2xl border border-[#A3B18A]/30 bg-[#F6F1E9]/60 p-5 transition"
@@ -174,18 +176,35 @@
                 </button>
               <% } %>
               <% if (user) { %>
-                <button
-                  type="button"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#A3B18A]/30 bg-white/70 text-[#344E41]/55 transition hover:bg-[#588157]/10 hover:text-[#588157]"
-                  data-verse-bookmark
-                  data-verse-number="<%= verse.number %>"
-                  aria-label="Simpan bookmark ayat <%= verse.number %>"
-                  title="Simpan bookmark"
-                >
-                  <svg class="pointer-events-none h-4 w-4" fill="currentColor" viewBox="0 0 24 24" data-verse-bookmark-icon>
-                    <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Zm2.75-1.25c-.69 0-1.25.56-1.25 1.25v14.52l3.5-2.24 3.5 2.24V4.75c0-.69-.56-1.25-1.25-1.25h-4.5Z"/>
-                  </svg>
-                </button>
+                <% if (isVerseBookmarked) { %>
+                  <form action="/bookmarks/<%= surah.number %>/<%= verse.number %>/delete" method="POST" class="inline-flex">
+                    <button
+                      type="submit"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#588157]/35 bg-[#588157]/12 text-[#588157] transition hover:bg-[#588157] hover:text-white"
+                      aria-label="Hapus bookmark ayat <%= verse.number %>"
+                      title="Hapus bookmark"
+                    >
+                      <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Z"/>
+                      </svg>
+                    </button>
+                  </form>
+                <% } else { %>
+                  <form action="/bookmarks" method="POST" class="inline-flex">
+                    <input type="hidden" name="surahNumber" value="<%= surah.number %>">
+                    <input type="hidden" name="verseNumber" value="<%= verse.number %>">
+                    <button
+                      type="submit"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#A3B18A]/30 bg-white/70 text-[#344E41]/55 transition hover:bg-[#588157]/10 hover:text-[#588157]"
+                      aria-label="Simpan bookmark ayat <%= verse.number %>"
+                      title="Simpan bookmark"
+                    >
+                      <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V22l-5-3.2L7 22V4.75Zm2.75-1.25c-.69 0-1.25.56-1.25 1.25v14.52l3.5-2.24 3.5 2.24V4.75c0-.69-.56-1.25-1.25-1.25h-4.5Z"/>
+                      </svg>
+                    </button>
+                  </form>
+                <% } %>
                 <form action="/favorites" method="POST" class="inline-flex">
                   <input type="hidden" name="type" value="quran">
                   <input type="hidden" name="title" value="QS. <%= surah.nameLatin %> ayat <%= verse.number %>">
