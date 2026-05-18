@@ -29,6 +29,12 @@
     <% } %>
     <link rel="icon" type="image/svg+xml" href="/assets/prayer-streak-logo.svg" />
     <link rel="shortcut icon" href="/assets/prayer-streak-logo.svg" />
+    <link rel="manifest" href="/manifest.webmanifest?v=2" />
+    <meta name="theme-color" content="#588157" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Prayer Streak" />
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png" />
     <link rel="stylesheet" href="/css/output.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,6 +69,15 @@
         <%- body %>
       </div>
     </div>
+    <button
+      type="button"
+      class="fixed bottom-5 right-5 z-[90] hidden rounded-full bg-[#588157] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(52,78,65,0.28)] transition hover:bg-[#466B47]"
+      data-app-install-btn
+      aria-hidden="true"
+    >
+      Install Aplikasi
+    </button>
     <script src="/js/main.js"></script>
+    <script src="/js/pwa-install.js"></script>
   </body>
 </html>
