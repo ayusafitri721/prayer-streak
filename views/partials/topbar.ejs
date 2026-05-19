@@ -34,7 +34,7 @@ const userInitial = user && user.name ? user.name.trim().charAt(0).toUpperCase()
 const userProfileImage = user && user.profileImage ? user.profileImage : null;
 %>
 
-<header class="sticky top-0 z-40 px-3 pt-3 sm:px-5">
+<header class="relative z-40 px-3 pt-3 sm:px-5">
   <div class="mx-auto flex w-full max-w-[92rem] items-center justify-between rounded-[1.55rem] border border-[#DCCFBF]/80 bg-white/88 px-3 py-3 shadow-[0_18px_55px_rgba(52,78,65,0.11)] backdrop-blur-xl sm:px-5">
     <a href="<%= user ? '/dashboard' : '/' %>" class="group flex min-w-fit items-center gap-3">
       <span class="grid h-11 w-11 place-items-center overflow-hidden rounded-2xl shadow-md shadow-[#344E41]/14 ring-1 ring-[#A3B18A]/25 transition group-hover:-translate-y-0.5">
