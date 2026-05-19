@@ -53,29 +53,29 @@
   ];
 %>
 
-<main class="mx-auto w-full max-w-[92rem] px-4 pb-12 pt-8 text-[#344E41] sm:px-6">
-  <section class="overflow-hidden rounded-[2rem] bg-[#2F654D] p-6 text-white shadow-[0_24px_70px_rgba(52,78,65,0.18)] sm:p-8">
-    <div class="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-      <div class="flex items-center gap-6">
-        <div class="relative grid h-32 w-32 shrink-0 place-items-center rounded-full border-[7px] border-white/50 bg-white/10 shadow-[inset_0_0_35px_rgba(255,255,255,0.08)]">
+<main class="mx-auto w-full max-w-[92rem] px-3 pb-12 pt-5 text-[#344E41] sm:px-6 sm:pt-8">
+  <section class="overflow-hidden rounded-[1.5rem] bg-[#2F654D] p-5 text-white shadow-[0_24px_70px_rgba(52,78,65,0.18)] sm:rounded-[2rem] sm:p-8">
+    <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-8">
+      <div class="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left lg:gap-6">
+        <div class="relative grid h-24 w-24 shrink-0 place-items-center rounded-full border-[6px] border-white/50 bg-white/10 shadow-[inset_0_0_35px_rgba(255,255,255,0.08)] sm:h-32 sm:w-32 sm:border-[7px]">
           <div class="absolute inset-3 rounded-full bg-[#588157]/45 blur-sm"></div>
-          <svg class="relative h-16 w-16 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg class="relative h-12 w-12 text-white sm:h-16 sm:w-16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
           </svg>
         </div>
         <div>
           <p class="text-sm font-bold text-[#C9D7B8]">Pencapaianmu</p>
-          <h1 class="mt-2 max-w-xl text-4xl font-black leading-tight tracking-[-0.02em] sm:text-5xl">
+          <h1 class="mx-auto mt-2 max-w-xl text-3xl font-black leading-tight tracking-[-0.02em] sm:mx-0 sm:text-5xl">
             Terus melangkah dalam kebaikan.
           </h1>
-          <p class="mt-4 max-w-xl text-base font-medium leading-7 text-white/72">
+          <p class="mx-auto mt-3 max-w-xl text-sm font-medium leading-6 text-white/72 sm:mx-0 sm:mt-4 sm:text-base sm:leading-7">
             Setiap salat yang kamu jaga, mendekatkanmu pada versi terbaik dirimu.
           </p>
         </div>
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
-        <article class="rounded-3xl border border-white/12 bg-white/10 p-5 backdrop-blur">
+      <div class="grid gap-3 sm:grid-cols-[0.8fr_1.2fr] sm:gap-4">
+        <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur sm:rounded-3xl sm:p-5">
           <p class="text-sm font-semibold text-white/72">Streak Aktif</p>
           <div class="mt-2 flex items-end gap-2">
             <p class="text-5xl font-black"><%= achievementSummary.streak %></p>
@@ -84,7 +84,7 @@
           <p class="mt-5 text-sm font-semibold text-[#F4D68C]">Rekor terbaik: <%= achievementSummary.longestStreak %> hari</p>
         </article>
 
-        <article class="rounded-3xl border border-white/12 bg-white/10 p-5 backdrop-blur">
+        <article class="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur sm:rounded-3xl sm:p-5">
           <div class="grid grid-cols-7 gap-2">
             <% weeklyTracker.forEach((day) => { %>
               <div class="text-center">
@@ -107,11 +107,11 @@
     </div>
   </section>
 
-  <section class="mt-8 rounded-[2rem] border border-[#E2D8C8] bg-white/92 p-5 shadow-[0_18px_55px_rgba(52,78,65,0.08)] sm:p-7">
+  <section class="mt-5 rounded-[1.5rem] border border-[#E2D8C8] bg-white/92 p-4 shadow-[0_18px_55px_rgba(52,78,65,0.08)] sm:mt-8 sm:rounded-[2rem] sm:p-7">
     <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <div class="flex items-center gap-3">
-          <h2 class="text-2xl font-black text-[#244338]">Semua Achievement</h2>
+          <h2 class="text-xl font-black text-[#244338] sm:text-2xl">Semua Achievement</h2>
           <span class="rounded-full bg-[#A3B18A]/18 px-3 py-1 text-xs font-black text-[#2F654D]">
             <%= achievementSummary.unlockedCount %> / <%= achievementSummary.totalCount %>
           </span>
@@ -119,43 +119,43 @@
         <p class="mt-2 text-sm font-medium text-[#344E41]/62">Lihat badge yang sudah terbuka dan progress yang sedang kamu kejar.</p>
       </div>
 
-      <div class="flex flex-wrap gap-2" data-achievement-filters>
+      <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" data-achievement-filters>
         <% filters.forEach((filter) => { %>
-          <button type="button" data-achievement-filter="<%= filter.key %>" class="<%= filter.key === 'all' ? 'border-[#A3B18A] bg-[#F2F7EC] text-[#244338]' : 'border-[#E2D8C8] bg-white text-[#344E41]/65' %> rounded-full border px-5 py-2.5 text-sm font-bold transition hover:border-[#A3B18A] hover:text-[#244338]">
+          <button type="button" data-achievement-filter="<%= filter.key %>" class="<%= filter.key === 'all' ? 'border-[#A3B18A] bg-[#F2F7EC] text-[#244338]' : 'border-[#E2D8C8] bg-white text-[#344E41]/65' %> rounded-full border px-4 py-2.5 text-sm font-bold transition hover:border-[#A3B18A] hover:text-[#244338] sm:px-5">
             <%= filter.label %>
           </button>
         <% }) %>
       </div>
     </div>
 
-    <div class="mt-7 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3" data-achievement-grid>
+    <div class="mt-5 grid gap-4 sm:mt-7 lg:grid-cols-2 lg:gap-5 2xl:grid-cols-3" data-achievement-grid>
       <% achievements.forEach((item) => { %>
         <% const theme = colorMap[item.color] || colorMap.green; %>
-        <article data-achievement-card data-category="<%= item.category %>" class="<%= theme.card %> rounded-[1.5rem] border p-5 transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(52,78,65,0.12)]">
-          <div class="flex items-center gap-5">
-            <div class="<%= theme.ring %> grid h-24 w-24 shrink-0 place-items-center rounded-full border-4 bg-white shadow-lg">
-              <div class="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br <%= theme.badge %> text-white shadow-inner">
+        <article data-achievement-card data-category="<%= item.category %>" class="<%= theme.card %> rounded-[1.25rem] border p-4 transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(52,78,65,0.12)] sm:rounded-[1.5rem] sm:p-5">
+          <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-5 sm:text-left">
+            <div class="<%= theme.ring %> grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 bg-white shadow-lg sm:h-24 sm:w-24">
+              <div class="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br <%= theme.badge %> text-white shadow-inner sm:h-20 sm:w-20">
                 <% if (item.icon === "flame") { %>
-                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                  <svg class="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c3.6 0 6.5-2.5 6.5-6.1 0-2.6-1.5-4.6-3.2-6.4-.9 2.1-2.3 3.1-3.9 3.4.7-2.4.1-5.1-2.5-7.9-.4 3.1-2.1 5-3.2 6.5-1 1.3-1.7 2.6-1.7 4.4C4 19.5 6.9 22 10.5 22H12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
                 <% } else if (item.icon === "calendar") { %>
-                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  <svg class="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 <% } else if (item.icon === "level") { %>
-                  <span class="text-3xl font-black">5</span>
+                  <span class="text-2xl font-black sm:text-3xl">5</span>
                 <% } else if (item.icon === "bar") { %>
-                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 20V9M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3 20h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                  <svg class="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 20V9M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3 20h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
                 <% } else if (item.icon === "medal") { %>
-                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" stroke="currentColor" stroke-width="1.8"/><path d="m9 14-2 7 5-3 5 3-2-7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m12 6 1.1 2.2 2.4.3-1.7 1.7.4 2.4-2.2-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3L12 6Z" fill="currentColor"/></svg>
+                  <svg class="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" stroke="currentColor" stroke-width="1.8"/><path d="m9 14-2 7 5-3 5 3-2-7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m12 6 1.1 2.2 2.4.3-1.7 1.7.4 2.4-2.2-1.1-2.2 1.1.4-2.4-1.7-1.7 2.4-.3L12 6Z" fill="currentColor"/></svg>
                 <% } else { %>
-                  <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg class="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <% } %>
               </div>
             </div>
 
             <div class="min-w-0 flex-1">
-              <div class="flex items-start justify-between gap-3">
+              <div class="flex flex-col items-center gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div>
                   <p class="text-xs font-black uppercase tracking-[0.16em] <%= theme.text %>"><%= item.type %></p>
-                  <h3 class="mt-1 text-xl font-black text-[#244338]"><%= item.name %></h3>
+                  <h3 class="mt-1 text-lg font-black text-[#244338] sm:text-xl"><%= item.name %></h3>
                 </div>
                 <span class="<%= item.unlocked ? 'bg-[#E8F4E6] text-[#2F654D]' : 'bg-[#E9E4DB] text-[#244338]/58' %> shrink-0 rounded-full px-3 py-1 text-xs font-black">
                   <%= item.unlocked ? "Unlocked" : "Locked" %>
@@ -175,8 +175,8 @@
       <% }) %>
     </div>
 
-    <section class="mt-7 rounded-[1.5rem] border border-[#E6D6C1] bg-[#FFF8ED] p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
-      <div class="flex items-center gap-4">
+    <section class="mt-6 rounded-[1.5rem] border border-[#E6D6C1] bg-[#FFF8ED] p-5 text-center sm:mt-7 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:text-left">
+      <div class="flex flex-col items-center gap-4 sm:flex-row">
         <span class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#A3B18A]/18 text-[#2F654D]">
           <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -187,7 +187,7 @@
           <p class="mt-1 text-sm font-medium text-[#344E41]/66">Allah mencintai hamba-Nya yang istiqomah dalam kebaikan.</p>
         </div>
       </div>
-      <a href="/statistics" class="mt-5 inline-flex rounded-full bg-[#588157] px-6 py-3 text-sm font-black text-white transition hover:bg-[#344E41] sm:mt-0">
+      <a href="/statistics" class="mt-5 inline-flex justify-center rounded-full bg-[#588157] px-6 py-3 text-sm font-black text-white transition hover:bg-[#344E41] sm:mt-0">
         Lihat Progress Level ->
       </a>
     </section>
