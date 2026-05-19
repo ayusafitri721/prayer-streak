@@ -32,6 +32,44 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
 const passwordToggleButtons = Array.from(document.querySelectorAll("[data-password-toggle]"));
 const favoritePanels = Array.from(document.querySelectorAll("[data-favorite-panel]"));
 const profilePhotoForm = document.querySelector("[data-profile-photo-form]");
+const homeMobileMenu = document.querySelector("[data-home-mobile-menu]");
+const homeMobileMenuToggle = document.querySelector("[data-home-mobile-menu-toggle]");
+const homeMobileMenuPanel = document.querySelector("[data-home-mobile-menu-panel]");
+
+if (homeMobileMenu && homeMobileMenuToggle && homeMobileMenuPanel) {
+  const setHomeMobileMenuOpen = (isOpen) => {
+    homeMobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    homeMobileMenuPanel.classList.toggle("pointer-events-none", !isOpen);
+    homeMobileMenuPanel.classList.toggle("opacity-0", !isOpen);
+    homeMobileMenuPanel.classList.toggle("scale-95", !isOpen);
+    homeMobileMenuPanel.classList.toggle("opacity-100", isOpen);
+    homeMobileMenuPanel.classList.toggle("scale-100", isOpen);
+  };
+
+  homeMobileMenuToggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setHomeMobileMenuOpen(homeMobileMenuToggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  homeMobileMenuPanel.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLAnchorElement) {
+      setHomeMobileMenuOpen(false);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Node) || homeMobileMenu.contains(target)) return;
+    setHomeMobileMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setHomeMobileMenuOpen(false);
+    }
+  });
+}
 
 if (profilePhotoForm) {
   const fileInput = profilePhotoForm.querySelector("[data-profile-photo-input]");

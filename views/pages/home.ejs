@@ -8,8 +8,8 @@
     <div class="absolute inset-0 bg-black/22"></div>
     <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.14)_46%,rgba(0,0,0,0.44)_100%)]"></div>
 
-    <header class="relative z-20 mx-auto flex max-w-5xl items-center justify-center px-3 pt-5 sm:px-5 sm:pt-8">
-      <nav class="home-mobile-nav flex max-w-full items-center gap-3 overflow-x-auto rounded-full border border-white/10 bg-black/24 px-4 py-3 text-[0.66rem] font-bold text-white/80 backdrop-blur sm:gap-6 sm:px-5 sm:text-xs" aria-label="Navigasi landing page">
+    <header class="relative z-20 mx-auto flex max-w-5xl items-center justify-center px-4 pt-5 sm:px-5 sm:pt-8">
+      <nav class="hidden items-center gap-6 rounded-full border border-white/10 bg-black/20 px-5 py-3 text-xs font-bold text-white/80 backdrop-blur sm:flex" aria-label="Navigasi landing page">
         <a href="/" class="text-[#A3B18A]">Home</a>
         <a href="#fitur" class="transition hover:text-[#A3B18A]">Fitur</a>
         <a href="#progress" class="transition hover:text-[#A3B18A]">Progress</a>
@@ -17,6 +17,34 @@
         <a href="/login" class="transition hover:text-[#A3B18A]">Login</a>
         <a href="/register" class="transition hover:text-[#A3B18A]">Register</a>
       </nav>
+
+      <div class="relative flex w-full items-center justify-between rounded-full border border-white/10 bg-black/24 px-3 py-2 text-white shadow-xl shadow-black/20 backdrop-blur-xl sm:hidden" data-home-mobile-menu>
+        <a href="/" class="flex min-w-0 items-center gap-2">
+          <span class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#A3B18A]/18 ring-1 ring-white/10">
+            <img src="/assets/prayer-streak-logo.svg" alt="" class="h-full w-full" />
+          </span>
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-black leading-none">Prayer Streak</span>
+            <span class="mt-1 block text-[0.58rem] font-bold uppercase tracking-[0.18em] text-[#A3B18A]">Habit ibadah</span>
+          </span>
+        </a>
+
+        <button type="button" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-white transition active:scale-95" aria-label="Buka menu" aria-expanded="false" data-home-mobile-menu-toggle>
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="pointer-events-none absolute left-0 right-0 top-16 z-30 scale-95 rounded-3xl border border-white/12 bg-[#172018]/94 p-2 text-sm font-bold text-white/82 opacity-0 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl transition duration-200" data-home-mobile-menu-panel>
+          <a href="/" class="block rounded-2xl px-4 py-3 text-[#A3B18A] transition hover:bg-white/8">Home</a>
+          <a href="#fitur" class="block rounded-2xl px-4 py-3 transition hover:bg-white/8 hover:text-[#A3B18A]">Fitur</a>
+          <a href="#progress" class="block rounded-2xl px-4 py-3 transition hover:bg-white/8 hover:text-[#A3B18A]">Progress</a>
+          <a href="#konsep" class="block rounded-2xl px-4 py-3 transition hover:bg-white/8 hover:text-[#A3B18A]">Konsep</a>
+          <div class="my-1 h-px bg-white/10"></div>
+          <a href="/login" class="block rounded-2xl px-4 py-3 transition hover:bg-white/8 hover:text-[#A3B18A]">Login</a>
+          <a href="/register" class="mt-1 block rounded-2xl bg-[#A3B18A] px-4 py-3 text-center text-[#244338] transition hover:bg-[#C9D7B8]">Register</a>
+        </div>
+      </div>
     </header>
 
     <div class="relative z-10 mx-auto flex min-h-[calc(100svh-84px)] max-w-4xl flex-col items-center justify-center px-5 pb-12 pt-10 text-center sm:min-h-[540px] sm:pb-10 sm:pt-16">

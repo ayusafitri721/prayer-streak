@@ -158,16 +158,3 @@ input[type="password"]::-webkit-reveal {
   animation: dashboard-card-enter 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.home-mobile-nav {
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.home-mobile-nav::-webkit-scrollbar {
-  display: none;
-}
-
-.home-mobile-nav a {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
