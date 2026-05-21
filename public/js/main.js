@@ -2744,9 +2744,9 @@ if (homeCarousel && homeAnchorLinks.length) {
   });
 }
 
-const pushSettings = document.querySelector("[data-push-settings]");
+const pushSettingsList = Array.from(document.querySelectorAll("[data-push-settings]"));
 
-if (pushSettings) {
+pushSettingsList.forEach((pushSettings) => {
   const statusEl = pushSettings.querySelector("[data-push-status]");
   const enableBtn = pushSettings.querySelector("[data-push-enable]");
   const disableBtn = pushSettings.querySelector("[data-push-disable]");
@@ -3066,7 +3066,7 @@ if (pushSettings) {
   motivationEnabledSelect?.addEventListener("change", () => {
     savePreferences().catch(() => null);
   });
-}
+});
 
 const notificationPanel = document.querySelector("[data-notification-panel]");
 const notificationPanelToggles = Array.from(

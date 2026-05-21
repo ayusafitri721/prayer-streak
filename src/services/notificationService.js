@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const db = require("../utils/prisma");
 
 const PRAYER_LABELS = {
   imsak: "Imsak",
@@ -59,6 +60,42 @@ const vapidFilePath =
 const subscriptionsByUser = new Map();
 const preferencesByUser = new Map();
 const sentNotificationCache = new Map();
+
+function hasNotificationTables() {
+  return Boolean(db.notificationPreference && db.pushSubscription);
+}
+
+function preferenceFromRecord(record) {
+  if (!record) return null;
+  return sanitizePreferences({
+    prayerEnabled: record.prayerEnabled,
+    imsakEnabled: record.imsakEnabled,
+    motivationEnabled: record.motivationEnabled,
+    motivationHour: record.motivationHour,
+    motivationMinute: record.motivationMinute,
+    prayerReminderMinutes: record.prayerReminderMinutes,
+    timezoneOffsetMinutes: record.timezoneOffsetMinutes,
+  });
+}
+
+function subscriptionFromRecord(record) {
+  if (!record) return null;
+  return {
+    subscription: {
+      endpoint: record.endpoint,
+      keys: {
+        p256dh: record.p256dh,
+        auth: record.auth,
+      },
+    },
+    createdAt: record.createdAt?.toISOString?.() || new Date().toISOString(),
+    metadata: {
+      userAgent: record.userAgent || "",
+      timezoneOffsetMinutes: Number(record.timezoneOffsetMinutes || 0),
+      locale: record.locale || "id-ID",
+    },
+  };
+}
 
 function tryLoadWebPush() {
   if (webPush || webPushDisabledReason) return webPush;
@@ -186,13 +223,50 @@ function getUserPreferences(userId) {
   return defaults;
 }
 
-function updateUserPreferences(userId, patch = {}) {
+async function loadUserPreferences(userId) {
+  const id = Number(userId);
+  const existing = preferencesByUser.get(id);
+  if (existing) return existing;
+
+  if (hasNotificationTables()) {
+    try {
+      const record = await db.notificationPreference.findUnique({
+        where: { userId: id },
+      });
+      const preferences = preferenceFromRecord(record) || { ...DEFAULT_PREFERENCES };
+      preferencesByUser.set(id, preferences);
+      return preferences;
+    } catch (error) {
+      console.warn(`[push] gagal memuat preferensi user ${id}: ${error?.message || error}`);
+    }
+  }
+
+  return getUserPreferences(id);
+}
+
+async function updateUserPreferences(userId, patch = {}) {
   const id = Number(userId);
   const merged = sanitizePreferences({
-    ...getUserPreferences(id),
+    ...(await loadUserPreferences(id)),
     ...patch,
   });
   preferencesByUser.set(id, merged);
+
+  if (hasNotificationTables()) {
+    try {
+      await db.notificationPreference.upsert({
+        where: { userId: id },
+        update: merged,
+        create: {
+          userId: id,
+          ...merged,
+        },
+      });
+    } catch (error) {
+      console.warn(`[push] gagal menyimpan preferensi user ${id}: ${error?.message || error}`);
+    }
+  }
+
   return merged;
 }
 
@@ -202,6 +276,35 @@ function getUserSubscriptions(userId) {
   if (existing) return existing;
 
   const subscriptions = new Map();
+  subscriptionsByUser.set(id, subscriptions);
+  return subscriptions;
+}
+
+async function loadUserSubscriptions(userId) {
+  const id = Number(userId);
+  const existing = subscriptionsByUser.get(id);
+  if (existing) return existing;
+
+  const subscriptions = new Map();
+
+  if (hasNotificationTables()) {
+    try {
+      const records = await db.pushSubscription.findMany({
+        where: { userId: id },
+      });
+      records.forEach((record) => {
+        const item = subscriptionFromRecord(record);
+        if (item?.subscription?.endpoint) {
+          subscriptions.set(item.subscription.endpoint, item);
+        }
+      });
+      subscriptionsByUser.set(id, subscriptions);
+      return subscriptions;
+    } catch (error) {
+      console.warn(`[push] gagal memuat subscription user ${id}: ${error?.message || error}`);
+    }
+  }
+
   subscriptionsByUser.set(id, subscriptions);
   return subscriptions;
 }
@@ -223,7 +326,7 @@ function normalizeSubscriptionPayload(payload) {
   };
 }
 
-function subscribeUser(userId, subscription, metadata = {}) {
+async function subscribeUser(userId, subscription, metadata = {}) {
   const id = Number(userId);
   const normalized = normalizeSubscriptionPayload(subscription);
   if (!normalized) {
@@ -233,8 +336,8 @@ function subscribeUser(userId, subscription, metadata = {}) {
     };
   }
 
-  const userSubscriptions = getUserSubscriptions(id);
-  userSubscriptions.set(normalized.endpoint, {
+  const userSubscriptions = await loadUserSubscriptions(id);
+  const record = {
     subscription: normalized,
     createdAt: new Date().toISOString(),
     metadata: {
@@ -242,26 +345,39 @@ function subscribeUser(userId, subscription, metadata = {}) {
       timezoneOffsetMinutes: Number(metadata.timezoneOffsetMinutes || 0),
       locale: metadata.locale || "id-ID",
     },
-  });
+  };
 
-  updateUserPreferences(id, {
+  userSubscriptions.set(normalized.endpoint, record);
+
+  await updateUserPreferences(id, {
     timezoneOffsetMinutes: Number(metadata.timezoneOffsetMinutes || 0),
   });
 
-  return {
-    ok: true,
-    subscriptionCount: userSubscriptions.size,
-  };
-}
-
-function unsubscribeUser(userId, endpoint = null) {
-  const id = Number(userId);
-  const userSubscriptions = getUserSubscriptions(id);
-
-  if (endpoint) {
-    userSubscriptions.delete(String(endpoint));
-  } else {
-    userSubscriptions.clear();
+  if (hasNotificationTables()) {
+    try {
+      await db.pushSubscription.upsert({
+        where: { endpoint: normalized.endpoint },
+        update: {
+          userId: id,
+          p256dh: normalized.keys.p256dh,
+          auth: normalized.keys.auth,
+          userAgent: record.metadata.userAgent,
+          locale: record.metadata.locale,
+          timezoneOffsetMinutes: record.metadata.timezoneOffsetMinutes,
+        },
+        create: {
+          userId: id,
+          endpoint: normalized.endpoint,
+          p256dh: normalized.keys.p256dh,
+          auth: normalized.keys.auth,
+          userAgent: record.metadata.userAgent,
+          locale: record.metadata.locale,
+          timezoneOffsetMinutes: record.metadata.timezoneOffsetMinutes,
+        },
+      });
+    } catch (error) {
+      console.warn(`[push] gagal menyimpan subscription user ${id}: ${error?.message || error}`);
+    }
   }
 
   return {
@@ -270,15 +386,46 @@ function unsubscribeUser(userId, endpoint = null) {
   };
 }
 
-function getUserNotificationState(userId) {
+async function unsubscribeUser(userId, endpoint = null) {
+  const id = Number(userId);
+  const userSubscriptions = await loadUserSubscriptions(id);
+
+  if (endpoint) {
+    userSubscriptions.delete(String(endpoint));
+    if (hasNotificationTables()) {
+      await db.pushSubscription.deleteMany({
+        where: {
+          userId: id,
+          endpoint: String(endpoint),
+        },
+      }).catch((error) => {
+        console.warn(`[push] gagal hapus subscription user ${id}: ${error?.message || error}`);
+      });
+    }
+  } else {
+    userSubscriptions.clear();
+    if (hasNotificationTables()) {
+      await db.pushSubscription.deleteMany({ where: { userId: id } }).catch((error) => {
+        console.warn(`[push] gagal hapus semua subscription user ${id}: ${error?.message || error}`);
+      });
+    }
+  }
+
+  return {
+    ok: true,
+    subscriptionCount: userSubscriptions.size,
+  };
+}
+
+async function getUserNotificationState(userId) {
   const status = getPushStatus();
-  const subscriptions = getUserSubscriptions(userId);
+  const subscriptions = await loadUserSubscriptions(userId);
   return {
     enabled: status.enabled,
     reason: status.reason,
     subscribed: subscriptions.size > 0,
     subscriptionCount: subscriptions.size,
-    preferences: getUserPreferences(userId),
+    preferences: await loadUserPreferences(userId),
   };
 }
 
@@ -293,7 +440,7 @@ async function sendNotificationToUser(userId, payload = {}) {
   }
 
   const library = tryLoadWebPush();
-  const subscriptions = getUserSubscriptions(userId);
+  const subscriptions = await loadUserSubscriptions(userId);
   if (!subscriptions.size) {
     return {
       ok: true,
@@ -415,10 +562,10 @@ async function runSchedulerTick({
   const prayerTimes = schedule?.times || FALLBACK_PRAYER_TIMES;
 
   for (const userId of userIds) {
-    const subscriptionCount = getUserSubscriptions(userId).size;
+    const subscriptionCount = (await loadUserSubscriptions(userId)).size;
     if (!subscriptionCount) continue;
 
-    const prefs = getUserPreferences(userId);
+    const prefs = await loadUserPreferences(userId);
     const userLocal = getLocalDateFromOffset(now, prefs.timezoneOffsetMinutes);
     const dateKey = buildDateKeyUtc(userLocal);
     const localHour = userLocal.getUTCHours();

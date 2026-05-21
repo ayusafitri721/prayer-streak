@@ -22,23 +22,23 @@ function getPublicPushKeyAction(req, res) {
   });
 }
 
-function getNotificationStateAction(req, res) {
+async function getNotificationStateAction(req, res) {
   const userId = req.session.user.id;
   return res.json({
     ok: true,
-    ...getUserNotificationState(userId),
+    ...(await getUserNotificationState(userId)),
   });
 }
 
-function subscribeNotificationAction(req, res) {
+async function subscribeNotificationAction(req, res) {
   const userId = req.session.user.id;
   const { subscription, metadata, preferences } = req.body || {};
 
   if (preferences && typeof preferences === "object") {
-    updateUserPreferences(userId, preferences);
+    await updateUserPreferences(userId, preferences);
   }
 
-  const result = subscribeUser(userId, subscription, {
+  const result = await subscribeUser(userId, subscription, {
     ...(metadata || {}),
     userAgent: req.get("user-agent") || "",
   });
@@ -56,19 +56,19 @@ function subscribeNotificationAction(req, res) {
   });
 }
 
-function unsubscribeNotificationAction(req, res) {
+async function unsubscribeNotificationAction(req, res) {
   const userId = req.session.user.id;
   const endpoint = req.body?.endpoint || null;
-  const result = unsubscribeUser(userId, endpoint);
+  const result = await unsubscribeUser(userId, endpoint);
   return res.json({
     ok: true,
     subscriptionCount: result.subscriptionCount,
   });
 }
 
-function updateNotificationPreferencesAction(req, res) {
+async function updateNotificationPreferencesAction(req, res) {
   const userId = req.session.user.id;
-  const preferences = updateUserPreferences(userId, req.body || {});
+  const preferences = await updateUserPreferences(userId, req.body || {});
   return res.json({
     ok: true,
     preferences,

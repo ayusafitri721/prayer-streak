@@ -34,6 +34,8 @@ model User {
   xpHistories XPHistory[]
   favoriteContents FavoriteContent[]
   quranBookmarks QuranBookmark[]
+  notificationPreference NotificationPreference?
+  pushSubscriptions PushSubscription[]
 }
 
 model PrayerLog {
@@ -125,4 +127,35 @@ model QuranBookmark {
 
   @@unique([userId, surahNumber, verseNumber])
   @@index([userId, createdAt])
+}
+
+model NotificationPreference {
+  id                    Int      @id @default(autoincrement())
+  userId                Int      @unique
+  prayerEnabled         Boolean  @default(true)
+  imsakEnabled          Boolean  @default(false)
+  motivationEnabled     Boolean  @default(true)
+  motivationHour        Int      @default(7)
+  motivationMinute      Int      @default(0)
+  prayerReminderMinutes Int      @default(10)
+  timezoneOffsetMinutes Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  endpoint              String   @unique @db.VarChar(512)
+  p256dh                String   @db.VarChar(255)
+  auth                  String   @db.VarChar(255)
+  userAgent             String?  @db.Text
+  locale                String?
+  timezoneOffsetMinutes Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
